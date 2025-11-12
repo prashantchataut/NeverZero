@@ -46,7 +46,9 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build Release APK
-        run: ./gradlew --no-daemon --stacktrace --build-cache assembleRelease
+        run: ./gradlew --no-daemon --stacktrace --build-cache \
+          -Pandroid.useAndroidX=true \
+          assembleRelease
 
       - name: Set short SHA
         id: set_sha
