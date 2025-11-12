@@ -22,6 +22,12 @@ jobs:
   build:
     name: Build Signed Release APK
     runs-on: ubuntu-latest
+    env:
+      RELEASE_STORE_FILE: ${{ secrets.RELEASE_STORE_FILE }}
+      RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+      RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+      RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     outputs:
       short_sha: ${{ steps.set_sha.outputs.short_sha }}
     steps:
