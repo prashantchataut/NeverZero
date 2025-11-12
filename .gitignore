@@ -10,3 +10,4 @@
 .externalNativeBuild
 *.iml
 external/
+gradle.properties
