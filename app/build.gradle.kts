@@ -26,14 +26,18 @@ android {
 
     signingConfigs {
         create("release") {
-            val storeFilePath = project.findProperty("RELEASE_STORE_FILE") as? String
+            val storeFilePath = (project.findProperty("RELEASE_STORE_FILE") as? String)
+                ?: System.getenv("RELEASE_STORE_FILE")
                 ?: error("RELEASE_STORE_FILE is not defined")
             storeFile = rootProject.file(storeFilePath)
-            storePassword = project.findProperty("RELEASE_STORE_PASSWORD") as? String
+            storePassword = (project.findProperty("RELEASE_STORE_PASSWORD") as? String)
+                ?: System.getenv("RELEASE_STORE_PASSWORD")
                 ?: error("RELEASE_STORE_PASSWORD is not defined")
-            keyAlias = project.findProperty("RELEASE_KEY_ALIAS") as? String
+            keyAlias = (project.findProperty("RELEASE_KEY_ALIAS") as? String)
+                ?: System.getenv("RELEASE_KEY_ALIAS")
                 ?: error("RELEASE_KEY_ALIAS is not defined")
-            keyPassword = project.findProperty("RELEASE_KEY_PASSWORD") as? String
+            keyPassword = (project.findProperty("RELEASE_KEY_PASSWORD") as? String)
+                ?: System.getenv("RELEASE_KEY_PASSWORD")
                 ?: error("RELEASE_KEY_PASSWORD is not defined")
         }
     }
