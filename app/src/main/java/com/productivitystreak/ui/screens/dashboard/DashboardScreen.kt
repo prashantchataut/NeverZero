@@ -394,6 +394,7 @@ private fun TaskRow(task: DashboardTask, onToggleTask: (String) -> Unit) {
     }
 }
 
+@Composable
 private fun hexToColor(hex: String): Color {
     return try {
         Color(android.graphics.Color.parseColor(hex))
