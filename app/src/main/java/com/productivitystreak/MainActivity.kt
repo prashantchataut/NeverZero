@@ -16,8 +16,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val viewModel: AppViewModel by viewModels { AppViewModelFactory(application) }
         setContent {
-            ProductivityStreakTheme {
-                val state = viewModel.uiState.collectAsStateWithLifecycle()
+            val state = viewModel.uiState.collectAsStateWithLifecycle()
+            val darkTheme = when (state.value.profileState.theme) {
+                com.productivitystreak.ui.state.profile.ProfileTheme.Dark -> true
+                com.productivitystreak.ui.state.profile.ProfileTheme.Light -> false
+                com.productivitystreak.ui.state.profile.ProfileTheme.Auto -> androidx.compose.foundation.isSystemInDarkTheme()
+            }
+
+            ProductivityStreakTheme(darkTheme = darkTheme) {
                 Surface {
                     NeverZeroApp(
                         uiState = state.value,

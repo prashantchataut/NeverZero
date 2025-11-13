@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.productivitystreak.data.QuoteRepository
-import com.productivitystreak.data.local.UserPreferencesDataStore
 import com.productivitystreak.data.model.Streak
 import com.productivitystreak.data.repository.StreakRepository
 import com.productivitystreak.notifications.StreakReminderScheduler
@@ -15,6 +14,7 @@ import com.productivitystreak.ui.state.discover.ChallengeItem
 import com.productivitystreak.ui.state.discover.DiscoverState
 import com.productivitystreak.ui.state.discover.FeaturedContent
 import com.productivitystreak.ui.state.discover.SuggestionItem
+import com.productivitystreak.ui.state.onboarding.OnboardingState
 import com.productivitystreak.ui.state.profile.ProfileState
 import com.productivitystreak.ui.state.profile.ProfileTheme
 import com.productivitystreak.ui.state.profile.ReminderFrequency
@@ -40,8 +40,7 @@ class AppViewModel(
     application: Application,
     private val quoteRepository: QuoteRepository,
     private val streakRepository: StreakRepository,
-    private val reminderScheduler: StreakReminderScheduler,
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    private val reminderScheduler: StreakReminderScheduler
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(AppUiState())
@@ -50,42 +49,9 @@ class AppViewModel(
     private var quoteRefreshJob: Job? = null
 
     init {
-        initializeData()
-        observeUserPreferences()
-        observeStreaks()
         bootstrapStaticState()
+        observeStreaks()
         refreshQuote()
-    }
-
-    private fun initializeData() {
-        viewModelScope.launch {
-            streakRepository.initializeSampleData()
-        }
-    }
-
-    private fun observeUserPreferences() {
-        viewModelScope.launch {
-            userPreferencesDataStore.userPreferencesFlow.collectLatest { prefs ->
-                _uiState.update { state ->
-                    state.copy(
-                        userName = prefs.userName,
-                        profileState = state.profileState.copy(
-                            email = prefs.userEmail,
-                            theme = prefs.theme,
-                            notificationEnabled = prefs.notificationsEnabled,
-                            reminderFrequency = prefs.reminderFrequency,
-                            hasWeeklySummary = prefs.weeklySummaryEnabled,
-                            activeCategories = prefs.selectedCategories
-                        ),
-                        onboardingState = state.onboardingState.copy(
-                            hasCompleted = prefs.hasCompletedOnboarding,
-                            selectedCategories = prefs.selectedCategories
-                        ),
-                        showOnboarding = prefs.showOnboarding
-                    )
-                }
-            }
-        }
     }
 
     fun refreshQuote() {
@@ -125,82 +91,82 @@ class AppViewModel(
     }
 
     fun onToggleOnboardingCategory(category: String) {
-        viewModelScope.launch {
-            _uiState.update { state ->
-                val current = state.onboardingState.selectedCategories
-                val updated = if (current.contains(category) && current.size > 1) {
-                    current - category
-                } else {
-                    current + category
-                }
-                state.copy(
-                    onboardingState = state.onboardingState.copy(selectedCategories = updated),
-                    profileState = state.profileState.copy(activeCategories = updated)
-                )
+        _uiState.update { state ->
+            val current = state.onboardingState.selectedCategories
+            val updated = if (current.contains(category) && current.size > 1) {
+                current - category
+            } else {
+                current + category
             }
-            userPreferencesDataStore.updateSelectedCategories(_uiState.value.onboardingState.selectedCategories)
+            state.copy(
+                onboardingState = state.onboardingState.copy(selectedCategories = updated),
+                profileState = state.profileState.copy(activeCategories = updated)
+            )
         }
     }
 
     fun onDismissOnboarding() {
-        viewModelScope.launch {
-            userPreferencesDataStore.dismissOnboarding()
+        _uiState.update { state ->
+            state.copy(showOnboarding = false)
         }
     }
 
     fun onCompleteOnboarding() {
-        viewModelScope.launch {
-            val snapshot = _uiState.value
-            userPreferencesDataStore.completeOnboarding()
-            if (snapshot.profileState.notificationEnabled) {
-                reminderScheduler.scheduleReminder(
-                    frequency = snapshot.profileState.reminderFrequency,
-                    categories = snapshot.onboardingState.selectedCategories,
-                    userName = snapshot.userName
-                )
-            }
+        val snapshot = _uiState.value
+        _uiState.update { state ->
+            state.copy(
+                showOnboarding = false,
+                onboardingState = state.onboardingState.copy(hasCompleted = true)
+            )
+        }
+        if (snapshot.profileState.notificationEnabled) {
+            reminderScheduler.scheduleReminder(
+                frequency = snapshot.profileState.reminderFrequency,
+                categories = snapshot.onboardingState.selectedCategories,
+                userName = snapshot.userName
+            )
         }
     }
 
     fun onToggleNotifications(enabled: Boolean) {
-        viewModelScope.launch {
-            userPreferencesDataStore.updateNotificationsEnabled(enabled)
-            val current = _uiState.value
-            if (enabled) {
-                reminderScheduler.scheduleReminder(
-                    frequency = current.profileState.reminderFrequency,
-                    categories = current.onboardingState.selectedCategories,
-                    userName = current.userName
-                )
-            } else {
-                reminderScheduler.cancelReminders()
-            }
+        _uiState.update { state ->
+            state.copy(profileState = state.profileState.copy(notificationEnabled = enabled))
+        }
+        val current = _uiState.value
+        if (enabled) {
+            reminderScheduler.scheduleReminder(
+                frequency = current.profileState.reminderFrequency,
+                categories = current.onboardingState.selectedCategories,
+                userName = current.userName
+            )
+        } else {
+            reminderScheduler.cancelReminders()
         }
     }
 
     fun onChangeReminderFrequency(frequency: ReminderFrequency) {
-        viewModelScope.launch {
-            userPreferencesDataStore.updateReminderFrequency(frequency)
-            val current = _uiState.value
-            if (current.profileState.notificationEnabled) {
-                reminderScheduler.scheduleReminder(
-                    frequency = frequency,
-                    categories = current.onboardingState.selectedCategories,
-                    userName = current.userName
-                )
-            }
+        _uiState.update { state ->
+            state.copy(profileState = state.profileState.copy(reminderFrequency = frequency))
+        }
+        val current = _uiState.value
+        if (current.profileState.notificationEnabled) {
+            reminderScheduler.scheduleReminder(
+                frequency = frequency,
+                categories = current.onboardingState.selectedCategories,
+                userName = current.userName
+            )
         }
     }
 
     fun onToggleWeeklySummary(enabled: Boolean) {
-        viewModelScope.launch {
-            userPreferencesDataStore.updateWeeklySummary(enabled)
+        _uiState.update { state ->
+            state.copy(profileState = state.profileState.copy(hasWeeklySummary = enabled))
         }
     }
 
     fun onChangeTheme(theme: ProfileTheme) {
-        viewModelScope.launch {
-            userPreferencesDataStore.updateTheme(theme)
+        _uiState.update { state ->
+            state.copy(profileState = state.profileState.copy(theme = theme))
         }
     }
 
@@ -267,7 +233,8 @@ class AppViewModel(
                 statsState = buildStatsState(),
                 discoverState = buildDiscoverState(),
                 readingTrackerState = buildReadingState(),
-                vocabularyState = buildVocabularyState()
+                vocabularyState = buildVocabularyState(),
+                profileState = buildProfileState()
             )
         }
     }
@@ -348,6 +315,14 @@ class AppViewModel(
             VocabularyWord("Liminal", "Occupying a position at a boundary.", "Morning routines live in the liminal space between rest and action."),
             VocabularyWord("Verve", "Energy and enthusiasm.")
         )
+    )
+
+    private fun buildProfileState(): ProfileState = ProfileState(
+        notificationEnabled = true,
+        reminderFrequency = ReminderFrequency.Daily,
+        hasWeeklySummary = true,
+        theme = ProfileTheme.Dark,
+        activeCategories = _uiState.value.onboardingState.selectedCategories
     )
 
     fun simulateTaskCompletion(streakId: String, value: Int) {

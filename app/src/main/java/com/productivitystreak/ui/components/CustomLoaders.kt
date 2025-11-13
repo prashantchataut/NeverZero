@@ -134,18 +134,16 @@ fun WaveLoader(
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "waveLoader")
 
-    val animations = remember(barCount) {
-        (0 until barCount).map { index ->
-            infiniteTransition.animateFloat(
-                initialValue = 0.3f,
-                targetValue = 1f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(600, easing = FastOutSlowInEasing, delayMillis = index * 100),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "bar$index"
-            )
-        }
+    val animations = (0 until barCount).map { index ->
+        infiniteTransition.animateFloat(
+            initialValue = 0.3f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(600, easing = FastOutSlowInEasing, delayMillis = index * 100),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "bar$index"
+        )
     }
 
     Row(
@@ -326,18 +324,16 @@ fun DotsLoader(
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "dotsLoader")
 
-    val animations = remember {
-        (0..2).map { index ->
-            infiniteTransition.animateFloat(
-                initialValue = 0f,
-                targetValue = 1f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(600, easing = FastOutSlowInEasing, delayMillis = index * 150),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "dot$index"
-            )
-        }
+    val animations = (0..2).map { index ->
+        infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(600, easing = FastOutSlowInEasing, delayMillis = index * 150),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "dot$index"
+        )
     }
 
     Row(
