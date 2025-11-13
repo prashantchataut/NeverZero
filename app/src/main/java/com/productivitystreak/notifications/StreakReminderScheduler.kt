@@ -9,7 +9,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.productivitystreak.ui.state.profile.ReminderFrequency
-import java.util.concurrent.TimeUnit
+import java.time.Duration
 
 class StreakReminderScheduler(private val context: Context) {
 
@@ -27,13 +27,13 @@ class StreakReminderScheduler(private val context: Context) {
 
         createChannel()
 
-        val intervalDays = when (frequency) {
-            ReminderFrequency.Daily -> 1L
-            ReminderFrequency.Weekly -> 7L
+        val repeatInterval = when (frequency) {
+            ReminderFrequency.Daily -> Duration.ofDays(1)
+            ReminderFrequency.Weekly -> Duration.ofDays(7)
             ReminderFrequency.None -> return
         }
 
-        val workRequest = PeriodicWorkRequestBuilder<StreakReminderWorker>(intervalDays, TimeUnit.DAYS)
+        val workRequest = PeriodicWorkRequestBuilder<StreakReminderWorker>(repeatInterval)
             .setInputData(StreakReminderWorker.createInputData(categories, userName))
             .build()
 
