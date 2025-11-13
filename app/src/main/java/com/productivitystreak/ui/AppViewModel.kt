@@ -40,13 +40,23 @@ class AppViewModel(
     application: Application,
     private val quoteRepository: QuoteRepository,
     private val streakRepository: StreakRepository,
-    private val reminderScheduler: StreakReminderScheduler
+    private val reminderScheduler: StreakReminderScheduler,
+    private val vocabularyRepository: com.productivitystreak.data.repository.VocabularyRepository,
+    private val bookRepository: com.productivitystreak.data.repository.BookRepository,
+    private val reflectionRepository: com.productivitystreak.data.repository.ReflectionRepository,
+    private val achievementRepository: com.productivitystreak.data.repository.AchievementRepository
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(AppUiState())
     val uiState: StateFlow<AppUiState> = _uiState.asStateFlow()
 
     private var quoteRefreshJob: Job? = null
+
+    // New data streams
+    val achievements = achievementRepository.observeAllAchievements()
+    val unlockedAchievements = achievementRepository.observeUnlockedAchievements()
+    val vocabularyWords = vocabularyRepository.observeAllWords()
+    val books = bookRepository.observeAllBooks()
 
     init {
         bootstrapStaticState()
@@ -338,6 +348,110 @@ class AppViewModel(
             _uiState.update { state ->
                 state.copy(todayTasks = buildTasksForStreaks(state.streaks))
             }
+            checkAchievements()
+        }
+    }
+
+    // Achievement checking system
+    private suspend fun checkAchievements() {
+        val streaks = _uiState.value.streaks
+
+        // Check streak milestones
+        streaks.forEach { streak ->
+            when {
+                streak.currentCount >= 365 ->
+                    achievementRepository.incrementProgress("streak_365", streak.currentCount)
+                streak.currentCount >= 100 ->
+                    achievementRepository.incrementProgress("streak_100", streak.currentCount)
+                streak.currentCount >= 30 ->
+                    achievementRepository.incrementProgress("streak_30", streak.currentCount)
+                streak.currentCount >= 7 ->
+                    achievementRepository.incrementProgress("streak_7", streak.currentCount)
+            }
+        }
+
+        // Check book completions
+        val finishedBooks = bookRepository.getFinishedBookCount()
+        if (finishedBooks >= 10) {
+            achievementRepository.updateProgress("books_10", finishedBooks)
+        }
+        if (finishedBooks >= 1) {
+            achievementRepository.updateProgress("books_1", finishedBooks)
+        }
+
+        // Check vocabulary
+        val wordCount = vocabularyRepository.getWordCount()
+        when {
+            wordCount >= 500 -> achievementRepository.updateProgress("words_500", wordCount)
+            wordCount >= 200 -> achievementRepository.updateProgress("words_200", wordCount)
+            wordCount >= 50 -> achievementRepository.updateProgress("words_50", wordCount)
+        }
+
+        // Check reflections
+        val reflectionCount = reflectionRepository.getReflectionCount()
+        when {
+            reflectionCount >= 30 -> achievementRepository.updateProgress("reflections_30", reflectionCount)
+            reflectionCount >= 7 -> achievementRepository.updateProgress("reflections_7", reflectionCount)
+        }
+    }
+
+    // Vocabulary functions
+    fun addVocabularyWord(word: String, definition: String, example: String?, partOfSpeech: String?) {
+        if (word.isBlank() || definition.isBlank()) return
+        viewModelScope.launch {
+            vocabularyRepository.addWord(
+                word = word,
+                definition = definition,
+                example = example,
+                partOfSpeech = partOfSpeech
+            )
+            checkAchievements()
+        }
+    }
+
+    suspend fun getWordsForPractice(limit: Int = 10) =
+        vocabularyRepository.getWordsForPractice(limit)
+
+    fun reviewWord(wordId: Long, correct: Boolean) {
+        viewModelScope.launch {
+            vocabularyRepository.reviewWord(wordId, correct)
+        }
+    }
+
+    // Book functions
+    fun addBook(title: String, author: String, totalPages: Int, genre: String? = null) {
+        viewModelScope.launch {
+            bookRepository.addBook(
+                title = title,
+                author = author,
+                totalPages = totalPages,
+                genre = genre
+            )
+        }
+    }
+
+    fun logReadingSession(bookId: Long, pagesRead: Int, startPage: Int, notes: String? = null) {
+        viewModelScope.launch {
+            val success = bookRepository.logReadingSession(bookId, pagesRead, startPage, notes)
+            if (success) {
+                checkAchievements()
+            }
+        }
+    }
+
+    // Reflection functions
+    suspend fun getTodayReflection() = reflectionRepository.getTodayReflection()
+
+    fun saveReflection(mood: Int, notes: String, highlights: String?, challenges: String?, gratitude: String?) {
+        viewModelScope.launch {
+            reflectionRepository.saveReflection(
+                mood = mood,
+                notes = notes,
+                highlights = highlights,
+                challenges = challenges,
+                gratitude = gratitude
+            )
+            checkAchievements()
         }
     }
 }
