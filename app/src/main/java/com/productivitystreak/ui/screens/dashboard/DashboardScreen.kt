@@ -24,9 +24,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.productivitystreak.data.model.Streak
 import com.productivitystreak.ui.components.*
+import com.productivitystreak.ui.graphics.*
 import com.productivitystreak.ui.state.AppUiState
 import com.productivitystreak.ui.state.DashboardTask
 import com.productivitystreak.ui.theme.*
+import com.productivitystreak.ui.utils.*
 import java.time.LocalTime
 
 /**
@@ -42,42 +44,93 @@ fun DashboardScreen(
     onNavigateToReading: () -> Unit,
     onNavigateToVocabulary: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = Spacing.md, vertical = Spacing.md),
-        verticalArrangement = Arrangement.spacedBy(Spacing.xl)
-    ) {
-        // Welcome header with user greeting
-        WelcomeHeader(userName = state.userName)
+    // Initialize haptic feedback
+    val haptic = rememberHapticFeedback()
 
-        // Motivational quote card
-        MotivationalQuoteCard(
-            quote = state.quote?.text ?: "Steady beats sudden. Keep your streak warm today!",
-            author = state.quote?.author,
-            isLoading = state.isQuoteLoading,
-            onRefreshClick = onRefreshQuote
-        )
+    // Celebration state for task completion
+    var showCelebration by remember { mutableStateOf(false) }
+    var lastCompletedTaskId by remember { mutableStateOf<String?>(null) }
 
-        // Streaks section
-        StreaksSection(
-            streaks = state.streaks,
-            selectedId = state.selectedStreakId,
-            onSelectStreak = onSelectStreak
-        )
+    // Track task completion for celebration
+    LaunchedEffect(state.todayTasks) {
+        val completedTasks = state.todayTasks.filter { it.isCompleted }
+        if (completedTasks.isNotEmpty() && completedTasks.any { it.id != lastCompletedTaskId }) {
+            showCelebration = true
+            lastCompletedTaskId = completedTasks.last().id
+            haptic.celebration()
+        }
+    }
 
-        // Today's tasks section
-        TodayFocusSection(
-            tasks = state.todayTasks,
-            onToggleTask = onToggleTask,
-            onNavigateToReading = onNavigateToReading,
-            onNavigateToVocabulary = onNavigateToVocabulary
-        )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = Spacing.md, vertical = Spacing.md),
+            verticalArrangement = Arrangement.spacedBy(Spacing.xl)
+        ) {
+            // Welcome header with user greeting
+            WelcomeHeader(
+                userName = state.userName,
+                modifier = Modifier.bouncyAppearance(delayMillis = 0)
+            )
 
-        // Add spacing at the bottom for better scrolling
-        Spacer(modifier = Modifier.height(Spacing.xl))
+            // Motivational quote card
+            MotivationalQuoteCard(
+                quote = state.quote?.text ?: "Steady beats sudden. Keep your streak warm today!",
+                author = state.quote?.author,
+                isLoading = state.isQuoteLoading,
+                onRefreshClick = {
+                    haptic.mediumImpact()
+                    onRefreshQuote()
+                },
+                modifier = Modifier.bouncyAppearance(delayMillis = 100)
+            )
+
+            // Streaks section
+            StreaksSection(
+                streaks = state.streaks,
+                selectedId = state.selectedStreakId,
+                onSelectStreak = { streakId ->
+                    haptic.selectionChanged()
+                    onSelectStreak(streakId)
+                },
+                haptic = haptic,
+                modifier = Modifier.bouncyAppearance(delayMillis = 200)
+            )
+
+            // Today's tasks section
+            TodayFocusSection(
+                tasks = state.todayTasks,
+                onToggleTask = { taskId ->
+                    haptic.heavyImpact()
+                    onToggleTask(taskId)
+                },
+                onNavigateToReading = {
+                    haptic.lightTap()
+                    onNavigateToReading()
+                },
+                onNavigateToVocabulary = {
+                    haptic.lightTap()
+                    onNavigateToVocabulary()
+                },
+                haptic = haptic,
+                modifier = Modifier.bouncyAppearance(delayMillis = 300)
+            )
+
+            // Add spacing at the bottom for better scrolling
+            Spacer(modifier = Modifier.height(Spacing.xl))
+        }
+
+        // Celebration confetti overlay
+        if (showCelebration) {
+            CelebrationConfetti(
+                modifier = Modifier.fillMaxSize(),
+                trigger = showCelebration,
+                onAnimationEnd = { showCelebration = false }
+            )
+        }
     }
 }
 
@@ -85,7 +138,7 @@ fun DashboardScreen(
  * Welcome header with time-based greeting
  */
 @Composable
-private fun WelcomeHeader(userName: String) {
+private fun WelcomeHeader(userName: String, modifier: Modifier = Modifier) {
     val greeting = remember {
         val hour = LocalTime.now().hour
         when {
@@ -97,7 +150,7 @@ private fun WelcomeHeader(userName: String) {
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(Spacing.xxs)
     ) {
         Text(
@@ -122,7 +175,8 @@ private fun MotivationalQuoteCard(
     quote: String,
     author: String?,
     isLoading: Boolean,
-    onRefreshClick: () -> Unit
+    onRefreshClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "shimmer")
     val shimmerAlpha by infiniteTransition.animateFloat(
@@ -136,7 +190,7 @@ private fun MotivationalQuoteCard(
     )
 
     GradientCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         gradientColors = listOf(
             NeverZeroTheme.gradientColors.PremiumStart.copy(alpha = shimmerAlpha),
             NeverZeroTheme.gradientColors.PremiumEnd.copy(alpha = shimmerAlpha * 0.8f)
@@ -249,9 +303,14 @@ private fun MotivationalQuoteCard(
 private fun StreaksSection(
     streaks: List<Streak>,
     selectedId: String?,
-    onSelectStreak: (String) -> Unit
+    onSelectStreak: (String) -> Unit,
+    haptic: HapticFeedbackManager,
+    modifier: Modifier = Modifier
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(Spacing.md)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -498,20 +557,14 @@ private fun EmptyStreaksState() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Spacing.md)
         ) {
-            Surface(
-                modifier = Modifier.size(Size.iconExtraLarge),
-                shape = Shapes.medium,
-                color = MaterialTheme.colorScheme.primaryContainer
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Rounded.AddCircleOutline,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(Size.iconLarge)
-                    )
-                }
-            }
+            // Custom illustration instead of icon
+            EmptyStreaksIllustration(
+                modifier = Modifier
+                    .size(180.dp)
+                    .bouncyAppearance(delayMillis = 100),
+                primaryColor = MaterialTheme.colorScheme.primary,
+                secondaryColor = MaterialTheme.colorScheme.tertiary
+            )
 
             Text(
                 text = "Start Your First Streak",
@@ -538,9 +591,14 @@ private fun TodayFocusSection(
     tasks: List<DashboardTask>,
     onToggleTask: (String) -> Unit,
     onNavigateToReading: () -> Unit,
-    onNavigateToVocabulary: () -> Unit
+    onNavigateToVocabulary: () -> Unit,
+    haptic: HapticFeedbackManager,
+    modifier: Modifier = Modifier
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(Spacing.md)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
