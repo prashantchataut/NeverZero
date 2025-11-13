@@ -1,64 +1,38 @@
 package com.productivitystreak.ui.screens.dashboard
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedIconButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.rounded.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.productivitystreak.data.model.Streak
+import com.productivitystreak.ui.components.*
 import com.productivitystreak.ui.state.AppUiState
 import com.productivitystreak.ui.state.DashboardTask
+import com.productivitystreak.ui.theme.*
+import java.time.LocalTime
 
+/**
+ * Redesigned Dashboard Screen
+ * Modern, clean Material 3 UI with Poppins typography
+ */
 @Composable
 fun DashboardScreen(
     state: AppUiState,
@@ -71,119 +45,194 @@ fun DashboardScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+            .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = Spacing.md, vertical = Spacing.md),
+        verticalArrangement = Arrangement.spacedBy(Spacing.xl)
     ) {
-        GreetingCard(
-            userName = state.userName,
+        // Welcome header with user greeting
+        WelcomeHeader(userName = state.userName)
+
+        // Motivational quote card
+        MotivationalQuoteCard(
             quote = state.quote?.text ?: "Steady beats sudden. Keep your streak warm today!",
             author = state.quote?.author,
             isLoading = state.isQuoteLoading,
             onRefreshClick = onRefreshQuote
         )
 
-        StreakCarousel(
+        // Streaks section
+        StreaksSection(
             streaks = state.streaks,
             selectedId = state.selectedStreakId,
             onSelectStreak = onSelectStreak
         )
 
-        TodayTasksSection(
+        // Today's tasks section
+        TodayFocusSection(
             tasks = state.todayTasks,
             onToggleTask = onToggleTask,
             onNavigateToReading = onNavigateToReading,
             onNavigateToVocabulary = onNavigateToVocabulary
         )
+
+        // Add spacing at the bottom for better scrolling
+        Spacer(modifier = Modifier.height(Spacing.xl))
     }
 }
 
+/**
+ * Welcome header with time-based greeting
+ */
 @Composable
-private fun GreetingCard(
-    userName: String,
+private fun WelcomeHeader(userName: String) {
+    val greeting = remember {
+        val hour = LocalTime.now().hour
+        when {
+            hour < 12 -> "Good Morning"
+            hour < 17 -> "Good Afternoon"
+            hour < 21 -> "Good Evening"
+            else -> "Good Night"
+        }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Spacing.xxs)
+    ) {
+        Text(
+            text = greeting,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = userName,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+/**
+ * Motivational quote card with gradient background
+ */
+@Composable
+private fun MotivationalQuoteCard(
     quote: String,
     author: String?,
     isLoading: Boolean,
     onRefreshClick: () -> Unit
 ) {
-    val transition = rememberInfiniteTransition(label = "glow")
-    val glow by transition.animateFloat(
-        initialValue = 0.1f,
-        targetValue = 0.35f,
+    val infiniteTransition = rememberInfiniteTransition(label = "shimmer")
+    val shimmerAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.6f,
         animationSpec = infiniteRepeatable(
-            tween(durationMillis = 2200, easing = FastOutSlowInEasing),
+            animation = tween(2000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "glow-anim"
+        label = "shimmerAlpha"
     )
 
-    ElevatedCard(
+    GradientCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+        gradientColors = listOf(
+            NeverZeroTheme.gradientColors.PremiumStart.copy(alpha = shimmerAlpha),
+            NeverZeroTheme.gradientColors.PremiumEnd.copy(alpha = shimmerAlpha * 0.8f)
         )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    Brush.linearGradient(
-                        listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = glow),
-                            Color.Transparent
-                        )
-                    )
-                )
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(Spacing.xl)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(
-                    modifier = Modifier.size(44.dp),
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Rounded.AutoAwesome, contentDescription = null)
+                    Surface(
+                        modifier = Modifier.size(Size.iconLarge),
+                        shape = Shapes.small,
+                        color = Color.White.copy(alpha = 0.2f)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Rounded.AutoAwesome,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(Size.iconMedium)
+                            )
+                        }
                     }
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Column {
                     Text(
-                        text = "Good Morning, $userName",
+                        text = "Daily Inspiration",
                         style = MaterialTheme.typography.titleMedium,
+                        color = Color.White,
                         fontWeight = FontWeight.SemiBold
                     )
-                    Text(
-                        text = "Never hit zero today.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
-                Spacer(modifier = Modifier.weight(1f))
-                OutlinedIconButton(onClick = onRefreshClick, enabled = !isLoading) {
-                    Icon(Icons.Rounded.Refresh, contentDescription = "Refresh quote")
+
+                IconButton(
+                    onClick = onRefreshClick,
+                    enabled = !isLoading,
+                    modifier = Modifier
+                        .size(Size.iconLarge)
+                        .clip(Shapes.small)
+                        .background(Color.White.copy(alpha = 0.2f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Refresh,
+                        contentDescription = "Refresh quote",
+                        tint = Color.White,
+                        modifier = Modifier.size(Size.iconMedium)
+                    )
                 }
             }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+            Spacer(modifier = Modifier.height(Spacing.md))
 
-            AnimatedContent(targetState = isLoading, label = "quote-state") { loading ->
+            AnimatedContent(
+                targetState = isLoading,
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(Motion.durationMedium)) togetherWith
+                            fadeOut(animationSpec = tween(Motion.durationMedium))
+                },
+                label = "quoteContent"
+            ) { loading ->
                 if (loading) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        CircularProgressIndicator(strokeWidth = 3.dp)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(80.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            strokeWidth = 3.dp,
+                            modifier = Modifier.size(Size.iconLarge)
+                        )
                     }
                 } else {
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                         Text(
                             text = "\"$quote\"",
                             style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
+                            color = Color.White,
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = MaterialTheme.typography.bodyLarge.lineHeight
                         )
                         if (!author.isNullOrBlank()) {
                             Text(
-                                text = author,
+                                text = "— $author",
                                 style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = Color.White.copy(alpha = Opacity.high),
+                                fontWeight = FontWeight.Medium
                             )
                         }
                     }
@@ -193,24 +242,63 @@ private fun GreetingCard(
     }
 }
 
+/**
+ * Streaks section with horizontal carousel
+ */
 @Composable
-private fun StreakCarousel(
-    streaks: List<com.productivitystreak.data.model.Streak>,
+private fun StreaksSection(
+    streaks: List<Streak>,
     selectedId: String?,
     onSelectStreak: (String) -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(text = "Your Streaks", style = MaterialTheme.typography.titleMedium)
-        if (streaks.isEmpty()) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
-                text = "Tap the + button to add your first habit and start a streak!",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = "Your Streaks",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
             )
+
+            if (streaks.isNotEmpty()) {
+                AssistChip(
+                    onClick = { /* Navigate to all streaks */ },
+                    label = {
+                        Text(
+                            text = "${streaks.size} active",
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Rounded.LocalFireDepartment,
+                            contentDescription = null,
+                            modifier = Modifier.size(Size.iconSmall)
+                        )
+                    },
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        labelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    border = null,
+                    shape = Shapes.full
+                )
+            }
+        }
+
+        if (streaks.isEmpty()) {
+            EmptyStreaksState()
         } else {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                contentPadding = PaddingValues(horizontal = Spacing.xxs)
+            ) {
                 items(streaks, key = { it.id }) { streak ->
-                    StreakCard(
+                    ModernStreakCard(
                         streak = streak,
                         selected = streak.id == selectedId,
                         onClick = { onSelectStreak(streak.id) }
@@ -221,135 +309,317 @@ private fun StreakCarousel(
     }
 }
 
+/**
+ * Modern streak card with category colors
+ */
 @Composable
-private fun StreakCard(
-    streak: com.productivitystreak.data.model.Streak,
+private fun ModernStreakCard(
+    streak: Streak,
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val accent = hexToColor(
-        when (streak.category.lowercase()) {
-            "reading" -> "#6C63FF"
-            "vocabulary" -> "#FF6584"
-            "wellness" -> "#4CD964"
-            else -> "#F7B500"
-        }
+    val categoryColors = getCategoryColors(streak.category)
+
+    val scale by animateFloatAsState(
+        targetValue = if (selected) 1.03f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "cardScale"
     )
+
     Card(
         modifier = Modifier
-            .width(220.dp)
+            .width(200.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
+        shape = Shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = if (selected) accent.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceVariant
+            containerColor = categoryColors.second
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (selected) 8.dp else 2.dp)
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (selected) Elevation.level3 else Elevation.level2
+        )
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.md),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm)
         ) {
-            Text(text = streak.name, style = MaterialTheme.typography.titleMedium)
-            Text(
-                text = "Current streak: ${streak.currentCount} days",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Sparkline(values = streak.history, lineColor = accent)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                androidx.compose.material3.Icon(
-                    imageVector = Icons.Rounded.CheckCircle,
-                    contentDescription = null,
-                    tint = accent
-                )
-                Spacer(modifier = Modifier.width(8.dp))
+            // Category badge
+            Surface(
+                color = categoryColors.first,
+                shape = Shapes.small
+            ) {
                 Text(
-                    text = "Longest: ${streak.longestCount} days",
-                    style = MaterialTheme.typography.labelMedium
+                    text = streak.category.uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(horizontal = Spacing.sm, vertical = Spacing.xxs)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(Spacing.xxs))
+
+            // Streak name
+            Text(
+                text = streak.name,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = categoryColors.third,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Spacer(modifier = Modifier.height(Spacing.xs))
+
+            // Current streak with fire icon
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.xs)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.LocalFireDepartment,
+                    contentDescription = null,
+                    tint = categoryColors.first,
+                    modifier = Modifier.size(Size.iconMedium)
+                )
+                Text(
+                    text = "${streak.currentCount}",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = categoryColors.third
+                )
+                Text(
+                    text = "days",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = categoryColors.third.copy(alpha = Opacity.high)
+                )
+            }
+
+            // Sparkline chart
+            if (streak.history.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(Spacing.xs))
+                ModernSparkline(
+                    values = streak.history,
+                    lineColor = categoryColors.first
+                )
+            }
+
+            // Longest streak
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.xs)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.EmojiEvents,
+                    contentDescription = null,
+                    tint = categoryColors.first.copy(alpha = Opacity.high),
+                    modifier = Modifier.size(Size.iconSmall)
+                )
+                Text(
+                    text = "Best: ${streak.longestCount} days",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = categoryColors.third.copy(alpha = Opacity.high)
                 )
             }
         }
     }
 }
 
+/**
+ * Modern sparkline chart with smooth curves
+ */
 @Composable
-private fun Sparkline(values: List<Int>, lineColor: Color) {
+private fun ModernSparkline(
+    values: List<Int>,
+    lineColor: Color,
+    modifier: Modifier = Modifier
+) {
     val points = if (values.isEmpty()) listOf(0f, 0f, 0f) else values.map { it.toFloat() }
-    Canvas(modifier = Modifier
-        .fillMaxWidth()
-        .height(40.dp)) {
-        if (points.isEmpty()) return@Canvas
+
+    Canvas(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(40.dp)
+    ) {
+        if (points.isEmpty() || points.size < 2) return@Canvas
+
         val maxVal = points.maxOrNull() ?: 1f
         val minVal = points.minOrNull() ?: 0f
         val range = (maxVal - minVal).coerceAtLeast(1f)
         val stepX = size.width / (points.size - 1).coerceAtLeast(1)
-        val path = androidx.compose.ui.graphics.Path().apply {
+
+        val path = Path().apply {
             points.forEachIndexed { index, value ->
                 val x = stepX * index
                 val normalized = (value - minVal) / range
-                val y = size.height - normalized * size.height
-                if (index == 0) moveTo(x, y) else lineTo(x, y)
+                val y = size.height - (normalized * size.height * 0.8f + size.height * 0.1f)
+                if (index == 0) {
+                    moveTo(x, y)
+                } else {
+                    lineTo(x, y)
+                }
             }
         }
+
+        // Draw the line with rounded corners
         drawPath(
             path = path,
             color = lineColor,
-            style = androidx.compose.ui.graphics.drawscope.Stroke(
-                width = 6f,
-                pathEffect = PathEffect.cornerPathEffect(16f)
+            style = Stroke(
+                width = 4.dp.toPx(),
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round,
+                pathEffect = PathEffect.cornerPathEffect(8.dp.toPx())
             )
         )
     }
 }
 
+/**
+ * Empty state for streaks
+ */
 @Composable
-private fun TodayTasksSection(
+private fun EmptyStreaksState() {
+    OutlinedNeverZeroCard(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.xl),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Spacing.md)
+        ) {
+            Surface(
+                modifier = Modifier.size(Size.iconExtraLarge),
+                shape = Shapes.medium,
+                color = MaterialTheme.colorScheme.primaryContainer
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Rounded.AddCircleOutline,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(Size.iconLarge)
+                    )
+                }
+            }
+
+            Text(
+                text = "Start Your First Streak",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Text(
+                text = "Create a habit and track your progress daily. Never let your streak hit zero!",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        }
+    }
+}
+
+/**
+ * Today's focus section with tasks
+ */
+@Composable
+private fun TodayFocusSection(
     tasks: List<DashboardTask>,
     onToggleTask: (String) -> Unit,
     onNavigateToReading: () -> Unit,
     onNavigateToVocabulary: () -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Today’s Focus", style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.weight(1f))
-            OutlinedButton(onClick = onNavigateToReading) {
-                Text("Log Reading")
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Button(onClick = onNavigateToVocabulary) {
-                Text("Add Word")
-            }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Today's Focus",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
         }
 
-        if (tasks.isEmpty()) {
-            Text(
-                text = "Create habits to see them here. Your streaks will appear as quick actions.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+        // Quick action buttons
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+        ) {
+            SecondaryButton(
+                text = "Log Reading",
+                onClick = onNavigateToReading,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Rounded.MenuBook,
+                        contentDescription = null,
+                        modifier = Modifier.size(Size.iconSmall)
+                    )
+                },
+                modifier = Modifier.weight(1f)
             )
+
+            PrimaryButton(
+                text = "Add Word",
+                onClick = onNavigateToVocabulary,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Rounded.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(Size.iconSmall)
+                    )
+                },
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        // Tasks list
+        if (tasks.isEmpty()) {
+            EmptyTasksState()
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                 tasks.forEach { task ->
-                    TaskRow(task = task, onToggleTask = onToggleTask)
+                    ModernTaskCard(
+                        task = task,
+                        onToggleTask = onToggleTask
+                    )
                 }
             }
         }
     }
 }
 
+/**
+ * Modern task card with completion state
+ */
 @Composable
-private fun TaskRow(task: DashboardTask, onToggleTask: (String) -> Unit) {
-    val accent = hexToColor(task.accentHex)
-    val transition = rememberInfiniteTransition(label = "task-glow")
-    val alpha by transition.animateFloat(
-        initialValue = 0.15f,
-        targetValue = 0.35f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "task-alpha"
+private fun ModernTaskCard(
+    task: DashboardTask,
+    onToggleTask: (String) -> Unit
+) {
+    val categoryColors = getCategoryColors(task.category)
+
+    val backgroundColor by animateColorAsState(
+        targetValue = if (task.isCompleted) {
+            categoryColors.second
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        },
+        animationSpec = tween(durationMillis = Motion.durationMedium),
+        label = "taskBackground"
     )
 
     Card(
@@ -357,48 +627,222 @@ private fun TaskRow(task: DashboardTask, onToggleTask: (String) -> Unit) {
             .fillMaxWidth()
             .clickable { onToggleTask(task.id) },
         colors = CardDefaults.cardColors(
-            containerColor = if (task.isCompleted) accent.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant
+            containerColor = backgroundColor
         ),
-        shape = RoundedCornerShape(18.dp)
+        shape = Shapes.medium,
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (task.isCompleted) Elevation.level2 else Elevation.level1
+        )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 18.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(Spacing.md),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.md)
         ) {
+            // Status indicator
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(accent.copy(alpha = alpha))
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = task.title, style = MaterialTheme.typography.titleSmall)
+                    .size(Size.iconLarge)
+                    .clip(Shapes.small)
+                    .background(
+                        if (task.isCompleted) categoryColors.first else categoryColors.first.copy(
+                            alpha = Opacity.overlay
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                AnimatedContent(
+                    targetState = task.isCompleted,
+                    transitionSpec = {
+                        scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
+                    },
+                    label = "taskIcon"
+                ) { completed ->
+                    Icon(
+                        imageVector = if (completed) {
+                            Icons.Rounded.CheckCircle
+                        } else {
+                            Icons.Rounded.RadioButtonUnchecked
+                        },
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(Size.iconMedium)
+                    )
+                }
+            }
+
+            // Task content
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(Spacing.xxs)
+            ) {
                 Text(
-                    text = task.category,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = task.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = if (task.isCompleted) {
+                        categoryColors.third
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        color = categoryColors.first.copy(alpha = 0.2f),
+                        shape = Shapes.extraSmall
+                    ) {
+                        Text(
+                            text = task.category,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = categoryColors.third,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(
+                                horizontal = Spacing.xs,
+                                vertical = Spacing.xxxs
+                            )
+                        )
+                    }
+                }
             }
-            AnimatedVisibility(visible = task.isCompleted) {
-                Icon(
-                    imageVector = Icons.Rounded.CheckCircle,
-                    contentDescription = null,
-                    tint = accent
+
+            // Completion badge
+            if (task.isCompleted) {
+                Surface(
+                    color = NeverZeroTheme.semanticColors.Success.copy(alpha = 0.15f),
+                    shape = Shapes.full
+                ) {
+                    Row(
+                        modifier = Modifier.padding(
+                            horizontal = Spacing.sm,
+                            vertical = Spacing.xxs
+                        ),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.xxs),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Done,
+                            contentDescription = null,
+                            tint = NeverZeroTheme.semanticColors.Success,
+                            modifier = Modifier.size(Size.iconSmall)
+                        )
+                        Text(
+                            text = "Done",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = NeverZeroTheme.semanticColors.Success,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Empty state for tasks
+ */
+@Composable
+private fun EmptyTasksState() {
+    OutlinedNeverZeroCard(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.md),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                modifier = Modifier.size(Size.iconLarge),
+                shape = Shapes.small,
+                color = MaterialTheme.colorScheme.secondaryContainer
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Rounded.Task,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.size(Size.iconMedium)
+                    )
+                }
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "No tasks yet",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Create habits to see them here",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
     }
 }
 
+/**
+ * Helper function to get category-specific colors
+ */
 @Composable
-private fun hexToColor(hex: String): Color {
-    return try {
-        Color(android.graphics.Color.parseColor(hex))
-    } catch (_: IllegalArgumentException) {
-        MaterialTheme.colorScheme.primary
+private fun getCategoryColors(category: String): Triple<Color, Color, Color> {
+    return when (category.lowercase()) {
+        "reading" -> Triple(
+            NeverZeroTheme.streakColors.Reading,
+            NeverZeroTheme.streakColors.ReadingContainer,
+            NeverZeroTheme.streakColors.OnReadingContainer
+        )
+        "vocabulary" -> Triple(
+            NeverZeroTheme.streakColors.Vocabulary,
+            NeverZeroTheme.streakColors.VocabularyContainer,
+            NeverZeroTheme.streakColors.OnVocabularyContainer
+        )
+        "wellness" -> Triple(
+            NeverZeroTheme.streakColors.Wellness,
+            NeverZeroTheme.streakColors.WellnessContainer,
+            NeverZeroTheme.streakColors.OnWellnessContainer
+        )
+        "productivity" -> Triple(
+            NeverZeroTheme.streakColors.Productivity,
+            NeverZeroTheme.streakColors.ProductivityContainer,
+            NeverZeroTheme.streakColors.OnProductivityContainer
+        )
+        "learning" -> Triple(
+            NeverZeroTheme.streakColors.Learning,
+            NeverZeroTheme.streakColors.LearningContainer,
+            NeverZeroTheme.streakColors.OnLearningContainer
+        )
+        "exercise" -> Triple(
+            NeverZeroTheme.streakColors.Exercise,
+            NeverZeroTheme.streakColors.ExerciseContainer,
+            NeverZeroTheme.streakColors.OnExerciseContainer
+        )
+        "meditation" -> Triple(
+            NeverZeroTheme.streakColors.Meditation,
+            NeverZeroTheme.streakColors.MeditationContainer,
+            NeverZeroTheme.streakColors.OnMeditationContainer
+        )
+        "creative" -> Triple(
+            NeverZeroTheme.streakColors.Creative,
+            NeverZeroTheme.streakColors.CreativeContainer,
+            NeverZeroTheme.streakColors.OnCreativeContainer
+        )
+        else -> Triple(
+            MaterialTheme.colorScheme.primary,
+            MaterialTheme.colorScheme.primaryContainer,
+            MaterialTheme.colorScheme.onPrimaryContainer
+        )
     }
 }
