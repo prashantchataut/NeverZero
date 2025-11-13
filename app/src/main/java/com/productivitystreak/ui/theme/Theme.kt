@@ -82,11 +82,11 @@ private val DarkColorScheme = darkColorScheme(
  * Consistent corner radius for all components
  */
 private val AppShapes = Shapes(
-    extraSmall = Shapes.extraSmall,
-    small = Shapes.small,
-    medium = Shapes.medium,
-    large = Shapes.large,
-    extraLarge = Shapes.extraLarge
+    extraSmall = com.productivitystreak.ui.theme.Shapes.extraSmall,
+    small = com.productivitystreak.ui.theme.Shapes.small,
+    medium = com.productivitystreak.ui.theme.Shapes.medium,
+    large = com.productivitystreak.ui.theme.Shapes.large,
+    extraLarge = com.productivitystreak.ui.theme.Shapes.extraLarge
 )
 
 /**

@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -177,15 +178,18 @@ private fun MotivationalQuoteCard(
                     )
                 }
 
-                FilledIconButton(
+                IconButton(
                     onClick = onRefreshClick,
                     enabled = !isLoading,
-                    containerColor = Color.White.copy(alpha = 0.2f),
-                    contentColor = Color.White
+                    modifier = Modifier
+                        .size(Size.iconLarge)
+                        .clip(Shapes.small)
+                        .background(Color.White.copy(alpha = 0.2f))
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Refresh,
                         contentDescription = "Refresh quote",
+                        tint = Color.White,
                         modifier = Modifier.size(Size.iconMedium)
                     )
                 }
