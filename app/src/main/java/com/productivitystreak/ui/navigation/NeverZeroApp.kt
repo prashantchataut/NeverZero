@@ -1,28 +1,18 @@
 package com.productivitystreak.ui.navigation
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
-import androidx.compose.animation.with
-import androidx.compose.foundation.layout.padding
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.BarChart
-import androidx.compose.material.icons.rounded.CompassCalibration
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.rounded.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -37,7 +27,11 @@ import com.productivitystreak.ui.screens.reading.ReadingTrackerScreen
 import com.productivitystreak.ui.screens.stats.StatsScreen
 import com.productivitystreak.ui.screens.vocabulary.VocabularyScreen
 import com.productivitystreak.ui.state.AppUiState
+import com.productivitystreak.ui.theme.*
 
+/**
+ * Bottom navigation destinations
+ */
 private val bottomDestinations = listOf(
     NeverZeroDestination.Dashboard,
     NeverZeroDestination.Stats,
@@ -45,6 +39,9 @@ private val bottomDestinations = listOf(
     NeverZeroDestination.Profile
 )
 
+/**
+ * Main app navigation with modern Material 3 bottom bar
+ */
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NeverZeroApp(
@@ -68,28 +65,22 @@ fun NeverZeroApp(
     val currentDestination = backStackEntry?.destination
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             if (shouldShowBottomBar(currentDestination?.route)) {
-                NavigationBar {
-                    bottomDestinations.forEach { destination ->
-                        val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
-                        NavigationBarItem(
-                            selected = selected,
-                            onClick = {
-                                navController.navigate(destination.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            icon = { destination.icon?.let { Icon -> androidx.compose.material3.Icon(Icon, contentDescription = destination.label) } },
-                            label = { Text(destination.label) },
-                            colors = NavigationBarItemDefaults.colors()
-                        )
+                ModernNavigationBar(
+                    destinations = bottomDestinations,
+                    currentRoute = currentDestination?.route,
+                    onNavigate = { destination ->
+                        navController.navigate(destination.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
-                }
+                )
             }
         }
     ) { innerPadding ->
@@ -161,18 +152,102 @@ fun NeverZeroApp(
     }
 }
 
+/**
+ * Check if bottom bar should be visible for the given route
+ */
 private fun shouldShowBottomBar(route: String?): Boolean {
     return bottomDestinations.any { it.route == route }
 }
 
+/**
+ * Modern Navigation Bar with Material 3 design
+ */
+@Composable
+private fun ModernNavigationBar(
+    destinations: List<NeverZeroDestination>,
+    currentRoute: String?,
+    onNavigate: (NeverZeroDestination) -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        tonalElevation = Elevation.level2,
+        shadowElevation = Elevation.level3
+    ) {
+        NavigationBar(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(Size.bottomNavHeight),
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            tonalElevation = 0.dp
+        ) {
+            destinations.forEach { destination ->
+                val selected = currentRoute == destination.route
+
+                val iconScale by animateFloatAsState(
+                    targetValue = if (selected) 1.1f else 1f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    ),
+                    label = "iconScale"
+                )
+
+                NavigationBarItem(
+                    selected = selected,
+                    onClick = { onNavigate(destination) },
+                    icon = {
+                        destination.icon?.let { icon ->
+                            Box(
+                                modifier = Modifier
+                                    .size(Size.iconLarge)
+                                    .animateContentSize()
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = destination.label,
+                                    modifier = Modifier
+                                        .size(Size.iconMedium)
+                                        .graphicsLayer {
+                                            scaleX = iconScale
+                                            scaleY = iconScale
+                                        }
+                                )
+                            }
+                        }
+                    },
+                    label = {
+                        Text(
+                            text = destination.label,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Navigation destinations
+ */
 private sealed class NeverZeroDestination(
     val route: String,
     val label: String,
     val icon: ImageVector?
 ) {
-    object Dashboard : NeverZeroDestination("dashboard", "Dashboard", Icons.Rounded.Home)
+    object Dashboard : NeverZeroDestination("dashboard", "Home", Icons.Rounded.Home)
     object Stats : NeverZeroDestination("stats", "Stats", Icons.Rounded.BarChart)
-    object Discover : NeverZeroDestination("discover", "Discover", Icons.Rounded.CompassCalibration)
+    object Discover : NeverZeroDestination("discover", "Discover", Icons.Rounded.Explore)
     object Profile : NeverZeroDestination("profile", "Profile", Icons.Rounded.Person)
     object Reading : NeverZeroDestination("reading", "Reading", null)
     object Vocabulary : NeverZeroDestination("vocabulary", "Vocabulary", null)
