@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -27,6 +28,7 @@ import com.productivitystreak.ui.components.*
 import com.productivitystreak.ui.state.AppUiState
 import com.productivitystreak.ui.state.DashboardTask
 import com.productivitystreak.ui.theme.*
+import com.productivitystreak.ui.utils.hapticFeedbackManager
 import java.time.LocalTime
 
 /**
@@ -611,6 +613,8 @@ private fun ModernTaskCard(
     onToggleTask: (String) -> Unit
 ) {
     val categoryColors = getCategoryColors(task.category)
+    val context = LocalContext.current
+    val haptics = remember(context) { context.hapticFeedbackManager() }
 
     val backgroundColor by animateColorAsState(
         targetValue = if (task.isCompleted) {
@@ -625,7 +629,15 @@ private fun ModernTaskCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onToggleTask(task.id) },
+            .clickable {
+                val willComplete = !task.isCompleted
+                if (willComplete) {
+                    haptics.success()
+                } else {
+                    haptics.selection()
+                }
+                onToggleTask(task.id)
+            },
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor
         ),

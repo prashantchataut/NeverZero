@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import com.productivitystreak.ui.utils.hapticFeedbackManager
 
 class AppViewModel(
     application: Application,
@@ -49,6 +50,8 @@ class AppViewModel(
     private val reminderScheduler: StreakReminderScheduler,
     private val preferencesManager: PreferencesManager
 ) : AndroidViewModel(application) {
+
+    private val hapticManager = application.hapticFeedbackManager()
 
     private val _uiState = MutableStateFlow(AppUiState())
     val uiState: StateFlow<AppUiState> = _uiState.asStateFlow()
@@ -121,6 +124,19 @@ class AppViewModel(
                 }
             } catch (e: Exception) {
                 Log.e("AppViewModel", "Error loading notifications", e)
+            }
+        }
+
+        viewModelScope.launch {
+            try {
+                preferencesManager.hapticFeedbackEnabled.collect { enabled ->
+                    hapticManager.setEnabled(enabled)
+                    _uiState.update { state ->
+                        state.copy(profileState = state.profileState.copy(hapticsEnabled = enabled))
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error loading haptic preference", e)
             }
         }
 
@@ -337,11 +353,33 @@ class AppViewModel(
     }
 
     fun onToggleTask(taskId: String) {
+        val snapshot = _uiState.value
+        val task = snapshot.todayTasks.find { it.id == taskId } ?: return
+        if (task.isCompleted) return
+
+        val streak = snapshot.streaks.find { it.id == task.streakId }
+        if (streak == null) {
+            Log.w("AppViewModel", "Streak not found for task ${task.streakId}")
+            return
+        }
+
         _uiState.update { state ->
-            val updatedTasks = state.todayTasks.map { task ->
-                if (task.id == taskId) task.copy(isCompleted = !task.isCompleted) else task
+            state.copy(
+                todayTasks = state.todayTasks.map { current ->
+                    if (current.id == taskId) current.copy(isCompleted = true) else current
+                }
+            )
+        }
+
+        viewModelScope.launch {
+            try {
+                streakRepository.logProgress(task.streakId, streak.goalPerDay)
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error logging progress for streak ${task.streakId}", e)
+                _uiState.update { state ->
+                    state.copy(todayTasks = buildTasksForStreaks(state.streaks))
+                }
             }
-            state.copy(todayTasks = updatedTasks)
         }
     }
 
@@ -451,6 +489,22 @@ class AppViewModel(
     fun onToggleWeeklySummary(enabled: Boolean) {
         _uiState.update { state ->
             state.copy(profileState = state.profileState.copy(hasWeeklySummary = enabled))
+        }
+    }
+
+    fun onToggleHaptics(enabled: Boolean) {
+        _uiState.update { state ->
+            state.copy(profileState = state.profileState.copy(hapticsEnabled = enabled))
+        }
+
+        hapticManager.setEnabled(enabled)
+
+        viewModelScope.launch {
+            try {
+                preferencesManager.setHapticFeedbackEnabled(enabled)
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error saving haptic preference", e)
+            }
         }
     }
 
@@ -599,7 +653,26 @@ class AppViewModel(
                     state.copy(
                         streaks = streaks,
                         selectedStreakId = selectedId,
-                        todayTasks = buildTasksForStreaks(streaks)
+                        todayTasks = buildTasksForStreaks(streaks),
+                        statsState = buildStatsStateFromStreaks(streaks)
+                    )
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            streakRepository.observeTopStreaks(5).collectLatest { topStreaks ->
+                _uiState.update { state ->
+                    state.copy(
+                        statsState = state.statsState.copy(
+                            leaderboard = topStreaks.mapIndexed { index, streak ->
+                                LeaderboardEntry(
+                                    position = index + 1,
+                                    name = streak.name,
+                                    streakDays = streak.currentCount
+                                )
+                            }
+                        )
                     )
                 }
             }
@@ -609,7 +682,6 @@ class AppViewModel(
     private fun bootstrapStaticState() {
         _uiState.update { state ->
             state.copy(
-                statsState = buildStatsState(),
                 discoverState = buildDiscoverState(),
                 readingTrackerState = buildReadingState(),
                 vocabularyState = buildVocabularyState(),
@@ -620,36 +692,41 @@ class AppViewModel(
 
     private fun buildTasksForStreaks(streaks: List<Streak>): List<DashboardTask> {
         if (streaks.isEmpty()) return emptyList()
-        val accentPalette = listOf("#6C63FF", "#FF6584", "#4CD964", "#F7B500")
-        return streaks.mapIndexed { index, streak ->
+        return streaks.map { streak ->
             DashboardTask(
                 id = "task-${streak.id}",
                 title = "Log ${streak.goalPerDay} ${streak.unit}",
                 category = streak.category,
                 streakId = streak.id,
                 isCompleted = streak.history.lastOrNull()?.let { it >= streak.goalPerDay } ?: false,
-                accentHex = accentPalette[index % accentPalette.size]
+                accentHex = streak.color
             )
         }
     }
 
-    private fun buildStatsState(): StatsState = StatsState(
-        currentLongestStreak = 42,
-        currentLongestStreakName = "Read 30 mins",
-        averageDailyProgressPercent = 76,
-        averageDailyTrend = listOf(65, 70, 80, 76, 90, 88, 92),
-        streakConsistency = listOf(7, 6, 5, 7, 7, 6, 5),
-        habitBreakdown = listOf(
-            HabitBreakdown("Read 30 mins", 92, "#6C63FF"),
-            HabitBreakdown("Meditate", 86, "#4CD964"),
-            HabitBreakdown("Add Vocabulary", 74, "#FF6584")
-        ),
-        leaderboard = listOf(
-            LeaderboardEntry(position = 1, name = "Alex", streakDays = 24),
-            LeaderboardEntry(position = 2, name = "Maya", streakDays = 21),
-            LeaderboardEntry(position = 3, name = "Jordan", streakDays = 19)
+    private fun buildStatsStateFromStreaks(streaks: List<Streak>): StatsState {
+        if (streaks.isEmpty()) return StatsState()
+
+        val longestStreak = streaks.maxByOrNull { it.currentCount }
+        val avgProgress = streaks.map { it.progress }.average() * 100
+        val habitBreakdown = streaks.map { streak ->
+            HabitBreakdown(
+                name = streak.name,
+                completionPercent = (streak.progress * 100).toInt(),
+                accentHex = streak.color
+            )
+        }
+
+        return StatsState(
+            currentLongestStreak = longestStreak?.currentCount ?: 0,
+            currentLongestStreakName = longestStreak?.name ?: "",
+            averageDailyProgressPercent = avgProgress.toInt(),
+            averageDailyTrend = emptyList(), // TODO: compute from history if needed
+            streakConsistency = emptyList(), // TODO: compute consistency metrics
+            habitBreakdown = habitBreakdown,
+            leaderboard = emptyList() // Handled separately by observeTopStreaks
         )
-    )
+    }
 
     private fun buildDiscoverState(): DiscoverState = DiscoverState(
         featuredContent = FeaturedContent(

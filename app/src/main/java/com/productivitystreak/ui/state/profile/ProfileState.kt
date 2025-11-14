@@ -6,6 +6,7 @@ data class ProfileState(
     val reminderFrequency: ReminderFrequency = ReminderFrequency.Daily,
     val hasWeeklySummary: Boolean = true,
     val theme: ProfileTheme = ProfileTheme.Dark,
+    val hapticsEnabled: Boolean = true,
     val activeCategories: Set<String> = setOf("Reading", "Vocabulary"),
     val legalLinks: List<LegalItem> = listOf(
         LegalItem("Privacy Policy", "https://neverzero.app/privacy"),

@@ -29,7 +29,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.remember
 import com.productivitystreak.ui.state.onboarding.OnboardingState
+import com.productivitystreak.ui.utils.hapticFeedbackManager
 
 @Composable
 fun OnboardingDialog(
@@ -100,6 +103,8 @@ private fun CategorySelection(
     selected: Set<String>,
     onToggle: (String) -> Unit
 ) {
+    val context = LocalContext.current
+    val haptics = remember(context) { context.hapticFeedbackManager() }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         categories.forEach { category ->
             val isSelected = selected.contains(category)
@@ -107,7 +112,14 @@ private fun CategorySelection(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .toggleable(value = isSelected, onValueChange = { onToggle(category) }),
+                    .toggleable(value = isSelected, onValueChange = {
+                        if (isSelected) {
+                            haptics.selection()
+                        } else {
+                            haptics.light()
+                        }
+                        onToggle(category)
+                    }),
                 color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceVariant
             ) {
                 Row(

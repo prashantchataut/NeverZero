@@ -1,6 +1,8 @@
 package com.productivitystreak
 
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -10,8 +12,12 @@ import com.productivitystreak.ui.AppViewModel
 import com.productivitystreak.ui.AppViewModelFactory
 import com.productivitystreak.ui.navigation.NeverZeroApp
 import com.productivitystreak.ui.theme.ProductivityStreakTheme
+import com.productivitystreak.ui.utils.PermissionManager
 
 class MainActivity : ComponentActivity() {
+    private val notificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* no-op */ }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val viewModel: AppViewModel by viewModels { AppViewModelFactory(application) }
@@ -33,10 +39,44 @@ class MainActivity : ComponentActivity() {
                         onToggleNotifications = viewModel::onToggleNotifications,
                         onChangeReminderFrequency = viewModel::onChangeReminderFrequency,
                         onToggleWeeklySummary = viewModel::onToggleWeeklySummary,
-                        onChangeTheme = viewModel::onChangeTheme
+                        onChangeTheme = viewModel::onChangeTheme,
+                        onToggleHaptics = viewModel::onToggleHaptics
                     )
                 }
             }
         }
+
+        requestNotificationPermissionIfNeeded()
+        ensureExactAlarmCapability()
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (!PermissionManager.shouldRequestNotificationPermission(this)) return
+
+        if (PermissionManager.shouldShowNotificationPermissionRationale(this)) {
+            AlertDialog.Builder(this)
+                .setTitle(R.string.notification_permission_title)
+                .setMessage(R.string.notification_permission_rationale)
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+        } else {
+            notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    private fun ensureExactAlarmCapability() {
+        if (PermissionManager.canScheduleExactAlarms(this)) return
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.exact_alarm_permission_title)
+            .setMessage(R.string.exact_alarm_permission_rationale)
+            .setPositiveButton(R.string.exact_alarm_permission_action) { _, _ ->
+                PermissionManager.launchExactAlarmSettings(this)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 }

@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Never Zero</string>
+    <string name="notification_permission_title">Stay in the loop</string>
+    <string name="notification_permission_rationale">Enable notifications so we can nudge you before a streak goes cold.</string>
+    <string name="exact_alarm_permission_title">Allow precise reminders</string>
+    <string name="exact_alarm_permission_rationale">We need exact alarm access to deliver streak reminders at the perfect moment.</string>
+    <string name="exact_alarm_permission_action">Open settings</string>
 </resources>

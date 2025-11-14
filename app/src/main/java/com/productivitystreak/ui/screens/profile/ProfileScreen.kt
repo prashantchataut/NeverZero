@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.Vibration
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -38,7 +39,8 @@ fun ProfileScreen(
     onToggleNotifications: (Boolean) -> Unit,
     onChangeReminderFrequency: (ReminderFrequency) -> Unit,
     onToggleWeeklySummary: (Boolean) -> Unit,
-    onChangeTheme: (ProfileTheme) -> Unit
+    onChangeTheme: (ProfileTheme) -> Unit,
+    onToggleHaptics: (Boolean) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -56,6 +58,10 @@ fun ProfileScreen(
             onToggleNotifications = onToggleNotifications,
             onChangeFrequency = onChangeReminderFrequency,
             onToggleWeeklySummary = onToggleWeeklySummary
+        )
+        HapticsPreference(
+            enabled = state.hapticsEnabled,
+            onToggleHaptics = onToggleHaptics
         )
         ThemeSection(theme = state.theme, onChangeTheme = onChangeTheme)
         LegalLinks(items = state.legalLinks)
@@ -151,6 +157,28 @@ private fun ThemeSection(theme: ProfileTheme, onChangeTheme: (ProfileTheme) -> U
                     Switch(checked = option == theme, onCheckedChange = { onChangeTheme(option) })
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun HapticsPreference(enabled: Boolean, onToggleHaptics: (Boolean) -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.Vibration, contentDescription = null, modifier = Modifier.size(24.dp))
+                Spacer(Modifier.size(12.dp))
+                Text(text = "Haptics", style = MaterialTheme.typography.titleMedium)
+            }
+            Text(
+                text = if (enabled) "Subtle taps keep your focus on track" else "Haptics are disabled",
+                style = MaterialTheme.typography.bodySmall
+            )
+            SwitchPreference(
+                label = "Enable haptic feedback",
+                checked = enabled,
+                onCheckedChange = onToggleHaptics
+            )
         }
     }
 }

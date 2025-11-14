@@ -59,7 +59,8 @@ fun NeverZeroApp(
     onToggleNotifications: (Boolean) -> Unit,
     onChangeReminderFrequency: (com.productivitystreak.ui.state.profile.ReminderFrequency) -> Unit,
     onToggleWeeklySummary: (Boolean) -> Unit,
-    onChangeTheme: (com.productivitystreak.ui.state.profile.ProfileTheme) -> Unit
+    onChangeTheme: (com.productivitystreak.ui.state.profile.ProfileTheme) -> Unit,
+    onToggleHaptics: (Boolean) -> Unit
 ) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -133,7 +134,8 @@ fun NeverZeroApp(
                         onToggleNotifications = onToggleNotifications,
                         onChangeReminderFrequency = onChangeReminderFrequency,
                         onToggleWeeklySummary = onToggleWeeklySummary,
-                        onChangeTheme = onChangeTheme
+                        onChangeTheme = onChangeTheme,
+                        onToggleHaptics = onToggleHaptics
                     )
                 }
                 composable(NeverZeroDestination.Reading.route) {

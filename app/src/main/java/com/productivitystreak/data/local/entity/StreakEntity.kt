@@ -34,7 +34,9 @@ data class StreakEntity(
         goalPerDay = goalPerDay,
         unit = unit,
         category = category,
-        history = history
+        history = history,
+        color = color,
+        icon = icon
     )
 }
 
@@ -46,5 +48,7 @@ fun Streak.toEntity() = StreakEntity(
     goalPerDay = goalPerDay,
     unit = unit,
     category = category,
-    history = history
+    history = history,
+    color = color,
+    icon = icon
 )
