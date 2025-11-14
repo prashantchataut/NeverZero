@@ -25,6 +25,7 @@ import com.productivitystreak.ui.screens.discover.DiscoverScreen
 import com.productivitystreak.ui.screens.onboarding.OnboardingDialog
 import com.productivitystreak.ui.screens.profile.ProfileScreen
 import com.productivitystreak.ui.screens.reading.ReadingTrackerScreen
+import com.productivitystreak.ui.screens.settings.SettingsScreen
 import com.productivitystreak.ui.screens.stats.StatsScreen
 import com.productivitystreak.ui.screens.vocabulary.VocabularyScreen
 import com.productivitystreak.ui.state.AppUiState
@@ -60,7 +61,15 @@ fun NeverZeroApp(
     onChangeReminderFrequency: (com.productivitystreak.ui.state.profile.ReminderFrequency) -> Unit,
     onToggleWeeklySummary: (Boolean) -> Unit,
     onChangeTheme: (com.productivitystreak.ui.state.profile.ProfileTheme) -> Unit,
-    onToggleHaptics: (Boolean) -> Unit
+    onToggleHaptics: (Boolean) -> Unit,
+    onSettingsThemeChange: (com.productivitystreak.ui.state.settings.ThemeMode) -> Unit = {},
+    onSettingsDailyRemindersToggle: (Boolean) -> Unit = {},
+    onSettingsWeeklyBackupsToggle: (Boolean) -> Unit = {},
+    onSettingsReminderTimeChange: (String) -> Unit = {},
+    onSettingsHapticFeedbackToggle: (Boolean) -> Unit = {},
+    onSettingsCreateBackup: () -> Unit = {},
+    onSettingsRestoreBackup: () -> Unit = {},
+    onSettingsDismissMessage: () -> Unit = {}
 ) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -135,7 +144,10 @@ fun NeverZeroApp(
                         onChangeReminderFrequency = onChangeReminderFrequency,
                         onToggleWeeklySummary = onToggleWeeklySummary,
                         onChangeTheme = onChangeTheme,
-                        onToggleHaptics = onToggleHaptics
+                        onToggleHaptics = onToggleHaptics,
+                        onNavigateToSettings = {
+                            navController.navigate(NeverZeroDestination.Settings.route)
+                        }
                     )
                 }
                 composable(NeverZeroDestination.Reading.route) {
@@ -148,6 +160,19 @@ fun NeverZeroApp(
                     VocabularyScreen(
                         state = uiState.vocabularyState,
                         onAddWord = onAddVocabularyWord
+                    )
+                }
+                composable(NeverZeroDestination.Settings.route) {
+                    SettingsScreen(
+                        state = uiState.settingsState,
+                        onThemeChange = onSettingsThemeChange,
+                        onDailyRemindersToggle = onSettingsDailyRemindersToggle,
+                        onWeeklyBackupsToggle = onSettingsWeeklyBackupsToggle,
+                        onReminderTimeChange = onSettingsReminderTimeChange,
+                        onHapticFeedbackToggle = onSettingsHapticFeedbackToggle,
+                        onCreateBackup = onSettingsCreateBackup,
+                        onRestoreBackup = onSettingsRestoreBackup,
+                        onDismissMessage = onSettingsDismissMessage
                     )
                 }
             }
@@ -254,4 +279,5 @@ private sealed class NeverZeroDestination(
     object Profile : NeverZeroDestination("profile", "Profile", Icons.Rounded.Person)
     object Reading : NeverZeroDestination("reading", "Reading", null)
     object Vocabulary : NeverZeroDestination("vocabulary", "Vocabulary", null)
+    object Settings : NeverZeroDestination("settings", "Settings", Icons.Rounded.Settings)
 }

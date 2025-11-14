@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Vibration
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,7 +41,8 @@ fun ProfileScreen(
     onChangeReminderFrequency: (ReminderFrequency) -> Unit,
     onToggleWeeklySummary: (Boolean) -> Unit,
     onChangeTheme: (ProfileTheme) -> Unit,
-    onToggleHaptics: (Boolean) -> Unit
+    onToggleHaptics: (Boolean) -> Unit,
+    onNavigateToSettings: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -50,6 +52,37 @@ fun ProfileScreen(
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         GreetingCard(userName = userName, quote = quote?.text, onRefreshQuote = onRefreshQuote)
+        
+        // Settings Navigation Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiaryContainer)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Settings,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(Modifier.size(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = "Settings", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = "Manage app preferences and data",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                TextButton(onClick = onNavigateToSettings) {
+                    Text(text = "Open")
+                }
+            }
+        }
+        
         NotificationPreferences(
             notificationEnabled = state.notificationEnabled,
             frequency = state.reminderFrequency,

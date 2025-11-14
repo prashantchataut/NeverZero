@@ -409,7 +409,7 @@ private fun ModernStreakCard(
             if (streak.history.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(Spacing.xs))
                 ModernSparkline(
-                    values = streak.history,
+                    values = streak.history.map { it.completed.toFloat() },
                     lineColor = categoryColors.first
                 )
             }
@@ -440,16 +440,19 @@ private fun ModernStreakCard(
  */
 @Composable
 private fun ModernSparkline(
-    values: List<Int>,
+    values: List<Float>,
     lineColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val points = if (values.isEmpty()) listOf(0f, 0f, 0f) else values.map { it.toFloat() }
+    val points = if (values.isEmpty()) listOf(0f, 0f, 0f) else values
 
     Canvas(
         modifier = modifier
             .fillMaxWidth()
             .height(40.dp)
+            .semantics {
+                contentDescription = "Streak trend sparkline"
+            }
     ) {
         if (points.isEmpty() || points.size < 2) return@Canvas
 

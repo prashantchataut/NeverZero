@@ -6,6 +6,7 @@ import com.productivitystreak.ui.state.discover.DiscoverState
 import com.productivitystreak.ui.state.onboarding.OnboardingState
 import com.productivitystreak.ui.state.profile.ProfileState
 import com.productivitystreak.ui.state.reading.ReadingTrackerState
+import com.productivitystreak.ui.state.settings.SettingsState
 import com.productivitystreak.ui.state.stats.StatsState
 import com.productivitystreak.ui.state.vocabulary.VocabularyState
 
@@ -23,7 +24,10 @@ data class AppUiState(
     val vocabularyState: VocabularyState = VocabularyState(),
     val profileState: ProfileState = ProfileState(),
     val onboardingState: OnboardingState = OnboardingState(),
-    val showOnboarding: Boolean = true
+    val settingsState: SettingsState = SettingsState(),
+    val showOnboarding: Boolean = true,
+    val isDataLoading: Boolean = false,
+    val uiMessage: UiMessage? = null
 )
 
 data class DashboardTask(
@@ -33,4 +37,11 @@ data class DashboardTask(
     val streakId: String,
     val isCompleted: Boolean,
     val accentHex: String
+)
+
+data class UiMessage(
+    val id: Long = System.currentTimeMillis(),
+    val text: String,
+    val isBlocking: Boolean = false,
+    val actionLabel: String? = null
 )

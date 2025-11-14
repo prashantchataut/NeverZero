@@ -6,4 +6,7 @@
     <string name="exact_alarm_permission_title">Allow precise reminders</string>
     <string name="exact_alarm_permission_rationale">We need exact alarm access to deliver streak reminders at the perfect moment.</string>
     <string name="exact_alarm_permission_action">Open settings</string>
+    
+    <!-- Widget Strings -->
+    <string name="widget_description">View your top 3 streaks at a glance</string>
 </resources>

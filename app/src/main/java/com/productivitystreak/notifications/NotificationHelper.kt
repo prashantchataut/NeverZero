@@ -16,10 +16,14 @@ class NotificationHelper(private val context: Context) {
         private const val CHANNEL_ID_REMINDERS = "streak_reminders"
         private const val CHANNEL_ID_ACHIEVEMENTS = "achievements"
         private const val CHANNEL_ID_MILESTONES = "milestones"
+        private const val CHANNEL_ID_BACKUP = "backup_reminders"
+        private const val CHANNEL_ID_STREAK_DANGER = "streak_danger"
 
         private const val NOTIFICATION_ID_DAILY_REMINDER = 1
         private const val NOTIFICATION_ID_ACHIEVEMENT = 2
         private const val NOTIFICATION_ID_MILESTONE = 3
+        private const val NOTIFICATION_ID_BACKUP = 4
+        private const val NOTIFICATION_ID_STREAK_DANGER = 5
     }
 
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -60,8 +64,27 @@ class NotificationHelper(private val context: Context) {
                 enableVibration(true)
             }
 
+            // Backup reminders channel
+            val backupChannel = NotificationChannel(
+                CHANNEL_ID_BACKUP,
+                "Backup Reminders",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Weekly reminders to backup your data"
+            }
+
+            // Streak danger alerts
+            val dangerChannel = NotificationChannel(
+                CHANNEL_ID_STREAK_DANGER,
+                "Streak Warnings",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Urgent alerts when streaks are about to break"
+                enableVibration(true)
+            }
+
             notificationManager.createNotificationChannels(
-                listOf(remindersChannel, achievementsChannel, milestonesChannel)
+                listOf(remindersChannel, achievementsChannel, milestonesChannel, backupChannel, dangerChannel)
             )
         }
     }
@@ -148,5 +171,55 @@ class NotificationHelper(private val context: Context) {
             .build()
 
         notificationManager.notify(NOTIFICATION_ID_MILESTONE, notification)
+    }
+
+    // Phase 4: Advanced notification - Backup reminder
+    fun showBackupReminder() {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID_BACKUP)
+            .setSmallIcon(R.drawable.ic_launcher)
+            .setContentTitle("Time to Backup Your Data")
+            .setContentText("Keep your streaks safe! Export a backup today.")
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        notificationManager.notify(NOTIFICATION_ID_BACKUP, notification)
+    }
+
+    // Phase 4: Advanced notification - Streak danger warning (23h mark)
+    fun showStreakDangerWarning(streakName: String, hoursRemaining: Int) {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID_STREAK_DANGER)
+            .setSmallIcon(R.drawable.ic_launcher)
+            .setContentTitle("⚠️ Streak Alert!")
+            .setContentText("$streakName streak will break in $hoursRemaining hour(s)!")
+            .setStyle(NotificationCompat.BigTextStyle()
+                .bigText("Your '$streakName' streak is in danger! You have only $hoursRemaining hour(s) left to maintain it. Take action now!"))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        notificationManager.notify(NOTIFICATION_ID_STREAK_DANGER, notification)
     }
 }

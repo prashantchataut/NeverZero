@@ -48,6 +48,24 @@ class StreakReminderScheduler(private val context: Context) {
         workManager.cancelUniqueWork(UNIQUE_WORK_NAME)
     }
 
+    // Quick Win: Schedule weekly backup reminder
+    fun scheduleWeeklyBackup() {
+        createBackupChannel()
+
+        val workRequest = PeriodicWorkRequestBuilder<WeeklyBackupWorker>(Duration.ofDays(7))
+            .build()
+
+        workManager.enqueueUniquePeriodicWork(
+            BACKUP_WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
+    }
+
+    fun cancelWeeklyBackup() {
+        workManager.cancelUniqueWork(BACKUP_WORK_NAME)
+    }
+
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -62,8 +80,24 @@ class StreakReminderScheduler(private val context: Context) {
         }
     }
 
+    private fun createBackupChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                BACKUP_CHANNEL_ID,
+                "Backup Reminders",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Weekly reminders to backup your data."
+            }
+            val notificationManager = context.getSystemService(NotificationManager::class.java)
+            notificationManager?.createNotificationChannel(channel)
+        }
+    }
+
     companion object {
         const val CHANNEL_ID = "never_zero_streak_channel"
+        const val BACKUP_CHANNEL_ID = "backup_reminder_channel"
         private const val UNIQUE_WORK_NAME = "never_zero_streak_reminder"
+        private const val BACKUP_WORK_NAME = "weekly_backup_reminder"
     }
 }

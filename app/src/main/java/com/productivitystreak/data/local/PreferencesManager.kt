@@ -20,6 +20,7 @@ class PreferencesManager(context: Context) {
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
         val REMINDER_TIME = stringPreferencesKey("reminder_time")
         val REMINDER_FREQUENCY = stringPreferencesKey("reminder_frequency")
+        val WEEKLY_SUMMARY_ENABLED = booleanPreferencesKey("weekly_summary_enabled")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val APP_LOCK_ENABLED = booleanPreferencesKey("app_lock_enabled")
         val BIOMETRIC_ENABLED = booleanPreferencesKey("biometric_enabled")
@@ -123,6 +124,24 @@ class PreferencesManager(context: Context) {
     suspend fun setReminderFrequency(frequency: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.REMINDER_FREQUENCY] = frequency
+        }
+    }
+
+    val weeklySummaryEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.WEEKLY_SUMMARY_ENABLED] ?: true
+        }
+
+    suspend fun setWeeklySummaryEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.WEEKLY_SUMMARY_ENABLED] = enabled
         }
     }
 

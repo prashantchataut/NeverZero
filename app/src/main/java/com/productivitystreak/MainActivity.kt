@@ -40,7 +40,15 @@ class MainActivity : ComponentActivity() {
                         onChangeReminderFrequency = viewModel::onChangeReminderFrequency,
                         onToggleWeeklySummary = viewModel::onToggleWeeklySummary,
                         onChangeTheme = viewModel::onChangeTheme,
-                        onToggleHaptics = viewModel::onToggleHaptics
+                        onToggleHaptics = viewModel::onToggleHaptics,
+                        onSettingsThemeChange = viewModel::onSettingsThemeChange,
+                        onSettingsDailyRemindersToggle = viewModel::onSettingsDailyRemindersToggle,
+                        onSettingsWeeklyBackupsToggle = viewModel::onSettingsWeeklyBackupsToggle,
+                        onSettingsReminderTimeChange = viewModel::onSettingsReminderTimeChange,
+                        onSettingsHapticFeedbackToggle = viewModel::onSettingsHapticFeedbackToggle,
+                        onSettingsCreateBackup = viewModel::onSettingsCreateBackup,
+                        onSettingsRestoreBackup = viewModel::onSettingsRestoreBackup,
+                        onSettingsDismissMessage = viewModel::onSettingsDismissMessage
                     )
                 }
             }

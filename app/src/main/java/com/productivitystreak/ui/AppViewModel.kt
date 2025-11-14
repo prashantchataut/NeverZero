@@ -4,12 +4,15 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.productivitystreak.NeverZeroApplication
 import com.productivitystreak.data.QuoteRepository
 import com.productivitystreak.data.local.PreferencesManager
 import com.productivitystreak.data.model.Streak
 import com.productivitystreak.data.repository.StreakRepository
 import com.productivitystreak.notifications.StreakReminderScheduler
 import com.productivitystreak.ui.state.AppUiState
+import com.productivitystreak.ui.state.settings.SettingsState
+import com.productivitystreak.ui.state.settings.ThemeMode
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -25,11 +28,15 @@ import com.productivitystreak.ui.state.profile.ProfileTheme
 import com.productivitystreak.ui.state.profile.ReminderFrequency
 import com.productivitystreak.ui.state.reading.ReadingLog
 import com.productivitystreak.ui.state.reading.ReadingTrackerState
+import com.productivitystreak.ui.state.stats.CalendarHeatMap
 import com.productivitystreak.ui.state.stats.HabitBreakdown
+import com.productivitystreak.ui.state.stats.HeatMapDay
+import com.productivitystreak.ui.state.stats.HeatMapWeek
 import com.productivitystreak.ui.state.stats.LeaderboardEntry
 import com.productivitystreak.ui.state.stats.StatsState
 import com.productivitystreak.ui.state.vocabulary.VocabularyState
 import com.productivitystreak.ui.state.vocabulary.VocabularyWord
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,9 +46,11 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import com.productivitystreak.ui.utils.hapticFeedbackManager
+import kotlin.math.roundToInt
 
 class AppViewModel(
     application: Application,
@@ -66,6 +75,7 @@ class AppViewModel(
         loadUserPreferences()
         loadReadingTrackerData()
         loadVocabularyData()
+        loadSettingsPreferences()
         bootstrapStaticState()
         observeStreaks()
         refreshQuote()
@@ -124,6 +134,18 @@ class AppViewModel(
                 }
             } catch (e: Exception) {
                 Log.e("AppViewModel", "Error loading notifications", e)
+            }
+        }
+
+        viewModelScope.launch {
+            try {
+                preferencesManager.weeklySummaryEnabled.collect { enabled ->
+                    _uiState.update { state ->
+                        state.copy(profileState = state.profileState.copy(hasWeeklySummary = enabled))
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error loading weekly summary preference", e)
             }
         }
 
@@ -325,10 +347,87 @@ class AppViewModel(
         }
     }
 
+    private fun loadSettingsPreferences() {
+        viewModelScope.launch {
+            try {
+                preferencesManager.themeMode.collect { mode ->
+                    val themeMode = when (mode) {
+                        "light" -> com.productivitystreak.ui.state.settings.ThemeMode.LIGHT
+                        "dark" -> com.productivitystreak.ui.state.settings.ThemeMode.DARK
+                        else -> com.productivitystreak.ui.state.settings.ThemeMode.SYSTEM
+                    }
+                    _uiState.update { state ->
+                        state.copy(
+                            settingsState = state.settingsState.copy(themeMode = themeMode)
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error loading settings theme", e)
+            }
+        }
+
+        viewModelScope.launch {
+            try {
+                preferencesManager.dailyReminderEnabled.collect { enabled ->
+                    _uiState.update { state ->
+                        state.copy(
+                            settingsState = state.settingsState.copy(dailyRemindersEnabled = enabled)
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error loading daily reminders setting", e)
+            }
+        }
+
+        viewModelScope.launch {
+            try {
+                preferencesManager.weeklySummaryEnabled.collect { enabled ->
+                    _uiState.update { state ->
+                        state.copy(
+                            settingsState = state.settingsState.copy(weeklyBackupsEnabled = enabled)
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error loading weekly backups setting", e)
+            }
+        }
+
+        viewModelScope.launch {
+            try {
+                preferencesManager.reminderTime.collect { time ->
+                    _uiState.update { state ->
+                        state.copy(
+                            settingsState = state.settingsState.copy(reminderTime = time)
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error loading reminder time", e)
+            }
+        }
+
+        viewModelScope.launch {
+            try {
+                preferencesManager.hapticFeedbackEnabled.collect { enabled ->
+                    _uiState.update { state ->
+                        state.copy(
+                            settingsState = state.settingsState.copy(hapticFeedbackEnabled = enabled)
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error loading haptic feedback setting", e)
+            }
+        }
+    }
+
     fun refreshQuote() {
         quoteRefreshJob?.cancel()
         quoteRefreshJob = viewModelScope.launch {
-            _uiState.update { it.copy(isQuoteLoading = true, quoteErrorMessage = null) }
+            _uiState.update { it.copy(isQuoteLoading = true, uiMessage = null) }
             try {
                 val quote = quoteRepository.getDailyQuote(tags = "motivational|success")
                 _uiState.update { state ->
@@ -341,7 +440,11 @@ class AppViewModel(
                 _uiState.update { state ->
                     state.copy(
                         isQuoteLoading = false,
-                        quoteErrorMessage = error.message ?: "Unable to load quote"
+                        uiMessage = UiMessage(
+                            text = error.message ?: "Unable to load quote",
+                            isBlocking = false,
+                            actionLabel = "Retry"
+                        )
                     )
                 }
             }
@@ -432,28 +535,29 @@ class AppViewModel(
     }
 
     fun onToggleNotifications(enabled: Boolean) {
-        _uiState.update { state ->
-            state.copy(profileState = state.profileState.copy(notificationEnabled = enabled))
-        }
-
-        // Save to PreferencesManager
         viewModelScope.launch {
+            _uiState.update { state ->
+                state.copy(profileState = state.profileState.copy(notificationEnabled = enabled))
+            }
             try {
                 preferencesManager.setNotificationsEnabled(enabled)
-            } catch (e: Exception) {
-                Log.e("AppViewModel", "Error saving notification preference", e)
+                if (enabled) {
+                    reminderScheduler.scheduleDailyReminder()
+                } else {
+                    reminderScheduler.cancelAllReminders()
+                }
+            } catch (error: Exception) {
+                Log.e("AppViewModel", "Failed to toggle notifications", error)
+                _uiState.update { state ->
+                    state.copy(
+                        profileState = state.profileState.copy(notificationEnabled = !enabled),
+                        uiMessage = UiMessage(
+                            text = error.message ?: "Unable to update notifications",
+                            actionLabel = "Retry"
+                        )
+                    )
+                }
             }
-        }
-
-        val current = _uiState.value
-        if (enabled) {
-            reminderScheduler.scheduleReminder(
-                frequency = current.profileState.reminderFrequency,
-                categories = current.onboardingState.selectedCategories,
-                userName = current.userName
-            )
-        } else {
-            reminderScheduler.cancelReminders()
         }
     }
 
@@ -489,6 +593,23 @@ class AppViewModel(
     fun onToggleWeeklySummary(enabled: Boolean) {
         _uiState.update { state ->
             state.copy(profileState = state.profileState.copy(hasWeeklySummary = enabled))
+        }
+
+        viewModelScope.launch {
+            try {
+                preferencesManager.setWeeklySummaryEnabled(enabled)
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error saving weekly summary preference", e)
+                _uiState.update { state ->
+                    state.copy(
+                        profileState = state.profileState.copy(hasWeeklySummary = !enabled),
+                        uiMessage = UiMessage(
+                            text = "Couldn't update weekly summary",
+                            actionLabel = "Retry"
+                        )
+                    )
+                }
+            }
         }
     }
 
@@ -648,13 +769,14 @@ class AppViewModel(
     private fun observeStreaks() {
         viewModelScope.launch {
             streakRepository.observeStreaks().collectLatest { streaks ->
+                val stats = withContext(Dispatchers.Default) { buildStatsStateFromStreaks(streaks) }
                 _uiState.update { state ->
                     val selectedId = state.selectedStreakId ?: streaks.firstOrNull()?.id
                     state.copy(
                         streaks = streaks,
                         selectedStreakId = selectedId,
                         todayTasks = buildTasksForStreaks(streaks),
-                        statsState = buildStatsStateFromStreaks(streaks)
+                        statsState = stats
                     )
                 }
             }
@@ -698,7 +820,7 @@ class AppViewModel(
                 title = "Log ${streak.goalPerDay} ${streak.unit}",
                 category = streak.category,
                 streakId = streak.id,
-                isCompleted = streak.history.lastOrNull()?.let { it >= streak.goalPerDay } ?: false,
+                isCompleted = streak.history.lastOrNull()?.metGoal == true,
                 accentHex = streak.color
             )
         }
@@ -717,14 +839,69 @@ class AppViewModel(
             )
         }
 
+        val dailyTrend = computeAverageDailyTrend(streaks)
+        val consistency = computeStreakConsistency(streaks)
+        val heatMap = computeCalendarHeatMap(streaks)
+
         return StatsState(
             currentLongestStreak = longestStreak?.currentCount ?: 0,
             currentLongestStreakName = longestStreak?.name ?: "",
             averageDailyProgressPercent = avgProgress.toInt(),
-            averageDailyTrend = emptyList(), // TODO: compute from history if needed
-            streakConsistency = emptyList(), // TODO: compute consistency metrics
+            averageDailyTrend = dailyTrend,
+            streakConsistency = consistency,
             habitBreakdown = habitBreakdown,
-            leaderboard = emptyList() // Handled separately by observeTopStreaks
+            leaderboard = emptyList(), // Handled separately by observeTopStreaks
+            calendarHeatMap = heatMap
+        )
+    }
+
+    private fun computeCalendarHeatMap(
+        streaks: List<Streak>,
+        totalWeeks: Int = 6
+    ): CalendarHeatMap? {
+        if (streaks.isEmpty()) return null
+
+        val daysPerWeek = 7
+        val horizonDays = totalWeeks * daysPerWeek
+        val today = LocalDate.now()
+        val startDate = today.minusDays((horizonDays - 1).toLong())
+
+        val aggregates = mutableMapOf<LocalDate, MutableList<Float>>()
+        streaks.forEach { streak ->
+            streak.history.forEach { record ->
+                val date = parseDate(record.date) ?: return@forEach
+                val fraction = record.completionFraction.coerceIn(0f, 1f)
+                aggregates.getOrPut(date) { mutableListOf() }.add(fraction)
+            }
+        }
+
+        var activeDayCount = 0
+        val days = (0 until horizonDays).map { offset ->
+            val date = startDate.plusDays(offset.toLong())
+            val values = aggregates[date]
+            val intensity = values?.let { list ->
+                (list.sum() / list.size).coerceIn(0f, 1f)
+            } ?: 0f
+            if (intensity > 0f) activeDayCount++
+            HeatMapDay(
+                date = date.toString(),
+                intensity = intensity,
+                isToday = date == today
+            )
+        }
+
+        if (days.all { it.intensity == 0f }) {
+            return null
+        }
+
+        val weeks = days.chunked(daysPerWeek).map { chunk ->
+            HeatMapWeek(days = chunk)
+        }
+
+        return CalendarHeatMap(
+            weeks = weeks,
+            completedDays = activeDayCount,
+            totalDays = horizonDays
         )
     }
 
@@ -904,6 +1081,346 @@ class AppViewModel(
             }
         } catch (e: Exception) {
             Log.e("AppViewModel", "Error checking vocabulary achievements", e)
+        }
+    }
+
+    private fun computeAverageDailyTrend(
+        streaks: List<Streak>,
+        horizonDays: Int = 21,
+        windowSize: Int = 7
+    ): AverageDailyTrend? {
+        if (streaks.isEmpty()) return null
+
+        val today = LocalDate.now()
+        val perStreakDateMap = streaks.associateBy(
+            keySelector = { it.id },
+            valueTransform = { streak ->
+                streak.history.mapNotNull { record ->
+                    parseDate(record.date)?.let { it to record }
+                }.toMap()
+            }
+        )
+
+        data class DailyAggregate(val date: LocalDate, val completed: Int, val goal: Int)
+
+        val aggregates = (0 until horizonDays).map { offset ->
+            val day = today.minusDays(offset.toLong())
+            val dayString = day.toString()
+            val totals = perStreakDateMap.values.fold(0 to 0) { acc, map ->
+                val record = map[day]
+                if (record != null) {
+                    val goalValue = record.goal.coerceAtLeast(0)
+                    val completedValue = record.completed.coerceAtLeast(0).coerceAtMost(goalValue)
+                    (acc.first + completedValue) to (acc.second + goalValue)
+                } else acc
+            }
+            DailyAggregate(date = day, completed = totals.first, goal = totals.second)
+        }.reversed()
+
+        val trendPoints = aggregates.mapIndexedNotNull { index, aggregate ->
+            val startIndex = (index - windowSize + 1).coerceAtLeast(0)
+            val windowSlice = aggregates.subList(startIndex, index + 1)
+            val windowGoal = windowSlice.sumOf { it.goal }
+            if (windowGoal == 0) return@mapIndexedNotNull null
+            val windowCompleted = windowSlice.sumOf { it.completed }
+            val percent = ((windowCompleted / windowGoal.toFloat()) * 100f).roundToInt().coerceIn(0, 100)
+            TrendPoint(date = aggregate.date.toString(), percent = percent)
+        }
+
+        return trendPoints.takeIf { it.isNotEmpty() }?.let {
+            AverageDailyTrend(windowSize = windowSize, points = it)
+        }
+    }
+
+    private fun computeStreakConsistency(
+        streaks: List<Streak>,
+        windowDays: Int = 30
+    ): List<ConsistencyScore> {
+        if (streaks.isEmpty()) return emptyList()
+
+        return streaks.mapNotNull { streak ->
+            val history = streak.history.takeLast(windowDays)
+            if (history.isEmpty()) return@mapNotNull null
+
+            val completionRate = history.count { it.metGoal }.toFloat() / history.size.toFloat()
+            val fractions = history.map { it.completionFraction.coerceIn(0f, 1f) }
+            val mean = fractions.average().toFloat()
+            val variance = fractions.fold(0f) { acc, value ->
+                val diff = value - mean
+                acc + diff * diff
+            } / fractions.size.toFloat()
+            val varianceNorm = (variance / 0.25f).coerceIn(0f, 1f)
+            val score = ((completionRate * 70f) + ((1 - varianceNorm) * 30f)).roundToInt().coerceIn(0, 100)
+            val completionPercent = (completionRate * 100f).roundToInt().coerceIn(0, 100)
+            val level = when {
+                score >= 80 -> ConsistencyLevel.High
+                score >= 50 -> ConsistencyLevel.Medium
+                else -> ConsistencyLevel.NeedsAttention
+            }
+
+            ConsistencyScore(
+                streakId = streak.id,
+                streakName = streak.name,
+                score = score,
+                completionRate = completionPercent,
+                variance = variance,
+                level = level
+            )
+        }.sortedByDescending { it.score }
+    }
+
+    private fun parseDate(date: String): LocalDate? = runCatching { LocalDate.parse(date) }.getOrNull()
+
+    // Quick action: Schedule weekly backup reminder
+    fun scheduleWeeklyBackupReminder() {
+        viewModelScope.launch {
+            try {
+                reminderScheduler.scheduleWeeklyBackup()
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error scheduling weekly backup", e)
+            }
+        }
+    }
+
+    // Quick action: Auto-switch theme based on time
+    fun checkAndUpdateThemeByTime() {
+        viewModelScope.launch {
+            try {
+                val currentHour = java.time.LocalTime.now().hour
+                val shouldBeDark = currentHour < 6 || currentHour >= 18
+                val currentTheme = preferencesManager.themeMode.first()
+                
+                if (currentTheme == "auto_time") {
+                    val newTheme = if (shouldBeDark) "dark" else "light"
+                    preferencesManager.setThemeMode(newTheme)
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error auto-switching theme", e)
+            }
+        }
+    }
+
+    // Settings Screen Actions
+    fun onSettingsThemeChange(themeMode: com.productivitystreak.ui.state.settings.ThemeMode) {
+        val themeString = when (themeMode) {
+            com.productivitystreak.ui.state.settings.ThemeMode.LIGHT -> "light"
+            com.productivitystreak.ui.state.settings.ThemeMode.DARK -> "dark"
+            com.productivitystreak.ui.state.settings.ThemeMode.SYSTEM -> "system"
+        }
+        
+        _uiState.update { state ->
+            state.copy(
+                settingsState = state.settingsState.copy(themeMode = themeMode)
+            )
+        }
+        
+        viewModelScope.launch {
+            try {
+                preferencesManager.setThemeMode(themeString)
+                onChangeTheme(when (themeMode) {
+                    com.productivitystreak.ui.state.settings.ThemeMode.LIGHT -> ProfileTheme.Light
+                    com.productivitystreak.ui.state.settings.ThemeMode.DARK -> ProfileTheme.Dark
+                    com.productivitystreak.ui.state.settings.ThemeMode.SYSTEM -> ProfileTheme.Auto
+                })
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error saving theme", e)
+            }
+        }
+    }
+
+    fun onSettingsDailyRemindersToggle(enabled: Boolean) {
+        _uiState.update { state ->
+            state.copy(
+                settingsState = state.settingsState.copy(dailyRemindersEnabled = enabled)
+            )
+        }
+        
+        viewModelScope.launch {
+            try {
+                preferencesManager.setDailyReminderEnabled(enabled)
+                if (enabled) {
+                    reminderScheduler.scheduleDailyReminder()
+                } else {
+                    reminderScheduler.cancelAllReminders()
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error toggling daily reminders", e)
+            }
+        }
+    }
+
+    fun onSettingsWeeklyBackupsToggle(enabled: Boolean) {
+        _uiState.update { state ->
+            state.copy(
+                settingsState = state.settingsState.copy(weeklyBackupsEnabled = enabled)
+            )
+        }
+        
+        viewModelScope.launch {
+            try {
+                preferencesManager.setWeeklySummaryEnabled(enabled)
+                if (enabled) {
+                    reminderScheduler.scheduleWeeklyBackup()
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error toggling weekly backups", e)
+            }
+        }
+    }
+
+    fun onSettingsReminderTimeChange(time: String) {
+        _uiState.update { state ->
+            state.copy(
+                settingsState = state.settingsState.copy(
+                    reminderTime = time,
+                    showTimePickerDialog = true
+                )
+            )
+        }
+        
+        viewModelScope.launch {
+            try {
+                preferencesManager.setReminderTime(time)
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error saving reminder time", e)
+            }
+        }
+    }
+
+    fun onSettingsHapticFeedbackToggle(enabled: Boolean) {
+        _uiState.update { state ->
+            state.copy(
+                settingsState = state.settingsState.copy(hapticFeedbackEnabled = enabled)
+            )
+        }
+        
+        onToggleHaptics(enabled)
+    }
+
+    fun onSettingsCreateBackup() {
+        _uiState.update { state ->
+            state.copy(
+                settingsState = state.settingsState.copy(isBackupInProgress = true)
+            )
+        }
+        
+        viewModelScope.launch {
+            try {
+                val app = getApplication<com.productivitystreak.NeverZeroApplication>()
+                val result = app.backupManager.createBackup()
+                
+                result.onSuccess { file ->
+                    val dateFormat = java.text.SimpleDateFormat("MMM d, yyyy 'at' h:mm a", java.util.Locale.getDefault())
+                    val timestamp = dateFormat.format(java.util.Date())
+                    
+                    _uiState.update { state ->
+                        state.copy(
+                            settingsState = state.settingsState.copy(
+                                isBackupInProgress = false,
+                                showBackupSuccessMessage = true,
+                                lastBackupTime = timestamp
+                            )
+                        )
+                    }
+                }.onFailure { error ->
+                    _uiState.update { state ->
+                        state.copy(
+                            settingsState = state.settingsState.copy(
+                                isBackupInProgress = false,
+                                errorMessage = "Backup failed: ${error.message}"
+                            )
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error creating backup", e)
+                _uiState.update { state ->
+                    state.copy(
+                        settingsState = state.settingsState.copy(
+                            isBackupInProgress = false,
+                            errorMessage = "Backup failed: ${e.message}"
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    fun onSettingsRestoreBackup() {
+        // This will be triggered by file picker in the UI
+        _uiState.update { state ->
+            state.copy(
+                settingsState = state.settingsState.copy(showRestoreDialog = true)
+            )
+        }
+    }
+
+    fun onSettingsRestoreFromFile(fileUri: android.net.Uri) {
+        _uiState.update { state ->
+            state.copy(
+                settingsState = state.settingsState.copy(
+                    isRestoreInProgress = true,
+                    showRestoreDialog = false
+                )
+            )
+        }
+        
+        viewModelScope.launch {
+            try {
+                val app = getApplication<com.productivitystreak.NeverZeroApplication>()
+                val inputStream = app.contentResolver.openInputStream(fileUri)
+                val tempFile = java.io.File.createTempFile("restore", ".json", app.cacheDir)
+                tempFile.outputStream().use { output ->
+                    inputStream?.copyTo(output)
+                }
+                
+                val result = app.backupManager.restoreBackup(tempFile, mergeMode = false)
+                
+                result.onSuccess { message ->
+                    _uiState.update { state ->
+                        state.copy(
+                            settingsState = state.settingsState.copy(
+                                isRestoreInProgress = false,
+                                showRestoreSuccessMessage = true
+                            )
+                        )
+                    }
+                }.onFailure { error ->
+                    _uiState.update { state ->
+                        state.copy(
+                            settingsState = state.settingsState.copy(
+                                isRestoreInProgress = false,
+                                errorMessage = "Restore failed: ${error.message}"
+                            )
+                        )
+                    }
+                }
+                
+                tempFile.delete()
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error restoring backup", e)
+                _uiState.update { state ->
+                    state.copy(
+                        settingsState = state.settingsState.copy(
+                            isRestoreInProgress = false,
+                            errorMessage = "Restore failed: ${e.message}"
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    fun onSettingsDismissMessage() {
+        _uiState.update { state ->
+            state.copy(
+                settingsState = state.settingsState.copy(
+                    showTimePickerDialog = false,
+                    showBackupSuccessMessage = false,
+                    showRestoreSuccessMessage = false,
+                    errorMessage = null
+                )
+            )
         }
     }
 }
