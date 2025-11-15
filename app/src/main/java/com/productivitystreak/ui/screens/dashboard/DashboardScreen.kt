@@ -295,44 +295,6 @@ private fun StatMetric(
             }
         }
     }
-}
-            )
-
-            DailyInspirationCard(
-                quote = state.quote?.text
-                    ?: "The secret of getting ahead is getting started.",
-                author = state.quote?.author,
-                isLoading = state.isQuoteLoading,
-                onRefreshClick = onRefreshQuote
-            )
-
-            ProgressOverviewCard(
-                completedTasks = state.todayTasks.count { it.isCompleted },
-                totalTasks = state.todayTasks.size,
-                activeStreaks = state.streaks.size,
-                longestStreak = state.statsState.currentLongestStreak,
-                onNavigateToStats = onNavigateToStats,
-                onNavigateToDiscover = onNavigateToDiscover
-            )
-
-            StreaksSection(
-                streaks = state.streaks,
-                selectedId = state.selectedStreakId,
-                onSelectStreak = onSelectStreak
-            )
-
-            TodayTasksCard(
-                tasks = state.todayTasks,
-                onToggleTask = onToggleTask,
-                onNavigateToReading = onNavigateToReading,
-                onNavigateToVocabulary = onNavigateToVocabulary
-            )
-
-            Spacer(modifier = Modifier.height(Spacing.xxxl))
-        }
-    }
-}
-
 /**
  * Welcome header with time-based greeting
  */
