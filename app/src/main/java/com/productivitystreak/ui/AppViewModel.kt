@@ -1396,6 +1396,17 @@ class AppViewModel(
         }
     }
 
+    fun onSettingsDismissRestoreDialog() {
+        _uiState.update { state ->
+            state.copy(
+                settingsState = state.settingsState.copy(
+                    showRestoreDialog = false,
+                    isRestoreInProgress = false
+                )
+            )
+        }
+    }
+
     fun onSettingsRestoreFromFile(fileUri: android.net.Uri) {
         _uiState.update { state ->
             state.copy(

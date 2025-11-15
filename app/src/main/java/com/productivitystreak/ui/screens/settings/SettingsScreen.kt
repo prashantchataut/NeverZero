@@ -1,6 +1,9 @@
 package com.productivitystreak.ui.screens.settings
 
 import android.app.TimePickerDialog
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,6 +12,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -47,12 +52,22 @@ fun SettingsScreen(
     onHapticFeedbackToggle: (Boolean) -> Unit,
     onCreateBackup: () -> Unit,
     onRestoreBackup: () -> Unit,
+    onRestoreFileSelected: (Uri) -> Unit,
+    onDismissRestoreDialog: () -> Unit,
     onDismissMessage: () -> Unit
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     
     var showThemeMenu by remember { mutableStateOf(false) }
+
+    val backupPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            onRestoreFileSelected(uri)
+        }
+    }
 
     // Time Picker Dialog
     if (state.showTimePickerDialog) {
@@ -82,6 +97,56 @@ fun SettingsScreen(
             kotlinx.coroutines.delay(3000)
             onDismissMessage()
         }
+    }
+
+    if (state.showRestoreDialog) {
+        AlertDialog(
+            onDismissRequest = onDismissRestoreDialog,
+            title = {
+                Text(text = "Restore backup")
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                    Text(
+                        text = "Select the JSON backup file you previously exported to restore your streaks, reading sessions, reflections, and more.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    if (state.isRestoreInProgress) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                            Text(text = "Restoring data...", style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    enabled = !state.isRestoreInProgress,
+                    onClick = {
+                        backupPickerLauncher.launch(arrayOf("application/json"))
+                    }
+                ) {
+                    Text(text = "Choose file")
+                }
+            },
+            dismissButton = {
+                Text(
+                    text = "Cancel",
+                    modifier = Modifier
+                        .clip(Shapes.full)
+                        .clickable(
+                            enabled = !state.isRestoreInProgress,
+                            onClick = onDismissRestoreDialog
+                        )
+                        .padding(horizontal = Spacing.md, vertical = Spacing.sm),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        )
     }
 
     val gradient = Brush.verticalGradient(
