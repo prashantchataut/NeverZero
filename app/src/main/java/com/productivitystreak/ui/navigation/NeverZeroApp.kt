@@ -55,6 +55,10 @@ fun NeverZeroApp(
     onLogReadingProgress: (Int) -> Unit,
     onAddVocabularyWord: (String, String, String?) -> Unit,
     onToggleOnboardingCategory: (String) -> Unit,
+    onNextOnboardingStep: () -> Unit,
+    onPreviousOnboardingStep: () -> Unit,
+    onToggleOnboardingNotifications: (Boolean) -> Unit,
+    onSetOnboardingReminderTime: (String) -> Unit,
     onCompleteOnboarding: () -> Unit,
     onDismissOnboarding: () -> Unit,
     onToggleNotifications: (Boolean) -> Unit,
@@ -100,6 +104,10 @@ fun NeverZeroApp(
                 state = uiState.onboardingState,
                 onDismiss = onDismissOnboarding,
                 onToggleCategory = onToggleOnboardingCategory,
+                onNext = onNextOnboardingStep,
+                onPrevious = onPreviousOnboardingStep,
+                onToggleNotifications = onToggleOnboardingNotifications,
+                onReminderTimeSelected = onSetOnboardingReminderTime,
                 onComplete = onCompleteOnboarding
             )
         }

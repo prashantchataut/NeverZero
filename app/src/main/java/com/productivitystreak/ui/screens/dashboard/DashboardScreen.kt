@@ -12,14 +12,29 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.AddCircleOutline
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Done
+import androidx.compose.material.icons.rounded.EmojiEvents
+import androidx.compose.material.icons.rounded.LocalFireDepartment
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.RadioButtonUnchecked
+import androidx.compose.material.icons.rounded.Task
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -47,42 +62,57 @@ fun DashboardScreen(
     onNavigateToReading: () -> Unit,
     onNavigateToVocabulary: () -> Unit
 ) {
-    Column(
+    val scrollState = rememberScrollState()
+    val gradient = Brush.verticalGradient(
+        listOf(
+            NeverZeroTheme.gradientColors.PremiumStart.copy(alpha = 0.12f),
+            NeverZeroTheme.gradientColors.PremiumEnd.copy(alpha = 0.12f)
+        )
+    )
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = Spacing.md, vertical = Spacing.md),
-        verticalArrangement = Arrangement.spacedBy(Spacing.xl)
+            .background(gradient)
     ) {
-        // Welcome header with user greeting
-        WelcomeHeader(userName = state.userName)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(horizontal = Spacing.lg, vertical = Spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(Spacing.lg)
+        ) {
+            DashboardHeader(userName = state.userName)
 
-        // Motivational quote card
-        MotivationalQuoteCard(
-            quote = state.quote?.text ?: "Steady beats sudden. Keep your streak warm today!",
-            author = state.quote?.author,
-            isLoading = state.isQuoteLoading,
-            onRefreshClick = onRefreshQuote
-        )
+            StreakSummaryCard(
+                streakDays = state.statsState.currentLongestStreak.takeIf { it > 0 }
+                    ?: state.streaks.firstOrNull()?.currentCount ?: 0,
+                onRefreshQuote = onRefreshQuote
+            )
 
-        // Streaks section
-        StreaksSection(
-            streaks = state.streaks,
-            selectedId = state.selectedStreakId,
-            onSelectStreak = onSelectStreak
-        )
+            DailyInspirationCard(
+                quote = state.quote?.text
+                    ?: "The secret of getting ahead is getting started.",
+                author = state.quote?.author,
+                isLoading = state.isQuoteLoading,
+                onRefreshClick = onRefreshQuote
+            )
 
-        // Today's tasks section
-        TodayFocusSection(
-            tasks = state.todayTasks,
-            onToggleTask = onToggleTask,
-            onNavigateToReading = onNavigateToReading,
-            onNavigateToVocabulary = onNavigateToVocabulary
-        )
+            StreaksSection(
+                streaks = state.streaks,
+                selectedId = state.selectedStreakId,
+                onSelectStreak = onSelectStreak
+            )
 
-        // Add spacing at the bottom for better scrolling
-        Spacer(modifier = Modifier.height(Spacing.xl))
+            TodayTasksCard(
+                tasks = state.todayTasks,
+                onToggleTask = onToggleTask,
+                onNavigateToReading = onNavigateToReading,
+                onNavigateToVocabulary = onNavigateToVocabulary
+            )
+
+            Spacer(modifier = Modifier.height(Spacing.xxxl))
+        }
     }
 }
 
@@ -90,7 +120,7 @@ fun DashboardScreen(
  * Welcome header with time-based greeting
  */
 @Composable
-private fun WelcomeHeader(userName: String) {
+private fun DashboardHeader(userName: String) {
     val greeting = remember {
         val hour = LocalTime.now().hour
         when {
@@ -106,101 +136,128 @@ private fun WelcomeHeader(userName: String) {
         verticalArrangement = Arrangement.spacedBy(Spacing.xxs)
     ) {
         Text(
-            text = greeting,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = userName,
-            style = MaterialTheme.typography.headlineMedium,
+            text = "Never Zero",
+            style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface
         )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
+                Text(
+                    text = greeting,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = userName,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            Surface(
+                shape = Shapes.full,
+                tonalElevation = Elevation.level2,
+                color = Color.White,
+                shadowElevation = Elevation.level3
+            ) {
+                IconButton(onClick = {}) {
+                    Icon(
+                        imageVector = Icons.Rounded.Notifications,
+                        contentDescription = null,
+                        tint = NeverZeroTheme.gradientColors.PremiumStart
+                    )
+                }
+            }
+        }
     }
 }
 
-/**
- * Motivational quote card with gradient background
- */
 @Composable
-private fun MotivationalQuoteCard(
-    quote: String,
-    author: String?,
-    isLoading: Boolean,
-    onRefreshClick: () -> Unit
+private fun StreakSummaryCard(
+    streakDays: Int,
+    onRefreshQuote: () -> Unit
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "shimmer")
-    val shimmerAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.6f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "shimmerAlpha"
-    )
-
-    GradientCard(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        gradientColors = listOf(
-            NeverZeroTheme.gradientColors.PremiumStart.copy(alpha = shimmerAlpha),
-            NeverZeroTheme.gradientColors.PremiumEnd.copy(alpha = shimmerAlpha * 0.8f)
-        )
+        color = Color.White,
+        tonalElevation = 8.dp,
+        shape = Shapes.extraLarge,
+        shadowElevation = 12.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(Spacing.xl)
+                .padding(Spacing.xl),
+            verticalArrangement = Arrangement.spacedBy(Spacing.md)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        modifier = Modifier.size(Size.iconLarge),
-                        shape = Shapes.small,
-                        color = Color.White.copy(alpha = 0.2f)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Rounded.AutoAwesome,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(Size.iconMedium)
-                            )
-                        }
-                    }
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
                     Text(
-                        text = "Daily Inspiration",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White,
-                        fontWeight = FontWeight.SemiBold
+                        text = "Your Current Streak",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "$streakDays Days",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
                     )
                 }
-
-                IconButton(
-                    onClick = onRefreshClick,
-                    enabled = !isLoading,
-                    modifier = Modifier
-                        .size(Size.iconLarge)
-                        .clip(Shapes.small)
-                        .background(Color.White.copy(alpha = 0.2f))
-                ) {
+                IconButton(onClick = onRefreshQuote) {
                     Icon(
-                        imageVector = Icons.Rounded.Refresh,
-                        contentDescription = "Refresh quote",
-                        tint = Color.White,
-                        modifier = Modifier.size(Size.iconMedium)
+                        imageVector = Icons.Rounded.AutoAwesome,
+                        contentDescription = null,
+                        tint = NeverZeroTheme.gradientColors.PremiumStart
                     )
                 }
             }
+        }
+    }
+}
 
-            Spacer(modifier = Modifier.height(Spacing.md))
+@Composable
+private fun DailyInspirationCard(
+    quote: String,
+    author: String?,
+    isLoading: Boolean,
+    onRefreshClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 6.dp,
+        shape = Shapes.extraLarge
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Daily Inspiration",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                TextButton(onClick = onRefreshClick, enabled = !isLoading) {
+                    Text("Refresh")
+                }
+            }
 
             AnimatedContent(
                 targetState = isLoading,
@@ -208,36 +265,21 @@ private fun MotivationalQuoteCard(
                     fadeIn(animationSpec = tween(Motion.durationMedium)) togetherWith
                             fadeOut(animationSpec = tween(Motion.durationMedium))
                 },
-                label = "quoteContent"
+                label = "dailyQuoteState"
             ) { loading ->
                 if (loading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(80.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = Color.White,
-                            strokeWidth = 3.dp,
-                            modifier = Modifier.size(Size.iconLarge)
-                        )
-                    }
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 } else {
-                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
                         Text(
                             text = "\"$quote\"",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Color.White,
-                            fontWeight = FontWeight.Medium,
-                            lineHeight = MaterialTheme.typography.bodyLarge.lineHeight
+                            style = MaterialTheme.typography.bodyLarge
                         )
                         if (!author.isNullOrBlank()) {
                             Text(
-                                text = "— $author",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = Color.White.copy(alpha = Opacity.high),
-                                fontWeight = FontWeight.Medium
+                                text = author,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -256,44 +298,12 @@ private fun StreaksSection(
     selectedId: String?,
     onSelectStreak: (String) -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Your Streaks",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            if (streaks.isNotEmpty()) {
-                AssistChip(
-                    onClick = { /* Navigate to all streaks */ },
-                    label = {
-                        Text(
-                            text = "${streaks.size} active",
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Rounded.LocalFireDepartment,
-                            contentDescription = null,
-                            modifier = Modifier.size(Size.iconSmall)
-                        )
-                    },
-                    colors = AssistChipDefaults.assistChipColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        labelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ),
-                    border = null,
-                    shape = Shapes.full
-                )
-            }
-        }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        Text(
+            text = "Your Streaks",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
 
         if (streaks.isEmpty()) {
             EmptyStreaksState()
@@ -542,68 +552,71 @@ private fun EmptyStreaksState() {
  * Today's focus section with tasks
  */
 @Composable
-private fun TodayFocusSection(
+private fun TodayTasksCard(
     tasks: List<DashboardTask>,
     onToggleTask: (String) -> Unit,
     onNavigateToReading: () -> Unit,
     onNavigateToVocabulary: () -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color.White,
+        tonalElevation = 8.dp,
+        shape = Shapes.extraLarge
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(Spacing.md)
         ) {
             Text(
-                text = "Today's Focus",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-
-        // Quick action buttons
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
-        ) {
-            SecondaryButton(
-                text = "Log Reading",
-                onClick = onNavigateToReading,
-                icon = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.MenuBook,
-                        contentDescription = null,
-                        modifier = Modifier.size(Size.iconSmall)
-                    )
-                },
-                modifier = Modifier.weight(1f)
+                text = "Today's Tasks",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
             )
 
-            PrimaryButton(
-                text = "Add Word",
-                onClick = onNavigateToVocabulary,
-                icon = {
-                    Icon(
-                        imageVector = Icons.Rounded.Add,
-                        contentDescription = null,
-                        modifier = Modifier.size(Size.iconSmall)
-                    )
-                },
-                modifier = Modifier.weight(1f)
-            )
-        }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+            ) {
+                SecondaryButton(
+                    text = "Log Reading",
+                    onClick = onNavigateToReading,
+                    icon = {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.MenuBook,
+                            contentDescription = null,
+                            modifier = Modifier.size(Size.iconSmall)
+                        )
+                    },
+                    modifier = Modifier.weight(1f)
+                )
 
-        // Tasks list
-        if (tasks.isEmpty()) {
-            EmptyTasksState()
-        } else {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                tasks.forEach { task ->
-                    ModernTaskCard(
-                        task = task,
-                        onToggleTask = onToggleTask
-                    )
+                PrimaryButton(
+                    text = "Add Word",
+                    onClick = onNavigateToVocabulary,
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Rounded.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(Size.iconSmall)
+                        )
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            if (tasks.isEmpty()) {
+                EmptyTasksState()
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                    tasks.forEach { task ->
+                        ModernTaskCard(
+                            task = task,
+                            onToggleTask = onToggleTask
+                        )
+                    }
                 }
             }
         }

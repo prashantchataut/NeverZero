@@ -1,8 +1,6 @@
 package com.productivitystreak.ui.screens.settings
 
 import android.app.TimePickerDialog
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,10 +9,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -22,10 +30,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.productivitystreak.ui.state.settings.SettingsState
 import com.productivitystreak.ui.state.settings.ThemeMode
-import com.productivitystreak.ui.theme.*
+import com.productivitystreak.ui.theme.Elevation
+import com.productivitystreak.ui.theme.NeverZeroTheme
+import com.productivitystreak.ui.theme.Shapes
+import com.productivitystreak.ui.theme.Spacing
+import com.productivitystreak.ui.theme.Size
 import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     state: SettingsState,
@@ -73,57 +84,32 @@ fun SettingsScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Settings",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        },
-        snackbarHost = {
-            if (state.showBackupSuccessMessage || state.showRestoreSuccessMessage || state.errorMessage != null) {
-                Snackbar(
-                    modifier = Modifier.padding(Spacing.md),
-                    containerColor = if (state.errorMessage != null) 
-                        MaterialTheme.colorScheme.errorContainer 
-                    else 
-                        MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = if (state.errorMessage != null) 
-                        MaterialTheme.colorScheme.onErrorContainer 
-                    else 
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                ) {
-                    Text(
-                        text = state.errorMessage ?: when {
-                            state.showBackupSuccessMessage -> "✓ Backup created successfully"
-                            state.showRestoreSuccessMessage -> "✓ Data restored successfully"
-                            else -> ""
-                        }
-                    )
-                }
-            }
-        }
-    ) { paddingValues ->
+    val gradient = Brush.verticalGradient(
+        listOf(
+            NeverZeroTheme.gradientColors.PremiumStart.copy(alpha = 0.08f),
+            NeverZeroTheme.gradientColors.PremiumEnd.copy(alpha = 0.08f)
+        )
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(gradient)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .verticalScroll(scrollState)
-                .padding(horizontal = Spacing.md)
+                .padding(horizontal = Spacing.lg, vertical = Spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(Spacing.lg)
         ) {
-            Spacer(modifier = Modifier.height(Spacing.md))
+            Text(
+                text = "Settings",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
 
-            // Appearance Section
-            SettingsSection(title = "Appearance") {
+            SettingsCard(title = "Appearance") {
                 SettingsDropdownItem(
                     icon = Icons.Rounded.Palette,
                     title = "Theme",
@@ -140,10 +126,7 @@ fun SettingsScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(Spacing.xl))
-
-            // Notifications Section
-            SettingsSection(title = "Notifications") {
+            SettingsCard(title = "Notifications") {
                 SettingsSwitchItem(
                     icon = Icons.Rounded.Notifications,
                     title = "Daily Reminders",
@@ -151,8 +134,6 @@ fun SettingsScreen(
                     checked = state.dailyRemindersEnabled,
                     onCheckedChange = onDailyRemindersToggle
                 )
-
-                Spacer(modifier = Modifier.height(Spacing.xs))
 
                 AnimatedVisibility(
                     visible = state.dailyRemindersEnabled,
@@ -167,8 +148,6 @@ fun SettingsScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(Spacing.xs))
-
                 SettingsSwitchItem(
                     icon = Icons.Rounded.CalendarToday,
                     title = "Weekly Backups",
@@ -178,10 +157,7 @@ fun SettingsScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(Spacing.xl))
-
-            // Feedback Section
-            SettingsSection(title = "Feedback") {
+            SettingsCard(title = "Feedback") {
                 SettingsSwitchItem(
                     icon = Icons.Rounded.Vibration,
                     title = "Haptic Feedback",
@@ -191,37 +167,33 @@ fun SettingsScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(Spacing.xl))
-
-            // Data Management Section
-            SettingsSection(title = "Data Management") {
+            SettingsCard(title = "Data Management") {
                 SettingsActionItem(
                     icon = Icons.Rounded.Backup,
                     title = "Create Backup",
-                    subtitle = state.lastBackupTime?.let { "Last backup: $it" } ?: "Backup your data to file",
-                    isLoading = state.isBackupInProgress,
+                    subtitle = "Save your streak data securely",
                     onClick = onCreateBackup
                 )
-
-                Spacer(modifier = Modifier.height(Spacing.xs))
-
                 SettingsActionItem(
-                    icon = Icons.Rounded.CloudDownload,
+                    icon = Icons.Rounded.Restore,
                     title = "Restore Backup",
-                    subtitle = "Restore data from backup file",
-                    isLoading = state.isRestoreInProgress,
+                    subtitle = "Recover your saved streaks",
                     onClick = onRestoreBackup
                 )
             }
 
-            Spacer(modifier = Modifier.height(Spacing.xl))
-
-            // About Section
-            SettingsSection(title = "About") {
-                SettingsInfoItem(
+            SettingsCard(title = "Account") {
+                SettingsClickableItem(
+                    icon = Icons.Rounded.Security,
+                    title = "Privacy",
+                    subtitle = "Manage permissions and safeguards",
+                    onClick = {}
+                )
+                SettingsClickableItem(
                     icon = Icons.Rounded.Info,
-                    title = "App Version",
-                    subtitle = state.appVersion
+                    title = "About",
+                    subtitle = "App version and credits",
+                    onClick = {}
                 )
             }
 
@@ -231,23 +203,22 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun SettingsSection(
+private fun SettingsCard(
     title: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = Spacing.xs, bottom = Spacing.sm)
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
         )
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = Shapes.medium,
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            tonalElevation = Elevation.level1
+            shape = Shapes.extraLarge,
+            color = Color.White,
+            tonalElevation = 4.dp,
+            shadowElevation = 8.dp
         ) {
             Column(
                 modifier = Modifier.padding(vertical = Spacing.xs)

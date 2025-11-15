@@ -506,6 +506,32 @@ class AppViewModel(
         }
     }
 
+    fun onNextOnboardingStep() {
+        _uiState.update { state ->
+            val next = (state.onboardingState.currentStep + 1).coerceAtMost(state.onboardingState.totalSteps - 1)
+            state.copy(onboardingState = state.onboardingState.copy(currentStep = next))
+        }
+    }
+
+    fun onPreviousOnboardingStep() {
+        _uiState.update { state ->
+            val previous = (state.onboardingState.currentStep - 1).coerceAtLeast(0)
+            state.copy(onboardingState = state.onboardingState.copy(currentStep = previous))
+        }
+    }
+
+    fun onToggleOnboardingNotifications(enabled: Boolean) {
+        _uiState.update { state ->
+            state.copy(onboardingState = state.onboardingState.copy(allowNotifications = enabled))
+        }
+    }
+
+    fun onSetOnboardingReminderTime(time: String) {
+        _uiState.update { state ->
+            state.copy(onboardingState = state.onboardingState.copy(reminderTime = time))
+        }
+    }
+
     fun onDismissOnboarding() {
         _uiState.update { state ->
             state.copy(showOnboarding = false)
