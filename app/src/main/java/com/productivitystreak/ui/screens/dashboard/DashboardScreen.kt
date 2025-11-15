@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -571,7 +572,7 @@ private fun TodayFocusSection(
                 onClick = onNavigateToReading,
                 icon = {
                     Icon(
-                        imageVector = Icons.Rounded.MenuBook,
+                        imageVector = Icons.AutoMirrored.Rounded.MenuBook,
                         contentDescription = null,
                         modifier = Modifier.size(Size.iconSmall)
                     )
