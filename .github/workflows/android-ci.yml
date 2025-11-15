@@ -1,5 +1,3 @@
-proceed to create a github action android ci workflow. The workflow should auto trigger when any pushes are done in any branches (only changes related to the app). Also create a default public keystore and add it in repo as this is open source project, for signing the release app. Build one single release app with renamed after commit hash and signed. Below is the workflow from my other app;
-
 name: Android CI
 
 on:
@@ -55,4 +53,3 @@ jobs:
           name: apk-release-${{ steps.set_sha.outputs.short_sha }}
           path: app/build/outputs/apk/release/app-release-${{ steps.set_sha.outputs.short_sha }}.apk
           
- You have tools, so you may download whatever it is necessary for you. Make sure the app will compile. Use best practices and production grade implementations.
