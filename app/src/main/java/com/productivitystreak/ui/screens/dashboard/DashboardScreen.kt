@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -52,6 +53,7 @@ import com.productivitystreak.ui.state.DashboardTask
 import com.productivitystreak.ui.theme.*
 import com.productivitystreak.ui.utils.hapticFeedbackManager
 import java.time.LocalTime
+import kotlin.math.roundToInt
 
 /**
  * Redesigned Dashboard Screen
@@ -194,13 +196,15 @@ private fun ProgressOverviewCard(
                     title = "Active Streaks",
                     value = activeStreaks.toString(),
                     icon = Icons.Rounded.AutoAwesome,
-                    accent = NeverZeroTheme.streakColors.Productivity
+                    accent = NeverZeroTheme.streakColors.Productivity,
+                    modifier = Modifier.weight(1f)
                 )
                 StatMetric(
                     title = "Longest Run",
                     value = "$longestStreak d",
                     icon = Icons.Rounded.LocalFireDepartment,
-                    accent = NeverZeroTheme.streakColors.Wellness
+                    accent = NeverZeroTheme.streakColors.Wellness,
+                    modifier = Modifier.weight(1f)
                 )
             }
 
@@ -251,10 +255,11 @@ private fun StatMetric(
     title: String,
     value: String,
     icon: ImageVector,
-    accent: Color
+    accent: Color,
+    modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = Modifier.weight(1f),
+        modifier = modifier,
         color = accent.copy(alpha = 0.08f),
         shape = Shapes.large
     ) {

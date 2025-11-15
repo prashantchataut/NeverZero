@@ -52,6 +52,8 @@ class MainActivity : ComponentActivity() {
                         onSettingsHapticFeedbackToggle = viewModel::onSettingsHapticFeedbackToggle,
                         onSettingsCreateBackup = viewModel::onSettingsCreateBackup,
                         onSettingsRestoreBackup = viewModel::onSettingsRestoreBackup,
+                        onSettingsRestoreFileSelected = viewModel::onSettingsRestoreFromFile,
+                        onSettingsDismissRestoreDialog = viewModel::onSettingsDismissRestoreDialog,
                         onSettingsDismissMessage = viewModel::onSettingsDismissMessage
                     )
                 }

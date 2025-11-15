@@ -1,5 +1,6 @@
 package com.productivitystreak.ui.navigation
 
+import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -73,6 +74,8 @@ fun NeverZeroApp(
     onSettingsHapticFeedbackToggle: (Boolean) -> Unit = {},
     onSettingsCreateBackup: () -> Unit = {},
     onSettingsRestoreBackup: () -> Unit = {},
+    onSettingsRestoreFileSelected: (Uri) -> Unit = {},
+    onSettingsDismissRestoreDialog: () -> Unit = {},
     onSettingsDismissMessage: () -> Unit = {}
 ) {
     val navController = rememberNavController()
@@ -128,6 +131,12 @@ fun NeverZeroApp(
                     },
                     onNavigateToVocabulary = {
                         navController.navigate(NeverZeroDestination.Vocabulary.route)
+                    },
+                    onNavigateToStats = {
+                        navController.navigate(NeverZeroDestination.Stats.route)
+                    },
+                    onNavigateToDiscover = {
+                        navController.navigate(NeverZeroDestination.Discover.route)
                     }
                 )
             }
@@ -175,6 +184,8 @@ fun NeverZeroApp(
                     onHapticFeedbackToggle = onSettingsHapticFeedbackToggle,
                     onCreateBackup = onSettingsCreateBackup,
                     onRestoreBackup = onSettingsRestoreBackup,
+                    onRestoreFileSelected = onSettingsRestoreFileSelected,
+                    onDismissRestoreDialog = onSettingsDismissRestoreDialog,
                     onDismissMessage = onSettingsDismissMessage
                 )
             }
