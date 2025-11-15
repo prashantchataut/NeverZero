@@ -26,6 +26,7 @@ data class AppUiState(
     val onboardingState: OnboardingState = OnboardingState(),
     val settingsState: SettingsState = SettingsState(),
     val showOnboarding: Boolean = true,
+    val permissionState: PermissionUiState = PermissionUiState(),
     val isDataLoading: Boolean = false,
     val uiMessage: UiMessage? = null
 )

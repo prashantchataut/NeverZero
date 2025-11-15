@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowForwardIos
@@ -20,10 +21,10 @@ import androidx.compose.material.icons.rounded.Help
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Notifications
-import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Vibration
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -36,12 +37,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.productivitystreak.data.model.Quote
 import com.productivitystreak.ui.state.profile.LegalItem
 import com.productivitystreak.ui.state.profile.ProfileState
 import com.productivitystreak.ui.state.profile.ProfileTheme
 import com.productivitystreak.ui.state.profile.ReminderFrequency
-import com.productivitystreak.ui.theme.NeverZeroTheme
 import com.productivitystreak.ui.theme.Shapes
 import com.productivitystreak.ui.theme.Spacing
 
@@ -49,7 +51,7 @@ import com.productivitystreak.ui.theme.Spacing
 fun ProfileScreen(
     userName: String,
     state: ProfileState,
-    quote: com.productivitystreak.data.model.Quote?,
+    quote: Quote?,
     onRefreshQuote: () -> Unit,
     onToggleNotifications: (Boolean) -> Unit,
     onChangeReminderFrequency: (ReminderFrequency) -> Unit,
@@ -59,94 +61,72 @@ fun ProfileScreen(
     onNavigateToSettings: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
-    val gradient = Brush.verticalGradient(
-        listOf(
-            NeverZeroTheme.gradientColors.PremiumStart.copy(alpha = 0.08f),
-            NeverZeroTheme.gradientColors.PremiumEnd.copy(alpha = 0.08f)
-        )
-    )
+    val background = Brush.verticalGradient(listOf(Color(0xFFF3F6FF), Color(0xFFE8EDFF)))
 
-    Surface(modifier = Modifier.fillMaxSize(), color = Color.Transparent) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(gradient)
-                .verticalScroll(scrollState)
-                .padding(horizontal = Spacing.lg, vertical = Spacing.lg),
-            verticalArrangement = Arrangement.spacedBy(Spacing.lg)
-        ) {
-            ProfileHeader()
-            GreetingCard(userName = userName, quote = quote?.text, onRefreshQuote = onRefreshQuote)
-            QuickLinksCard(onNavigateToSettings = onNavigateToSettings)
-            NotificationPreferences(
-                notificationEnabled = state.notificationEnabled,
-                frequency = state.reminderFrequency,
-                hasWeeklySummary = state.hasWeeklySummary,
-                activeCategories = state.activeCategories,
-                onToggleNotifications = onToggleNotifications,
-                onChangeFrequency = onChangeReminderFrequency,
-                onToggleWeeklySummary = onToggleWeeklySummary
-            )
-            ThemeSection(theme = state.theme, onChangeTheme = onChangeTheme)
-            HapticsPreference(
-                enabled = state.hapticsEnabled,
-                onToggleHaptics = onToggleHaptics
-            )
-            LegalLinks(items = state.legalLinks)
-            Spacer(modifier = Modifier.height(Spacing.xxxl))
-        }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(background)
+            .verticalScroll(scrollState)
+            .padding(horizontal = 24.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        ProfileHeader()
+        ProfileHeroCard(userName = userName, quote = quote?.text, onRefreshQuote = onRefreshQuote)
+        ProfileOptionsCard(onNavigateToSettings = onNavigateToSettings)
+        PreferencesCard(
+            notificationEnabled = state.notificationEnabled,
+            reminderFrequency = state.reminderFrequency,
+            hasWeeklySummary = state.hasWeeklySummary,
+            hapticsEnabled = state.hapticsEnabled,
+            onToggleNotifications = onToggleNotifications,
+            onChangeReminderFrequency = onChangeReminderFrequency,
+            onToggleWeeklySummary = onToggleWeeklySummary,
+            onToggleHaptics = onToggleHaptics
+        )
+        SupportCard(items = state.legalLinks)
+        Text(
+            text = "Logout",
+            style = MaterialTheme.typography.bodyLarge,
+            color = Color(0xFF6A63FF),
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
 @Composable
 private fun ProfileHeader() {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        Text(
-            text = "Never Zero",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = "Profile",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(text = "Never Zero", style = MaterialTheme.typography.labelLarge, color = Color(0xFF7277A9))
+        Text(text = "Profile", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(text = "Manage your account and preferences.", style = MaterialTheme.typography.bodyMedium, color = Color(0xFF7C8095))
     }
 }
 
 @Composable
-private fun GreetingCard(userName: String, quote: String?, onRefreshQuote: () -> Unit) {
+private fun ProfileHeroCard(userName: String, quote: String?, onRefreshQuote: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color.White,
         shape = Shapes.extraLarge,
-        tonalElevation = 8.dp
+        color = Color.White,
+        tonalElevation = 10.dp
     ) {
         Column(
-            Modifier
+            modifier = Modifier
                 .fillMaxWidth()
-                .padding(Spacing.lg),
-            verticalArrangement = Arrangement.spacedBy(Spacing.md),
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Surface(
-                shape = CircleShape,
-                color = NeverZeroTheme.gradientColors.PremiumStart.copy(alpha = 0.15f)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Person,
-                    contentDescription = null,
-                    tint = NeverZeroTheme.gradientColors.PremiumStart,
-                    modifier = Modifier.padding(Spacing.lg)
-                )
+            Surface(shape = CircleShape, color = Color(0xFFE7E9FF)) {
+                Icon(imageVector = Icons.Rounded.Person, contentDescription = null, tint = Color(0xFF6A63FF), modifier = Modifier.padding(24.dp))
             }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = userName, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-                Text(
-                    text = "Joined January 2024",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(text = userName, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Text(text = "Joined January 2024", style = MaterialTheme.typography.bodyMedium, color = Color(0xFF7C8095))
             }
             TextButton(onClick = onRefreshQuote) {
                 Text(text = quote ?: "Build habits that last.")
@@ -156,98 +136,161 @@ private fun GreetingCard(userName: String, quote: String?, onRefreshQuote: () ->
 }
 
 @Composable
-private fun QuickLinksCard(onNavigateToSettings: () -> Unit) {
+private fun ProfileOptionsCard(onNavigateToSettings: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = Shapes.extraLarge,
         color = Color.White,
-        tonalElevation = 4.dp
+        tonalElevation = 6.dp
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Spacing.lg),
-            verticalArrangement = Arrangement.spacedBy(Spacing.sm)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(imageVector = Icons.Rounded.Person, contentDescription = null)
-                Spacer(modifier = Modifier.size(Spacing.sm))
-                Text(text = "Account", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Icon(imageVector = Icons.Rounded.ArrowForwardIos, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(imageVector = Icons.Rounded.ColorLens, contentDescription = null)
-                Spacer(modifier = Modifier.size(Spacing.sm))
-                Text(text = "Appearance", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Icon(imageVector = Icons.Rounded.ArrowForwardIos, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(imageVector = Icons.Rounded.Lock, contentDescription = null)
-                Spacer(modifier = Modifier.size(Spacing.sm))
-                Text(text = "Privacy", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Icon(imageVector = Icons.Rounded.ArrowForwardIos, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            TextButton(onClick = onNavigateToSettings, modifier = Modifier.align(Alignment.End)) {
-                Text(text = "Open Settings")
-            }
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)) {
+            ProfileOptionRow(icon = Icons.Rounded.Settings, title = "Account", subtitle = "Manage personal info", onClick = onNavigateToSettings)
+            Divider(color = Color(0xFFF0F0FF))
+            ProfileOptionRow(icon = Icons.Rounded.ColorLens, title = "Appearance", subtitle = "Theme & colors", onClick = onNavigateToSettings)
+            Divider(color = Color(0xFFF0F0FF))
+            ProfileOptionRow(icon = Icons.Rounded.Lock, title = "Privacy", subtitle = "Security & permissions", onClick = onNavigateToSettings)
         }
     }
 }
 
 @Composable
-private fun NotificationPreferences(
+private fun ProfileOptionRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Surface(shape = CircleShape, color = Color(0xFFEEF0FF)) {
+            Icon(imageVector = icon, contentDescription = null, tint = Color(0xFF6A63FF), modifier = Modifier.padding(12.dp))
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = Color(0xFF7C8095))
+        }
+        Icon(imageVector = Icons.Rounded.ArrowForwardIos, contentDescription = null, tint = Color(0xFFB0B3CC))
+    }
+}
+
+@Composable
+private fun PreferencesCard(
     notificationEnabled: Boolean,
-    frequency: ReminderFrequency,
+    reminderFrequency: ReminderFrequency,
     hasWeeklySummary: Boolean,
-    activeCategories: Set<String>,
+    hapticsEnabled: Boolean,
     onToggleNotifications: (Boolean) -> Unit,
-    onChangeFrequency: (ReminderFrequency) -> Unit,
-    onToggleWeeklySummary: (Boolean) -> Unit
+    onChangeReminderFrequency: (ReminderFrequency) -> Unit,
+    onToggleWeeklySummary: (Boolean) -> Unit,
+    onToggleHaptics: (Boolean) -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = Shapes.extraLarge,
         color = Color.White,
-        tonalElevation = 4.dp
+        tonalElevation = 6.dp
     ) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(Spacing.lg),
-            verticalArrangement = Arrangement.spacedBy(Spacing.md)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Rounded.Notifications, contentDescription = null, modifier = Modifier.size(Spacing.xl))
-                Spacer(Modifier.size(Spacing.sm))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Reminders", style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        text = if (notificationEnabled) "Stay nudged with friendly reminders" else "Notifications are off",
-                        style = MaterialTheme.typography.bodySmall
+        Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Text(text = "Preferences", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            PreferenceRow(
+                icon = Icons.Rounded.Notifications,
+                title = "Daily Reminder",
+                subtitle = if (notificationEnabled) "On" else "Off",
+                trailing = {
+                    Switch(
+                        checked = notificationEnabled,
+                        onCheckedChange = onToggleNotifications
                     )
                 }
-                Switch(checked = notificationEnabled, onCheckedChange = onToggleNotifications)
-            }
-            Text(text = "Frequency: ${frequency.name}")
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                ReminderFrequency.values().forEach { target ->
-                    TextButton(onClick = { onChangeFrequency(target) }) {
-                        Text(text = target.name)
-                    }
-                }
-            }
-            SwitchPreference(
-                label = "Weekly summary",
-                checked = hasWeeklySummary,
-                onCheckedChange = onToggleWeeklySummary
             )
-            if (activeCategories.isNotEmpty()) {
-                Text(
-                    text = "Active categories: ${activeCategories.joinToString()}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
+            PreferenceRow(
+                icon = Icons.Rounded.Palette,
+                title = "Reminder Time",
+                subtitle = reminderFrequency.name,
+                trailing = {
+                    TextButton(onClick = {
+                        val values = ReminderFrequency.values()
+                        val currentIndex = values.indexOf(reminderFrequency)
+                        val next = values[(currentIndex + 1) % values.size]
+                        onChangeReminderFrequency(next)
+                    }) { Text("Change") }
+                }
+            )
+            PreferenceRow(
+                icon = Icons.Rounded.Settings,
+                title = "Weekly Summary",
+                subtitle = if (hasWeeklySummary) "Enabled" else "Disabled",
+                trailing = {
+                    Switch(checked = hasWeeklySummary, onCheckedChange = onToggleWeeklySummary)
+                }
+            )
+            PreferenceRow(
+                icon = Icons.Rounded.Vibration,
+                title = "Haptics",
+                subtitle = if (hapticsEnabled) "Gentle feedback" else "Off",
+                trailing = {
+                    Switch(checked = hapticsEnabled, onCheckedChange = onToggleHaptics)
+                }
+            )
         }
+    }
+}
+
+@Composable
+private fun PreferenceRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    subtitle: String,
+    trailing: @Composable () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Surface(shape = CircleShape, color = Color(0xFFEEF0FF)) {
+            Icon(imageVector = icon, contentDescription = null, tint = Color(0xFF6A63FF), modifier = Modifier.padding(10.dp))
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = Color(0xFF7C8095))
+        }
+        trailing()
+    }
+}
+
+@Composable
+private fun SupportCard(items: List<LegalItem>) {
+    if (items.isEmpty()) return
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = Shapes.extraLarge,
+        color = Color.White,
+        tonalElevation = 6.dp
+    ) {
+        Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(text = "Support", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            SupportRow(icon = Icons.Rounded.Help, label = "Help & Support", value = items.firstOrNull()?.label ?: "Browse FAQs")
+            SupportRow(icon = Icons.Rounded.Info, label = "About", value = items.getOrNull(1)?.label ?: "Learn about Never Zero")
+        }
+    }
+}
+
+@Composable
+private fun SupportRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Surface(shape = CircleShape, color = Color(0xFFEEF0FF)) {
+            Icon(imageVector = icon, contentDescription = null, tint = Color(0xFF6A63FF), modifier = Modifier.padding(10.dp))
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = label, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Text(text = value, style = MaterialTheme.typography.bodySmall, color = Color(0xFF7C8095))
+        }
+        Icon(imageVector = Icons.Rounded.ArrowForwardIos, contentDescription = null, tint = Color(0xFFB0B3CC))
     }
 }
 

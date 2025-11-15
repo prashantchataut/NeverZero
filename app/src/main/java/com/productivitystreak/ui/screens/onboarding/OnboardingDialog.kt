@@ -1,7 +1,12 @@
 package com.productivitystreak.ui.screens.onboarding
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.with
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,11 +21,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Alarm
 import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -28,6 +32,10 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,11 +43,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.productivitystreak.ui.components.GradientButton
 import com.productivitystreak.ui.state.onboarding.OnboardingCategory
 import com.productivitystreak.ui.state.onboarding.OnboardingState
-import com.productivitystreak.ui.theme.NeverZeroTheme
 import com.productivitystreak.ui.theme.Shapes
 import com.productivitystreak.ui.theme.Spacing
 
@@ -55,29 +63,28 @@ fun OnboardingDialog(
     onComplete: () -> Unit
 ) {
     val isLastStep = state.currentStep >= state.totalSteps - 1
-    val gradientBrush = Brush.verticalGradient(
-        colors = listOf(
-            NeverZeroTheme.gradientColors.PremiumStart.copy(alpha = 0.15f),
-            NeverZeroTheme.gradientColors.PremiumEnd.copy(alpha = 0.15f)
+    val background = Brush.verticalGradient(
+        listOf(
+            Color(0xFFF2F6FF),
+            Color(0xFFE1E6FF)
         )
     )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(gradientBrush)
+            .background(background)
             .padding(horizontal = Spacing.xl, vertical = Spacing.xl)
     ) {
         Surface(
-            modifier = Modifier
-                .fillMaxSize(),
-            color = Color.White.copy(alpha = 0.92f),
-            shape = RoundedCornerShape(28.dp)
+            modifier = Modifier.fillMaxSize(),
+            shape = RoundedCornerShape(32.dp),
+            color = Color.White.copy(alpha = 0.92f)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = Spacing.xl, vertical = Spacing.xl),
+                    .padding(Spacing.xl),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.lg)) {
@@ -87,25 +94,38 @@ fun OnboardingDialog(
                         onDismiss = onDismiss
                     )
 
-                    when (state.currentStep) {
-                        0 -> WelcomeStep()
-                        1 -> CategoriesStep(state, onToggleCategory)
-                        else -> ReminderStep(state, onToggleNotifications, onReminderTimeSelected)
+                    AnimatedContent(
+                        targetState = state.currentStep,
+                        transitionSpec = {
+                            tween<IntSize>(250) with tween(250)
+                        }, label = "onboarding-step"
+                    ) { step ->
+                        when (step) {
+                            0 -> WelcomeStep()
+                            1 -> CategoriesStep(state, onToggleCategory)
+                            else -> GentleNudgeStep(state, onToggleNotifications, onReminderTimeSelected)
+                        }
                     }
                 }
 
-                Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
                     val primaryEnabled = when (state.currentStep) {
                         1 -> state.selectedCategories.size >= 3
                         else -> true
                     }
 
                     GradientButton(
-                        text = if (isLastStep) "Continue" else if (state.currentStep == 0) "Let's Begin" else "Continue",
-                        onClick = { if (isLastStep) onComplete() else onNext() },
+                        text = when {
+                            state.currentStep == 0 -> "Let's Begin"
+                            isLastStep -> "Confirm"
+                            else -> "Continue"
+                        },
+                        onClick = {
+                            if (isLastStep) onComplete() else onNext()
+                        },
                         gradientColors = listOf(
-                            NeverZeroTheme.gradientColors.PremiumStart,
-                            NeverZeroTheme.gradientColors.PremiumEnd
+                            Color(0xFF7C4DFF),
+                            Color(0xFF5B6BFF)
                         ),
                         modifier = Modifier.fillMaxWidth(),
                         enabled = primaryEnabled
@@ -113,22 +133,22 @@ fun OnboardingDialog(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (state.currentStep > 0) {
                             TextButton(onClick = onPrevious) {
-                                Text("Back", color = MaterialTheme.colorScheme.primary)
+                                Text("Back", color = Color(0xFF5B6BFF))
                             }
                         } else {
-                            Spacer(modifier = Modifier.width(Spacing.lg))
+                            Spacer(modifier = Modifier.width(Spacing.xl))
                         }
 
-                        val secondaryLabel = when {
-                            isLastStep -> "Skip for now"
-                            else -> "Maybe later"
-                        }
                         TextButton(onClick = if (isLastStep) onComplete else onDismiss) {
-                            Text(secondaryLabel, color = MaterialTheme.colorScheme.primary)
+                            Text(
+                                text = if (isLastStep) "Skip for now" else "Skip",
+                                color = Color(0xFF5B6BFF)
+                            )
                         }
                     }
                 }
@@ -143,7 +163,7 @@ private fun OnboardingHeader(
     totalSteps: Int,
     onDismiss: () -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -152,27 +172,34 @@ private fun OnboardingHeader(
             Text(
                 text = "Never Zero",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                fontWeight = FontWeight.SemiBold
             )
             TextButton(onClick = onDismiss) {
-                Text("Skip", color = MaterialTheme.colorScheme.primary)
+                Text("Close", color = Color(0xFF5B6BFF))
             }
         }
 
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-            Text(
-                text = "Step ${currentStep + 1} of $totalSteps",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            LinearProgressIndicator(
-                progress = (currentStep + 1f) / totalSteps,
-                modifier = Modifier.fillMaxWidth(),
-                trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                color = MaterialTheme.colorScheme.primary
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(6.dp)
+                .clip(RoundedCornerShape(50))
+                .background(Color(0xFFE0E5FF))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(((currentStep + 1f) / totalSteps).coerceIn(0f, 1f))
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(Color(0xFF5B6BFF))
             )
         }
+
+        Text(
+            text = "Step ${currentStep + 1} of $totalSteps",
+            style = MaterialTheme.typography.labelLarge,
+            color = Color(0xFF667085)
+        )
     }
 }
 
@@ -184,35 +211,48 @@ private fun WelcomeStep() {
         verticalArrangement = Arrangement.spacedBy(Spacing.lg)
     ) {
         Surface(
-            modifier = Modifier.size(140.dp),
+            modifier = Modifier.size(160.dp),
             shape = CircleShape,
             color = Color.White,
-            shadowElevation = 12.dp
+            tonalElevation = 8.dp,
+            border = BorderStroke(2.dp, Color(0xFFE8EAFF))
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Rounded.AutoAwesome,
-                    contentDescription = null,
-                    tint = NeverZeroTheme.gradientColors.PremiumStart,
-                    modifier = Modifier.size(64.dp)
-                )
+                PulsingRing()
             }
         }
 
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "Never Zero",
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1E1E36)
             )
+            Spacer(modifier = Modifier.height(Spacing.sm))
             Text(
                 text = "Build habits that last. Start your journey today.",
                 style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color(0xFF5F647C),
+                textAlign = TextAlign.Center
             )
         }
+    }
+}
+
+@Composable
+private fun PulsingRing() {
+    Box(contentAlignment = Alignment.Center) {
+        Surface(
+            modifier = Modifier.size(120.dp),
+            shape = CircleShape,
+            color = Color(0xFFF2F5FF)
+        ) {}
+        Surface(
+            modifier = Modifier.size(70.dp),
+            shape = CircleShape,
+            color = Color(0xFF7C4DFF)
+        ) {}
     }
 }
 
@@ -225,45 +265,33 @@ private fun CategoriesStep(
         Text(
             text = "What do you want to improve?",
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1E1E36)
         )
         Text(
             text = "Select at least 3 categories to start your journey.",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = Color(0xFF5F647C)
         )
 
-        CategoryGrid(
-            categories = state.categories,
-            selected = state.selectedCategories,
-            onToggle = onToggleCategory
-        )
-    }
-}
-
-@Composable
-private fun CategoryGrid(
-    categories: List<OnboardingCategory>,
-    selected: Set<String>,
-    onToggle: (String) -> Unit
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-        categories.chunked(2).forEach { rowItems ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(Spacing.md)
-            ) {
-                rowItems.forEach { category ->
-                    CategoryCard(
-                        category = category,
-                        selected = selected.contains(category.label),
-                        onToggle = { onToggle(category.label) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                if (rowItems.size == 1) {
-                    Spacer(modifier = Modifier.weight(1f))
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+            state.categories.chunked(2).forEach { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.md)
+                ) {
+                    row.forEach { category ->
+                        val isSelected = state.selectedCategories.contains(category.label)
+                        CategoryCard(
+                            label = category.label,
+                            accent = category.emoji,
+                            selected = isSelected,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            onToggleCategory(category.label)
+                        }
+                    }
+                    if (row.size == 1) Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }
@@ -272,77 +300,68 @@ private fun CategoryGrid(
 
 @Composable
 private fun CategoryCard(
-    category: OnboardingCategory,
+    label: String,
+    accent: String,
     selected: Boolean,
-    onToggle: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onToggle: () -> Unit
 ) {
-    val border = if (selected) {
-        BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-    } else {
-        BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
-    }
-
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .clip(Shapes.large),
+            .clickable(onClick = onToggle),
         shape = Shapes.large,
         color = Color.White,
-        tonalElevation = 6.dp,
-        border = border,
-        onClick = onToggle
+        tonalElevation = 4.dp,
+        border = BorderStroke(2.dp, if (selected) Color(0xFF5B6BFF) else Color(0xFFE7E9F7))
     ) {
         Column(
             modifier = Modifier
-                .padding(vertical = Spacing.lg)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(vertical = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Spacing.sm)
         ) {
+            Text(text = accent, style = MaterialTheme.typography.headlineMedium)
             Text(
-                text = category.emoji,
-                style = MaterialTheme.typography.headlineMedium
-            )
-            Text(
-                text = category.label,
+                text = label,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF1E1E36)
             )
-            if (selected) {
-                Icon(
-                    imageVector = Icons.Rounded.CheckCircle,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
+            Icon(
+                imageVector = if (selected) Icons.Rounded.CheckCircle else Icons.Rounded.RadioButtonUnchecked,
+                contentDescription = null,
+                tint = if (selected) Color(0xFF5B6BFF) else Color(0xFFD7DAF3)
+            )
         }
     }
 }
 
 @Composable
-private fun ReminderStep(
+private fun GentleNudgeStep(
     state: OnboardingState,
     onToggleNotifications: (Boolean) -> Unit,
     onReminderTimeSelected: (String) -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.lg)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
         Text(
-            text = "Set Reminders",
+            text = "Set a Gentle Nudge",
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1E1E36)
         )
         Text(
-            text = "Get gentle nudges to keep your streak going.",
+            text = "A little reminder to help you build momentum and never have a zero day.",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = Color(0xFF5F647C)
         )
 
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = Shapes.large,
-            tonalElevation = 6.dp
+            color = Color.White,
+            tonalElevation = 8.dp
         ) {
             Column(
                 modifier = Modifier
@@ -352,34 +371,122 @@ private fun ReminderStep(
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-                        Text(
-                            text = "Daily Reminders",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = "Receive one notification per day.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFFEEF0FF)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Alarm,
+                                contentDescription = null,
+                                tint = Color(0xFF5B6BFF),
+                                modifier = Modifier.padding(12.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(Spacing.md))
+                        Column {
+                            Text("Daily Reminder", fontWeight = FontWeight.Medium)
+                            Text(
+                                text = "Keeps your streak in motion",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFF7C8095)
+                            )
+                        }
                     }
                     Switch(
                         checked = state.allowNotifications,
                         onCheckedChange = onToggleNotifications,
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = MaterialTheme.colorScheme.primary
+                            checkedTrackColor = Color(0xFF5B6BFF),
+                            checkedThumbColor = Color.White
                         )
                     )
                 }
 
-                ReminderTimeSelector(
+                Text(
+                    text = "Reminder Time",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF5F647C)
+                )
+                TimePickerRow(
                     selectedTime = state.reminderTime,
-                    onSelect = onReminderTimeSelected
+                    onValueChange = onReminderTimeSelected
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TimePickerRow(
+    selectedTime: String,
+    onValueChange: (String) -> Unit
+) {
+    val parts = selectedTime.trim().split(" ")
+    val (hour, minute, period) = when {
+        parts.size == 3 -> Triple(parts[0], parts[1].removeSuffix(":"), parts[2])
+        else -> Triple("08", "30", "PM")
+    }
+    var selectedHour by remember(hour) { mutableStateOf(hour) }
+    var selectedMinute by remember(minute) { mutableStateOf(minute) }
+    var selectedPeriod by remember(period) { mutableStateOf(period) }
+
+    fun emit() {
+        onValueChange("$selectedHour:$selectedMinute $selectedPeriod")
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(28.dp))
+            .background(Color(0xFFF5F6FF))
+            .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TimeColumn("Hour", selectedHour, listOf("07", "08", "09")) {
+            selectedHour = it
+            emit()
+        }
+        TimeColumn("Minute", selectedMinute, listOf("29", "30", "31")) {
+            selectedMinute = it
+            emit()
+        }
+        TimeColumn("Period", selectedPeriod, listOf("AM", "PM")) {
+            selectedPeriod = it
+            emit()
+        }
+    }
+}
+
+@Composable
+private fun TimeColumn(
+    label: String,
+    value: String,
+    options: List<String>,
+    onSelected: (String) -> Unit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        options.forEach { option ->
+            val isSelected = option == value
+            Surface(
+                modifier = Modifier
+                    .padding(vertical = 4.dp)
+                    .clip(RoundedCornerShape(18.dp))
+                    .clickable { onSelected(option) },
+                color = if (isSelected) Color.White else Color.Transparent
+            ) {
+                Text(
+                    text = option,
+                    modifier = Modifier
+                        .width(48.dp)
+                        .padding(vertical = 6.dp),
+                    color = if (isSelected) Color(0xFF5B6BFF) else Color(0xFF7C8095),
+                    textAlign = TextAlign.Center,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }

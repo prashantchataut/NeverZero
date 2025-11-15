@@ -1,34 +1,23 @@
 package com.productivitystreak.ui.screens.stats
 
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,357 +29,223 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.productivitystreak.ui.state.stats.AverageDailyTrend
-import com.productivitystreak.ui.state.stats.CalendarHeatMap
-import com.productivitystreak.ui.state.stats.ConsistencyLevel
-import com.productivitystreak.ui.state.stats.ConsistencyScore
-import com.productivitystreak.ui.state.stats.HabitBreakdown
-import com.productivitystreak.ui.state.stats.HeatMapDay
+import com.productivitystreak.R
 import com.productivitystreak.ui.state.stats.LeaderboardEntry
 import com.productivitystreak.ui.state.stats.StatsState
 import com.productivitystreak.ui.state.stats.TrendPoint
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.roundToInt
-import kotlinx.coroutines.delay
 
 @Composable
 fun StatsScreen(state: StatsState) {
-    val listState = rememberLazyListState()
-    val cardSpacing = 18.dp
-    LazyColumn(
+    val gradient = Brush.verticalGradient(listOf(Color(0xFFF0F4FF), Color(0xFFEAE5FF)))
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        state = listState,
-        verticalArrangement = Arrangement.spacedBy(cardSpacing)
+            .background(gradient)
+            .padding(horizontal = 24.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        item {
-            SummaryCard(
-                title = "Current Longest Streak",
-                primaryValue = "${state.currentLongestStreak} days",
-                secondary = state.currentLongestStreakName.ifBlank { "Keep climbing" },
-                accent = MaterialTheme.colorScheme.primary,
-                index = 0
-            )
-        }
-        item {
-            SummaryCard(
-                title = "Average Daily Progress",
-                primaryValue = "${state.averageDailyProgressPercent}%",
-                secondary = "Consistency is built one check-in at a time.",
-                accent = MaterialTheme.colorScheme.secondary,
-                index = 1
-            )
-        }
-        state.averageDailyTrend?.let { trend ->
-            item {
-                TrendCard(trend)
-            }
-        }
-        state.calendarHeatMap?.let { heatMap ->
-            item {
-                CalendarHeatMapCard(heatMap)
-            }
-        }
-        if (state.streakConsistency.isNotEmpty()) {
-            item {
-                ConsistencySection(scores = state.streakConsistency)
-            }
-        }
-        if (state.habitBreakdown.isNotEmpty()) {
-            item {
-                Text(
-                    text = "Habit Breakdown",
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            items(state.habitBreakdown) { habit ->
-                HabitBreakdownRow(habit)
-            }
-        }
-        if (state.leaderboard.isNotEmpty()) {
-            item {
-                Text(
-                    text = "Community Leaderboard",
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            items(state.leaderboard) { entry ->
-                LeaderboardRow(entry)
-            }
-        }
-    }
-}
-
-@Composable
-private fun CalendarHeatMapCard(heatMap: CalendarHeatMap) {
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+        StatsHeader()
+        StatsHeroCard()
+        MetricsRow(
+            current = state.currentLongestStreak,
+            longestName = state.currentLongestStreakName,
+            average = state.averageDailyProgressPercent
         )
+        TrendSection(points = state.averageDailyTrend?.points.orEmpty())
+        LeaderboardSection(entries = state.leaderboard)
+    }
+}
+
+@Composable
+private fun StatsHeader() {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(text = "Never Zero", style = MaterialTheme.typography.labelLarge, color = Color(0xFF6C70A3))
+        Text(text = "Your Stats", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(text = "Track your progress and stay motivated.", style = MaterialTheme.typography.bodyMedium, color = Color(0xFF6F748C))
+    }
+}
+
+@Composable
+private fun StatsHeroCard() {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(32.dp),
+        color = Color.White,
+        tonalElevation = 12.dp
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        Row(
+            modifier = Modifier.padding(24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = "Momentum Map",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "${heatMap.completedDays}/${heatMap.totalDays} active days",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                AssistChip(
-                    onClick = {},
-                    enabled = false,
-                    label = { Text("Last ${heatMap.totalDays} days") },
-                    colors = AssistChipDefaults.assistChipColors(
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+            Surface(shape = CircleShape, color = Color(0xFFE6E9FF)) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_stats),
+                    contentDescription = null,
+                    tint = Color(0xFF6A63FF),
+                    modifier = Modifier.padding(20.dp)
                 )
             }
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                heatMap.weeks.forEach { week ->
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        week.days.forEach { day ->
-                            HeatMapCell(day)
-                        }
-                    }
-                }
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(text = "You're on a roll!", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(text = "Keep building your momentum.", style = MaterialTheme.typography.bodyMedium, color = Color(0xFF7C8095))
             }
-
-            HeatMapLegend()
         }
     }
 }
 
 @Composable
-private fun HeatMapCell(day: HeatMapDay) {
-    val baseColor = MaterialTheme.colorScheme.primary
-    val inactiveColor = MaterialTheme.colorScheme.surfaceVariant
-    val intensityColor = lerp(inactiveColor, baseColor, day.intensity)
-    val animatedScale by animateFloatAsState(
-        targetValue = if (day.isToday) 1.15f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-        label = "heat-map-scale"
-    )
-
-    Box(
-        modifier = Modifier
-            .size(24.dp)
-            .semantics {
-                contentDescription = "${day.date}: ${(day.intensity * 100).roundToInt()}%"
-            }
-            .graphicsLayer {
-                scaleX = animatedScale
-                scaleY = animatedScale
-            }
-            .background(intensityColor, RoundedCornerShape(6.dp))
-            .border(
-                width = if (day.isToday) 2.dp else 0.dp,
-                color = if (day.isToday) baseColor else Color.Transparent,
-                shape = RoundedCornerShape(6.dp)
-            )
-    )
-}
-
-@Composable
-private fun HeatMapLegend() {
+private fun MetricsRow(current: Int, longestName: String, average: Int) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "Less",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            listOf(0f, 0.33f, 0.66f, 1f).forEach { value ->
-                Box(
-                    modifier = Modifier
-                        .size(width = 28.dp, height = 8.dp)
-                        .background(
-                            color = lerp(
-                                MaterialTheme.colorScheme.surfaceVariant,
-                                MaterialTheme.colorScheme.primary,
-                                value
-                            ),
-                            shape = RoundedCornerShape(4.dp)
-                        )
-                )
-            }
+        MetricCard(title = "Current", value = "$current days")
+        MetricCard(title = "Longest", value = longestName.ifBlank { "Keep going" })
+        MetricCard(title = "Success", value = "$average%")
+    }
+}
+
+@Composable
+private fun MetricCard(title: String, value: String) {
+    Surface(
+        modifier = Modifier.weight(1f),
+        shape = RoundedCornerShape(24.dp),
+        color = Color.White,
+        tonalElevation = 8.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(vertical = 20.dp, horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(text = title, style = MaterialTheme.typography.labelLarge, color = Color(0xFF7C819C))
+            Text(text = value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         }
-        Text(
-            text = "More",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+    }
+}
+
+@Composable
+private fun TrendSection(points: List<TrendPoint>) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(32.dp),
+        color = Color.White,
+        tonalElevation = 8.dp
+    ) {
+        Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Column {
+                    Text(text = "Streak Trend", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(text = "Rolling performance", style = MaterialTheme.typography.bodySmall, color = Color(0xFF7C8095))
+                }
+                IconButton(onClick = { }) {
+                    Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_arrow_right), contentDescription = null, tint = Color(0xFF6A63FF))
+                }
+            }
+            TrendGraph(points = points)
+        }
+    }
+}
+
+@Composable
+private fun TrendGraph(points: List<TrendPoint>) {
+    val displayPoints = if (points.isEmpty()) listOf(TrendPoint("", 10), TrendPoint("", 30), TrendPoint("", 60)) else points
+    val path = remember(displayPoints) { android.graphics.Path() }
+    val hasAnimated = remember { mutableStateOf(false) }
+    LaunchedEffect(displayPoints) {
+        hasAnimated.value = false
+        kotlinx.coroutines.delay(100)
+        hasAnimated.value = true
+    }
+    val progress by animateFloatAsState(
+        targetValue = if (hasAnimated.value) 1f else 0f,
+        animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
+        label = "trend-progress"
+    )
+    androidx.compose.foundation.Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(160.dp)
+    ) {
+        if (displayPoints.size < 2) return@Canvas
+        val max = displayPoints.maxOf { it.percent }
+        val min = displayPoints.minOf { it.percent }
+        val range = (max - min).coerceAtLeast(1)
+        val stepX = size.width / (displayPoints.size - 1)
+        val animatedCount = (displayPoints.size * progress).coerceAtLeast(2f)
+        val drawPath = Path()
+        displayPoints.forEachIndexed { index, trend ->
+            if (index > animatedCount) return@forEachIndexed
+            val yRatio = (trend.percent - min) / range.toFloat()
+            val x = stepX * index
+            val y = size.height - (yRatio * size.height)
+            if (index == 0) drawPath.moveTo(x, y) else drawPath.lineTo(x, y)
+        }
+        drawPath(
+            path = drawPath,
+            color = Color(0xFF6A63FF),
+            style = Stroke(width = 6.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
         )
     }
 }
 
 @Composable
-private fun HabitBreakdownRow(habit: HabitBreakdown) {
-    Card(
+private fun LeaderboardSection(entries: List<LeaderboardEntry>) {
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
-        shape = RoundedCornerShape(18.dp)
+        shape = RoundedCornerShape(32.dp),
+        color = Color.White,
+        tonalElevation = 8.dp
     ) {
-        Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(text = habit.name, style = MaterialTheme.typography.titleSmall)
-            GradientBar(
-                value = habit.completionPercent / 100f,
-                accent = Color(android.graphics.Color.parseColor(habit.accentHex))
-            )
-            Text(
-                text = "${habit.completionPercent}% complete",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "Leaderboard", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(text = "View All", style = MaterialTheme.typography.labelLarge, color = Color(0xFF6A63FF))
+            }
+            if (entries.isEmpty()) {
+                Text(text = "No entries yet", style = MaterialTheme.typography.bodyMedium, color = Color(0xFF7C8095))
+            } else {
+                entries.take(3).forEach { entry ->
+                    LeaderboardRow(entry)
+                    if (entry != entries.take(3).last()) Divider(color = Color(0xFFF0F0FF))
+                }
+            }
         }
     }
 }
 
 @Composable
 private fun LeaderboardRow(entry: LeaderboardEntry) {
-    Card(
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-        ),
-        shape = RoundedCornerShape(18.dp)
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 18.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "#${entry.position}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = entry.name, style = MaterialTheme.typography.titleSmall)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Surface(shape = CircleShape, color = Color(0xFFEEF0FF)) {
                 Text(
-                    text = "${entry.streakDays} day streak",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = entry.position.toString(),
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF6A63FF)
                 )
             }
-            Text(
-                text = "🔥",
-                style = MaterialTheme.typography.headlineSmall
-            )
+            Column {
+                Text(text = entry.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(text = "${entry.streakDays} day streak", style = MaterialTheme.typography.bodySmall, color = Color(0xFF7C8095))
+            }
         }
-    }
-}
-
-@Composable
-private fun SummaryCard(
-    title: String,
-    primaryValue: String,
-    secondary: String,
-    accent: Color,
-    index: Int
-) {
-    val hasAnimated = remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        delay(100L * index)
-        hasAnimated.value = true
-    }
-    val alpha by animateFloatAsState(
-        targetValue = if (hasAnimated.value) 1f else 0f,
-        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing),
-        label = "summary-alpha"
-    )
-    val translation by animateFloatAsState(
-        targetValue = if (hasAnimated.value) 0f else 30f,
-        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing),
-        label = "summary-translation"
-    )
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .graphicsLayer {
-                this.alpha = alpha
-                translationY = translation
-            },
-        colors = CardDefaults.cardColors(
-            containerColor = accent.copy(alpha = 0.22f)
-        ),
-        shape = RoundedCornerShape(20.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(text = title, style = MaterialTheme.typography.labelMedium)
-            Text(text = primaryValue, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            Text(text = secondary, style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}
-
-@Composable
-private fun GradientBar(value: Float, accent: Color) {
-    val safeValue = value.coerceIn(0f, 1f)
-    val gradient = Brush.horizontalGradient(listOf(accent, accent.copy(alpha = 0.4f)))
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(12.dp)
-            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(60.dp))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth(safeValue)
-                .height(12.dp)
-                .background(gradient, RoundedCornerShape(60.dp))
-        ) {}
+        Text(text = "🔥", style = MaterialTheme.typography.titleLarge)
     }
 }
 

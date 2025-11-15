@@ -4,17 +4,30 @@ import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -76,7 +89,8 @@ fun NeverZeroApp(
     onSettingsRestoreBackup: () -> Unit = {},
     onSettingsRestoreFileSelected: (Uri) -> Unit = {},
     onSettingsDismissRestoreDialog: () -> Unit = {},
-    onSettingsDismissMessage: () -> Unit = {}
+    onSettingsDismissMessage: () -> Unit = {},
+    onPrimaryAction: () -> Unit = {}
 ) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -86,7 +100,7 @@ fun NeverZeroApp(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             if (shouldShowBottomBar(currentDestination?.route)) {
-                ModernNavigationBar(
+                NeverZeroNavigationBar(
                     destinations = bottomDestinations,
                     currentRoute = currentDestination?.route,
                     onNavigate = { destination ->
@@ -97,7 +111,8 @@ fun NeverZeroApp(
                             launchSingleTop = true
                             restoreState = true
                         }
-                    }
+                    },
+                    onPrimaryAction = onPrimaryAction
                 )
             }
         }
@@ -204,74 +219,116 @@ private fun shouldShowBottomBar(route: String?): Boolean {
  * Modern Navigation Bar with Material 3 design
  */
 @Composable
-private fun ModernNavigationBar(
+private fun NeverZeroNavigationBar(
     destinations: List<NeverZeroDestination>,
     currentRoute: String?,
-    onNavigate: (NeverZeroDestination) -> Unit
+    onNavigate: (NeverZeroDestination) -> Unit,
+    onPrimaryAction: () -> Unit
 ) {
+    val backgroundGradient = Brush.verticalGradient(
+        listOf(
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+            MaterialTheme.colorScheme.surface
+        )
+    )
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        tonalElevation = Elevation.level2,
+        color = Color.Transparent,
         shadowElevation = Elevation.level3
     ) {
-        NavigationBar(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(Size.bottomNavHeight),
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            tonalElevation = 0.dp
+                .background(backgroundGradient)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            destinations.forEach { destination ->
-                val selected = currentRoute == destination.route
-
-                val iconScale by animateFloatAsState(
-                    targetValue = if (selected) 1.1f else 1f,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    ),
-                    label = "iconScale"
-                )
-
-                NavigationBarItem(
-                    selected = selected,
-                    onClick = { onNavigate(destination) },
-                    icon = {
-                        destination.icon?.let { icon ->
-                            Box(
-                                modifier = Modifier
-                                    .size(Size.iconLarge)
-                                    .animateContentSize()
-                            ) {
-                                Icon(
-                                    imageVector = icon,
-                                    contentDescription = destination.label,
-                                    modifier = Modifier
-                                        .size(Size.iconMedium)
-                                        .graphicsLayer {
-                                            scaleX = iconScale
-                                            scaleY = iconScale
-                                        }
-                                )
-                            }
-                        }
-                    },
-                    label = {
-                        Text(
-                            text = destination.label,
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
-                        )
-                    },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        selectedTextColor = MaterialTheme.colorScheme.onSurface,
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                destinations.forEachIndexed { index, destination ->
+                    NavigationPill(
+                        destination = destination,
+                        selected = currentRoute == destination.route,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onNavigate(destination) }
                     )
+
+                    if (index < destinations.lastIndex) {
+                        Spacer(modifier = Modifier.width(12.dp))
+                        PrimaryActionDivider(onClick = onPrimaryAction)
+                        Spacer(modifier = Modifier.width(12.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun NavigationPill(
+    destination: NeverZeroDestination,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    val targetColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    val textColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+    val iconTint = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+
+    Surface(
+        modifier = modifier.height(56.dp),
+        shape = CircleShape,
+        tonalElevation = if (selected) Elevation.level2 else Elevation.level1,
+        color = targetColor,
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            destination.icon?.let { icon ->
+                Icon(
+                    painter = rememberVectorPainter(icon),
+                    contentDescription = destination.label,
+                    tint = iconTint
+                )
+            }
+            Text(
+                text = destination.label,
+                style = MaterialTheme.typography.labelLarge,
+                color = textColor,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+@Composable
+private fun PrimaryActionDivider(onClick: () -> Unit) {
+    Box(contentAlignment = Alignment.Center) {
+        Surface(
+            modifier = Modifier
+                .height(60.dp)
+                .clip(CircleShape),
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primary,
+            shadowElevation = Elevation.level3,
+            onClick = onClick
+        ) {
+            Box(
+                modifier = Modifier
+                    .height(60.dp)
+                    .padding(12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Add,
+                    contentDescription = "Primary Action",
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }

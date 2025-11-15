@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
@@ -32,97 +32,68 @@ import com.productivitystreak.ui.state.discover.ChallengeItem
 import com.productivitystreak.ui.state.discover.DiscoverState
 import com.productivitystreak.ui.state.discover.FeaturedContent
 import com.productivitystreak.ui.state.discover.SuggestionItem
-import com.productivitystreak.ui.theme.NeverZeroTheme
 import com.productivitystreak.ui.theme.Shapes
 import com.productivitystreak.ui.theme.Spacing
 
 @Composable
 fun DiscoverScreen(state: DiscoverState) {
-    val gradient = Brush.verticalGradient(
-        listOf(
-            NeverZeroTheme.gradientColors.PremiumStart.copy(alpha = 0.08f),
-            NeverZeroTheme.gradientColors.PremiumEnd.copy(alpha = 0.08f)
-        )
-    )
-
-    Box(
+    val gradient = Brush.verticalGradient(listOf(Color(0xFFF1F4FF), Color(0xFFECE8FF)))
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(gradient)
+            .padding(horizontal = 24.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = Spacing.lg, vertical = Spacing.lg),
-            verticalArrangement = Arrangement.spacedBy(Spacing.lg)
-        ) {
-            DiscoverHeader()
-            StayInspiredCard(content = state.featuredContent)
-            SuggestionsSection(items = state.suggestions)
-            CommunitySection(challenges = state.communityChallenges)
-            Spacer(modifier = Modifier.height(Spacing.xxxl))
-        }
+        DiscoverHeader()
+        InspirationCard(content = state.featuredContent)
+        SuggestionsSection(items = state.suggestions)
+        CommunitySection(challenges = state.communityChallenges)
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
 @Composable
 private fun DiscoverHeader() {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        Text(
-            text = "Never Zero",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = "Discover",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(text = "Never Zero", style = MaterialTheme.typography.labelLarge, color = Color(0xFF7176A3))
+        Text(text = "Discover", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(text = "Stay inspired with new ideas.", style = MaterialTheme.typography.bodyMedium, color = Color(0xFF7A7F96))
     }
 }
 
 @Composable
-private fun StayInspiredCard(content: FeaturedContent) {
+private fun InspirationCard(content: FeaturedContent) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color.White,
         shape = Shapes.extraLarge,
-        tonalElevation = 8.dp
+        color = Color.White,
+        tonalElevation = 10.dp
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Spacing.lg),
-            verticalArrangement = Arrangement.spacedBy(Spacing.md)
+            modifier = Modifier.padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Stay Inspired",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                TextButton(onClick = {}) {
-                    Text("View All")
-                }
-            }
-
+            Text(text = "Stay Inspired", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Text(
                 text = content.description.ifBlank { "The secret of getting ahead is getting started." },
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color(0xFF7A7F96)
             )
-
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp),
+                    .height(140.dp),
                 shape = Shapes.large,
-                color = Color(android.graphics.Color.parseColor(content.accentHex)).copy(alpha = 0.1f)
+                color = Color(0xFFE7E9FF)
             ) {}
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Column {
+                    Text(text = "Add new habits", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
+                    Text(text = "Curated ideas daily", style = MaterialTheme.typography.bodySmall, color = Color(0xFF7A7F96))
+                }
+                TextButton(onClick = {}) { Text("View All") }
+            }
         }
     }
 }
@@ -130,50 +101,28 @@ private fun StayInspiredCard(content: FeaturedContent) {
 @Composable
 private fun SuggestionsSection(items: List<SuggestionItem>) {
     if (items.isEmpty()) return
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-        Text(
-            text = "New Habits to Try",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
-        )
-
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text(text = "New Habits to Try", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         items.forEach { suggestion ->
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = Shapes.large,
                 color = Color.White,
-                tonalElevation = 4.dp
+                tonalElevation = 6.dp
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-                        Text(
-                            text = suggestion.title,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = suggestion.subtitle,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(text = suggestion.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
+                        Text(text = suggestion.subtitle, style = MaterialTheme.typography.bodySmall, color = Color(0xFF7A7F96))
                     }
-
-                    Surface(
-                        shape = CircleShape,
-                        color = NeverZeroTheme.gradientColors.PremiumStart.copy(alpha = 0.1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Add,
-                            contentDescription = null,
-                            tint = NeverZeroTheme.gradientColors.PremiumStart,
-                            modifier = Modifier.padding(Spacing.sm)
-                        )
+                    Surface(shape = CircleShape, color = Color(0xFFEEF0FF)) {
+                        Icon(imageVector = Icons.Rounded.Add, contentDescription = null, tint = Color(0xFF6860FF), modifier = Modifier.padding(10.dp))
                     }
                 }
             }
@@ -183,17 +132,9 @@ private fun SuggestionsSection(items: List<SuggestionItem>) {
 
 @Composable
 private fun CommunitySection(challenges: List<ChallengeItem>) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-        Text(
-            text = "Community",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.md)
-        ) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text(text = "Community", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             CommunityCard(
                 title = "Join a Group",
                 subtitle = challenges.firstOrNull()?.title ?: "Find like-minded people",
@@ -218,31 +159,19 @@ private fun RowScope.CommunityCard(
         modifier = Modifier.weight(1f),
         shape = Shapes.large,
         color = Color.White,
-        tonalElevation = 4.dp
+        tonalElevation = 6.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(Spacing.lg),
-            verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Surface(
-                shape = CircleShape,
-                color = NeverZeroTheme.gradientColors.PremiumEnd.copy(alpha = 0.1f)
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = NeverZeroTheme.gradientColors.PremiumEnd,
-                    modifier = Modifier.padding(Spacing.sm)
-                )
+            Surface(shape = CircleShape, color = Color(0xFFEEF0FF)) {
+                Icon(imageVector = icon, contentDescription = null, tint = Color(0xFF6A63FF), modifier = Modifier.padding(10.dp))
             }
             Text(text = title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = Color(0xFF7A7F96))
         }
     }
 }
