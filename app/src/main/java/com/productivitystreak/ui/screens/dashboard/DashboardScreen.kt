@@ -15,14 +15,18 @@ import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddCircleOutline
 import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material.icons.rounded.EmojiEvents
+import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material.icons.rounded.Task
 import androidx.compose.material3.*
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,7 +64,9 @@ fun DashboardScreen(
     onSelectStreak: (String) -> Unit,
     onToggleTask: (String) -> Unit,
     onNavigateToReading: () -> Unit,
-    onNavigateToVocabulary: () -> Unit
+    onNavigateToVocabulary: () -> Unit,
+    onNavigateToStats: () -> Unit,
+    onNavigateToDiscover: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     val gradient = Brush.verticalGradient(
@@ -86,6 +92,7 @@ fun DashboardScreen(
 
             StreakSummaryCard(
                 streakDays = state.statsState.currentLongestStreak.takeIf { it > 0 }
+
                     ?: state.streaks.firstOrNull()?.currentCount ?: 0,
                 onRefreshQuote = onRefreshQuote
             )
@@ -96,6 +103,216 @@ fun DashboardScreen(
                 author = state.quote?.author,
                 isLoading = state.isQuoteLoading,
                 onRefreshClick = onRefreshQuote
+            )
+
+            ProgressOverviewCard(
+                completedTasks = state.todayTasks.count { it.isCompleted },
+                totalTasks = state.todayTasks.size,
+                activeStreaks = state.streaks.size,
+                longestStreak = state.statsState.currentLongestStreak,
+                onNavigateToStats = onNavigateToStats,
+                onNavigateToDiscover = onNavigateToDiscover
+            )
+
+            StreaksSection(
+                streaks = state.streaks,
+                selectedId = state.selectedStreakId,
+                onSelectStreak = onSelectStreak
+            )
+
+            TodayTasksCard(
+                tasks = state.todayTasks,
+                onToggleTask = onToggleTask,
+                onNavigateToReading = onNavigateToReading,
+                onNavigateToVocabulary = onNavigateToVocabulary
+            )
+
+            Spacer(modifier = Modifier.height(Spacing.xxxl))
+        }
+    }
+}
+
+@Composable
+private fun ProgressOverviewCard(
+    completedTasks: Int,
+    totalTasks: Int,
+    activeStreaks: Int,
+    longestStreak: Int,
+    onNavigateToStats: () -> Unit,
+    onNavigateToDiscover: () -> Unit
+) {
+    val completionFraction = if (totalTasks > 0) completedTasks / totalTasks.toFloat() else 0f
+    val completionPercent = (completionFraction * 100).roundToInt()
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 6.dp,
+        shape = Shapes.extraLarge
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(Spacing.md)
+        ) {
+            Text(
+                text = "Today's Momentum",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "$completionPercent% of daily goals",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = "$completedTasks/$totalTasks tasks",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                LinearProgressIndicator(
+                    progress = { completionFraction.coerceIn(0f, 1f) },
+                    modifier = Modifier.fillMaxWidth(),
+                    color = NeverZeroTheme.gradientColors.PremiumStart
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.md)
+            ) {
+                StatMetric(
+                    title = "Active Streaks",
+                    value = activeStreaks.toString(),
+                    icon = Icons.Rounded.AutoAwesome,
+                    accent = NeverZeroTheme.streakColors.Productivity
+                )
+                StatMetric(
+                    title = "Longest Run",
+                    value = "$longestStreak d",
+                    icon = Icons.Rounded.LocalFireDepartment,
+                    accent = NeverZeroTheme.streakColors.Wellness
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+            ) {
+                AssistChip(
+                    onClick = onNavigateToStats,
+                    label = {
+                        Text("View Stats")
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Rounded.BarChart,
+                            contentDescription = null,
+                            modifier = Modifier.size(Size.iconSmall)
+                        )
+                    },
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                    )
+                )
+
+                AssistChip(
+                    onClick = onNavigateToDiscover,
+                    label = {
+                        Text("Discover Ideas")
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Rounded.Explore,
+                            contentDescription = null,
+                            modifier = Modifier.size(Size.iconSmall)
+                        )
+                    },
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f)
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatMetric(
+    title: String,
+    value: String,
+    icon: ImageVector,
+    accent: Color
+) {
+    Surface(
+        modifier = Modifier.weight(1f),
+        color = accent.copy(alpha = 0.08f),
+        shape = Shapes.large
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.md),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+        ) {
+            Surface(
+                modifier = Modifier.size(Size.iconLarge),
+                shape = Shapes.medium,
+                color = accent
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(Size.iconMedium)
+                    )
+                }
+            }
+
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    }
+}
+            )
+
+            DailyInspirationCard(
+                quote = state.quote?.text
+                    ?: "The secret of getting ahead is getting started.",
+                author = state.quote?.author,
+                isLoading = state.isQuoteLoading,
+                onRefreshClick = onRefreshQuote
+            )
+
+            ProgressOverviewCard(
+                completedTasks = state.todayTasks.count { it.isCompleted },
+                totalTasks = state.todayTasks.size,
+                activeStreaks = state.streaks.size,
+                longestStreak = state.statsState.currentLongestStreak,
+                onNavigateToStats = onNavigateToStats,
+                onNavigateToDiscover = onNavigateToDiscover
             )
 
             StreaksSection(
