@@ -23,6 +23,10 @@ android {
     buildFeatures {
         buildConfig = false
     }
+
+    configurations.all {
+        exclude(group = "androidx.compose.ui", module = "ui-release")
+    }
 }
 
 dependencies {
