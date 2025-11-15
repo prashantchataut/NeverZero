@@ -16,4 +16,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "ProductivityStreak"
 include(":app")
-include(":uiOverrides")
