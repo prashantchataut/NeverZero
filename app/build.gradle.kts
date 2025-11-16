@@ -9,6 +9,7 @@ plugins {
 
 configurations.all {
     exclude(group = "androidx.compose.ui", module = "ui-release")
+    exclude(group = "androidx.compose.ui", module = "ui-android")
 }
 
 android {
@@ -148,6 +149,7 @@ dependencies {
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
+    implementation(files("libs/ui-release-fixed/ui-release.aar"))
 }
 
 // Configure Kover for code coverage
