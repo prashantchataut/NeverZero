@@ -245,7 +245,6 @@ private fun StepIndicator(currentStep: Int, totalSteps: Int) {
 }
 
 @Composable
-@Composable
 private fun GoalStep(goal: String, onGoalSelected: (String) -> Unit) {
     var localGoal by remember(goal) { mutableStateOf(goal) }
     val suggestions = listOf("Read 5 minutes", "Meditate 10 minutes", "Walk 1 km", "Journal nightly")

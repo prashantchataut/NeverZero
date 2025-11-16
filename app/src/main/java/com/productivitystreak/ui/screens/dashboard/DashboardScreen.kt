@@ -59,7 +59,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.productivitystreak.data.model.Streak
-import com.productivitystreak.ui.R
 import com.productivitystreak.ui.state.AppUiState
 import com.productivitystreak.ui.state.DashboardTask
 import com.productivitystreak.ui.theme.Border
@@ -67,6 +66,7 @@ import com.productivitystreak.ui.theme.Shapes
 import com.productivitystreak.ui.theme.Spacing
 import java.time.LocalTime
 import kotlin.math.roundToInt
+import com.productivitystreak.R
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -92,6 +92,84 @@ fun DashboardScreen(
     val selectedStreak = state.streaks.firstOrNull { it.id == state.selectedStreakId } ?: state.streaks.firstOrNull()
     val headlineQuote = state.quote?.text ?: "The secret of getting ahead is getting started."
     val completedTasks = state.todayTasks.count { it.isCompleted }
+    val pendingTask = state.todayTasks.firstOrNull { !it.isCompleted }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(gradient)
+            .verticalScroll(scrollState)
+            .padding(horizontal = 24.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        DashboardTopBar(userName = state.userName)
+
+        HeroStreakCard(
+            streak = selectedStreak,
+            totalStreaks = state.streaks.size,
+            onRefreshQuote = onRefreshQuote
+        )
+
+        QuickActionsRow(
+            onNavigateToReading = onNavigateToReading,
+            onNavigateToVocabulary = onNavigateToVocabulary,
+            onNavigateToStats = onNavigateToStats,
+            onNavigateToDiscover = onNavigateToDiscover
+        )
+
+        if (state.streaks.isEmpty()) {
+            FirstTimeChecklist(
+                notificationsEnabled = state.profileState.notificationEnabled,
+                hasLoggedToday = state.todayTasks.any { it.isCompleted },
+                onAddHabit = onNavigateToDiscover,
+                onEnableNotifications = onEnableNotifications,
+                onReviewProgress = onNavigateToStats,
+                goalHabit = state.onboardingState.goalHabit,
+                commitmentMinutes = state.onboardingState.commitmentDurationMinutes,
+                commitmentFrequency = state.onboardingState.commitmentFrequencyPerWeek
+            )
+        }
+
+        if (!state.profileState.notificationEnabled) {
+            NotificationNudgeCard(onEnableNotifications = onEnableNotifications)
+        }
+
+        HabitCalloutCard(onNavigateToDiscover = onNavigateToDiscover)
+
+        StreakGridSection(
+            streaks = state.streaks,
+            selectedId = state.selectedStreakId,
+            onSelectStreak = onSelectStreak,
+            onAddHabit = onNavigateToDiscover
+        )
+
+        PrimaryActionButton(
+            label = if (pendingTask == null) stringResource(R.string.dashboard_label_all_streaks_logged) else stringResource(
+                R.string.dashboard_button_log_streak
+            ),
+            enabled = pendingTask != null,
+            onClick = { pendingTask?.let { onToggleTask(it.id) } }
+        )
+
+        DailyInspirationPanel(
+            quote = headlineQuote,
+            author = state.quote?.author,
+            isLoading = state.isQuoteLoading,
+            onRefresh = onRefreshQuote
+        )
+
+        TaskListSection(
+            tasks = state.todayTasks,
+            completedTasks = completedTasks,
+            onToggleTask = onToggleTask
+        )
+
+        CommunityTeaser(
+            onNavigateToDiscover = onNavigateToDiscover
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
 
 @Composable
 private fun FirstTimeChecklist(
@@ -199,84 +277,6 @@ private fun NotificationNudgeCard(onEnableNotifications: () -> Unit) {
         }
     }
 }
-    val pendingTask = state.todayTasks.firstOrNull { !it.isCompleted }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(gradient)
-            .verticalScroll(scrollState)
-            .padding(horizontal = 24.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        DashboardTopBar(userName = state.userName)
-
-        HeroStreakCard(
-            streak = selectedStreak,
-            totalStreaks = state.streaks.size,
-            onRefreshQuote = onRefreshQuote
-        )
-
-        QuickActionsRow(
-            onNavigateToReading = onNavigateToReading,
-            onNavigateToVocabulary = onNavigateToVocabulary,
-            onNavigateToStats = onNavigateToStats,
-            onNavigateToDiscover = onNavigateToDiscover
-        )
-
-        if (state.streaks.isEmpty()) {
-            FirstTimeChecklist(
-                notificationsEnabled = state.profileState.notificationEnabled,
-                hasLoggedToday = state.todayTasks.any { it.isCompleted },
-                onAddHabit = onNavigateToDiscover,
-                onEnableNotifications = onEnableNotifications,
-                onReviewProgress = onNavigateToStats,
-                goalHabit = state.onboardingState.goalHabit,
-                commitmentMinutes = state.onboardingState.commitmentDurationMinutes,
-                commitmentFrequency = state.onboardingState.commitmentFrequencyPerWeek
-            )
-        }
-
-        if (!state.profileState.notificationEnabled) {
-            NotificationNudgeCard(onEnableNotifications = onEnableNotifications)
-        }
-
-        HabitCalloutCard(onNavigateToDiscover = onNavigateToDiscover)
-
-        StreakGridSection(
-            streaks = state.streaks,
-            selectedId = state.selectedStreakId,
-            onSelectStreak = onSelectStreak,
-            onAddHabit = onNavigateToDiscover
-        )
-
-        PrimaryActionButton(
-            label = if (pendingTask == null) stringResource(R.string.dashboard_label_all_streaks_logged) else stringResource(
-                R.string.dashboard_button_log_streak
-            ),
-            enabled = pendingTask != null,
-            onClick = { pendingTask?.let { onToggleTask(it.id) } }
-        )
-
-        DailyInspirationPanel(
-            quote = headlineQuote,
-            author = state.quote?.author,
-            isLoading = state.isQuoteLoading,
-            onRefresh = onRefreshQuote
-        )
-
-        TaskListSection(
-            tasks = state.todayTasks,
-            completedTasks = completedTasks,
-            onToggleTask = onToggleTask
-        )
-
-        CommunityTeaser(
-            onNavigateToDiscover = onNavigateToDiscover
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-    }
-}
 
 @Composable
 private fun DashboardTopBar(userName: String) {
@@ -298,8 +298,8 @@ private fun DashboardTopBar(userName: String) {
             Text(text = "$greeting, $userName", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         }
         Surface(shape = CircleShape, tonalElevation = 6.dp, color = MaterialTheme.colorScheme.surfaceVariant) {
-            IconButton(onClick = {}, contentDescription = stringResource(R.string.cd_profile_avatar)) {
-                Icon(imageVector = Icons.Rounded.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            IconButton(onClick = {}) {
+                Icon(imageVector = Icons.Rounded.Person, contentDescription = stringResource(R.string.cd_profile_avatar), tint = MaterialTheme.colorScheme.primary)
             }
         }
     }
