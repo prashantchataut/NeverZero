@@ -35,6 +35,8 @@ jobs:
   build:
     name: Build Signed Release APK
     runs-on: ubuntu-latest
+    env:
+      GRADLE_USER_HOME: ${{ github.workspace }}/.gradle-user-home
     outputs:
       short_sha: ${{ steps.set_sha.outputs.short_sha }}
     steps:
@@ -45,6 +47,16 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+
+      - name: Cache Gradle files
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.GRADLE_USER_HOME }}/caches
+            ${{ env.GRADLE_USER_HOME }}/wrapper
+          key: gradle-v2-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/settings.gradle*') }}
+          restore-keys: |
+            gradle-v2-${{ runner.os }}-
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
