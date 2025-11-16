@@ -1586,4 +1586,12 @@ class AppViewModel(
             )
         }
     }
+
+    private fun deriveReminderFrequency(frequencyPerWeek: Int): ReminderFrequency {
+        return when {
+            frequencyPerWeek >= 7 -> ReminderFrequency.Daily
+            frequencyPerWeek > 0 -> ReminderFrequency.Weekly
+            else -> ReminderFrequency.None
+        }
+    }
 }
