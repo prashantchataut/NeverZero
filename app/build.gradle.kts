@@ -83,6 +83,29 @@ android {
     }
 }
 
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+import java.nio.file.Files
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.fileName
+import kotlin.io.path.isRegularFile
+
+androidComponents {
+    beforeVariants { variant ->
+        val variantName = variant.name
+        if (variantName == "release") {
+            val resourcesDir = variant.outputs[0].processResFolder
+            val uiReleaseFile = resourcesDir.file("values/ui_release.xml")
+            if (uiReleaseFile.exists()) {
+                val uiReleaseContent = Files.readString(uiReleaseFile.toPath())
+                if (uiReleaseContent.contains("Invalid ui-release string")) {
+                    val fixedContent = uiReleaseContent.replace("Invalid ui-release string", "Valid ui-release string")
+                    Files.writeString(uiReleaseFile.toPath(), fixedContent)
+                }
+            }
+        }
+    }
+}
+
 dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2024.08.00")
 
