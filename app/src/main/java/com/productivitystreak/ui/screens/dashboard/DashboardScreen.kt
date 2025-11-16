@@ -58,8 +58,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.productivitystreak.R
 import com.productivitystreak.data.model.Streak
-import com.productivitystreak.ui.R
 import com.productivitystreak.ui.state.AppUiState
 import com.productivitystreak.ui.state.DashboardTask
 import com.productivitystreak.ui.theme.Border
@@ -94,7 +94,7 @@ fun DashboardScreen(
     val completedTasks = state.todayTasks.count { it.isCompleted }
 
 @Composable
-private fun FirstTimeChecklist(
+fun FirstTimeChecklist(
     notificationsEnabled: Boolean,
     hasLoggedToday: Boolean,
     onAddHabit: () -> Unit,
@@ -140,7 +140,7 @@ private fun FirstTimeChecklist(
 }
 
 @Composable
-private fun ChecklistRow(
+fun ChecklistRow(
     title: String,
     description: String,
     completed: Boolean,
@@ -172,7 +172,7 @@ private fun ChecklistRow(
 }
 
 @Composable
-private fun NotificationNudgeCard(onEnableNotifications: () -> Unit) {
+fun NotificationNudgeCard(onEnableNotifications: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = Shapes.extraLarge,
@@ -331,7 +331,7 @@ private fun HeroStreakCard(
                     Text(text = "$totalStreaks active streaks", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 TextButton(onClick = onRefreshQuote) {
-                    Text(text = stringResource(id = R.string.dashboard_action_get_motivated))
+                    Text(text = stringResource(id = R.string.action_change))
                 }
             }
 
@@ -364,7 +364,7 @@ private fun HeroStreakCard(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(text = "Today's Progress", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     LinearProgressIndicator(
-                        progress = { streak.progress.coerceIn(0f, 1f) },
+                        progress = streak.progress.coerceIn(0f, 1f),
                         color = MaterialTheme.colorScheme.primary,
                         trackColor = MaterialTheme.colorScheme.surfaceVariant
                     )
@@ -531,7 +531,7 @@ private fun StreakCard(
             Text(text = streak.category, style = MaterialTheme.typography.bodySmall, color = Color(0xFF7C819C))
             Spacer(modifier = Modifier.height(4.dp))
             LinearProgressIndicator(
-                progress = { streak.progress.coerceIn(0f, 1f) },
+                progress = streak.progress.coerceIn(0f, 1f),
                 color = accent.first,
                 trackColor = accent.second.copy(alpha = 0.4f)
             )

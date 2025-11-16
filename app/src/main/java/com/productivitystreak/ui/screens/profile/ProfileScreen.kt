@@ -32,6 +32,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -179,9 +181,6 @@ private fun ProfileHeroCard(
                     }
                 }
             }
-            Button(onClick = onManageAccount, shape = RoundedCornerShape(24.dp)) {
-                Text(text = "Manage account & settings")
-            }
         }
     }
 }
@@ -253,9 +252,6 @@ private fun NotificationPermissionCard(onEnable: () -> Unit) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color(0xFF8A5A10)
             )
-            Button(onClick = onEnable, shape = RoundedCornerShape(24.dp)) {
-                Text("Enable reminders")
-            }
         }
     }
 }
@@ -469,7 +465,7 @@ private fun LegalLinks(items: List<LegalItem>) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(text = item.label, style = MaterialTheme.typography.bodyMedium)
-                    Icon(imageVector = Icons.Rounded.Info, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Icon(imageVector = Icons.Rounded.ArrowForwardIos, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }

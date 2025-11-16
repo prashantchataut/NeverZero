@@ -105,7 +105,6 @@ fun NeverZeroApp(
             }
         },
         floatingActionButtonPosition = FabPosition.Center,
-        isFloatingActionButtonDocked = true,
         bottomBar = {
             if (shouldShowBottomBar(currentDestination?.route)) {
                 NeverZeroNavigationBar(
@@ -175,8 +174,6 @@ fun NeverZeroApp(
                 ProfileScreen(
                     userName = uiState.userName,
                     state = uiState.profileState,
-                    quote = uiState.quote,
-                    onRefreshQuote = onRefreshQuote,
                     onToggleNotifications = onToggleNotifications,
                     onChangeReminderFrequency = onChangeReminderFrequency,
                     onToggleWeeklySummary = onToggleWeeklySummary,

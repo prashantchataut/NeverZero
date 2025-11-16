@@ -52,14 +52,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.productivitystreak.ui.components.GradientButton
 import com.productivitystreak.ui.state.onboarding.OnboardingCategory
 import com.productivitystreak.ui.state.onboarding.OnboardingState
-import com.productivitystreak.ui.R
+import com.productivitystreak.R
 import com.productivitystreak.ui.theme.Shapes
 import com.productivitystreak.ui.theme.Spacing
 import kotlin.math.roundToInt
@@ -220,7 +220,6 @@ private fun OnboardingHeader(
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        StepIndicator(currentStep = currentStep, totalSteps = totalSteps)
     }
 }
 
@@ -244,7 +243,6 @@ private fun StepIndicator(currentStep: Int, totalSteps: Int) {
     }
 }
 
-@Composable
 @Composable
 private fun GoalStep(goal: String, onGoalSelected: (String) -> Unit) {
     var localGoal by remember(goal) { mutableStateOf(goal) }
