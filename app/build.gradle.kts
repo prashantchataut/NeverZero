@@ -12,6 +12,11 @@ plugins {
     id("org.owasp.dependencycheck")
 }
 
+configurations.all {
+    exclude(group = "androidx.compose.ui", module = "ui-release")
+    exclude(group = "androidx.compose.ui", module = "ui-android")
+}
+
 android {
     namespace = "com.productivitystreak"
     compileSdk = 34
