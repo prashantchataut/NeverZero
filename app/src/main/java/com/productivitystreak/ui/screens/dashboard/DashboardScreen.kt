@@ -331,7 +331,7 @@ private fun HeroStreakCard(
                     Text(text = "$totalStreaks active streaks", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 TextButton(onClick = onRefreshQuote) {
-                    Text(text = stringResource(id = R.string.dashboard_action_get_motivated))
+                    Text(text = stringResource(id = R.string.action_change))
                 }
             }
 
@@ -364,7 +364,7 @@ private fun HeroStreakCard(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(text = "Today's Progress", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     LinearProgressIndicator(
-                        progress = { streak.progress.coerceIn(0f, 1f) },
+                        progress = streak.progress.coerceIn(0f, 1f),
                         color = MaterialTheme.colorScheme.primary,
                         trackColor = MaterialTheme.colorScheme.surfaceVariant
                     )
@@ -531,7 +531,7 @@ private fun StreakCard(
             Text(text = streak.category, style = MaterialTheme.typography.bodySmall, color = Color(0xFF7C819C))
             Spacer(modifier = Modifier.height(4.dp))
             LinearProgressIndicator(
-                progress = { streak.progress.coerceIn(0f, 1f) },
+                progress = streak.progress.coerceIn(0f, 1f),
                 color = accent.first,
                 trackColor = accent.second.copy(alpha = 0.4f)
             )

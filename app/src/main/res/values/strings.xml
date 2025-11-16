@@ -11,7 +11,7 @@
     <string name="action_view_all">View all</string>
     <string name="action_change">Change</string>
     <string name="dashboard_section_quick_actions">Quick actions</string>
-    <string name="dashboard_section_tasks" tools:override="true">Today's tasks</string>
+    <string name="dashboard_section_tasks" tools:override="true">Today\'s tasks</string>
     <string name="dashboard_section_inspiration">Daily inspiration</string>
     <string name="dashboard_button_log_streak">+  Log streak</string>
     <string name="dashboard_label_all_streaks_logged">All streaks logged</string>

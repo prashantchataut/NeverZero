@@ -642,6 +642,10 @@ class AppViewModel(
         }
     }
 
+    private fun deriveReminderFrequency(frequencyPerWeek: Int): ReminderFrequency {
+        return if (frequencyPerWeek >= 5) ReminderFrequency.Daily else ReminderFrequency.Weekly
+    }
+
     private fun seedInitialHabitFromOnboarding(stateSnapshot: AppUiState) {
         if (stateSnapshot.streaks.isNotEmpty()) return
         val goal = stateSnapshot.onboardingState.goalHabit.trim()
@@ -962,6 +966,10 @@ class AppViewModel(
                 accentHex = streak.color
             )
         }
+    }
+
+    private fun deriveReminderFrequency(frequencyPerWeek: Int): ReminderFrequency {
+        return if (frequencyPerWeek >= 5) ReminderFrequency.Daily else ReminderFrequency.Weekly
     }
 
     private fun buildStatsStateFromStreaks(streaks: List<Streak>): StatsState {
