@@ -8,14 +8,25 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.AutoGraph
+import androidx.compose.material.icons.rounded.BarChart
+import androidx.compose.material.icons.rounded.Explore
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,12 +38,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.productivitystreak.ui.components.add.CenterAddMenu
+import com.productivitystreak.ui.screens.add.AddFormSheets
 import com.productivitystreak.ui.screens.dashboard.DashboardScreen
 import com.productivitystreak.ui.screens.discover.DiscoverScreen
 import com.productivitystreak.ui.screens.onboarding.OnboardingDialog
@@ -42,6 +56,7 @@ import com.productivitystreak.ui.screens.settings.SettingsScreen
 import com.productivitystreak.ui.screens.stats.StatsScreen
 import com.productivitystreak.ui.screens.vocabulary.VocabularyScreen
 import com.productivitystreak.ui.state.AppUiState
+import com.productivitystreak.ui.state.AddEntryType
 import com.productivitystreak.ui.theme.*
 
 /**
@@ -91,7 +106,13 @@ fun NeverZeroApp(
     onSettingsRestoreFileSelected: (Uri) -> Unit = {},
     onSettingsDismissRestoreDialog: () -> Unit = {},
     onSettingsDismissMessage: () -> Unit = {},
-    onPrimaryAction: () -> Unit = {}
+    onAddButtonTapped: () -> Unit,
+    onDismissAddMenu: () -> Unit,
+    onAddEntrySelected: (AddEntryType) -> Unit,
+    onDismissAddForm: () -> Unit,
+    onSubmitHabit: (name: String, goal: Int, unit: String, category: String, color: String?, icon: String?) -> Unit,
+    onSubmitWord: (word: String, definition: String, example: String?) -> Unit,
+    onSubmitJournal: (mood: Int, notes: String, highlights: String?, gratitude: String?, tomorrowGoals: String?) -> Unit
 ) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -99,14 +120,9 @@ fun NeverZeroApp(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        floatingActionButton = {
-            if (shouldShowBottomBar(currentDestination?.route)) {
-                PrimaryActionFab(onClick = onPrimaryAction)
-            }
-        },
         bottomBar = {
             if (shouldShowBottomBar(currentDestination?.route)) {
-                NeverZeroNavigationBar(
+                NeverZeroBottomBar(
                     destinations = bottomDestinations,
                     currentRoute = currentDestination?.route,
                     onNavigate = { destination ->
@@ -117,7 +133,8 @@ fun NeverZeroApp(
                             launchSingleTop = true
                             restoreState = true
                         }
-                    }
+                    },
+                    onAddTapped = onAddButtonTapped
                 )
             }
         }
@@ -137,79 +154,98 @@ fun NeverZeroApp(
             )
         }
 
-        NavHost(
-            navController = navController,
-            startDestination = NeverZeroDestination.Dashboard.route,
-            modifier = Modifier.padding(innerPadding)
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
         ) {
-            composable(NeverZeroDestination.Dashboard.route) {
-                DashboardScreen(
-                    state = uiState,
-                    onRefreshQuote = onRefreshQuote,
-                    onSelectStreak = onSelectStreak,
-                    onToggleTask = onToggleTask,
-                    onNavigateToReading = {
-                        navController.navigate(NeverZeroDestination.Reading.route)
-                    },
-                    onNavigateToVocabulary = {
-                        navController.navigate(NeverZeroDestination.Vocabulary.route)
-                    },
-                    onNavigateToStats = {
-                        navController.navigate(NeverZeroDestination.Stats.route)
-                    },
-                    onNavigateToDiscover = {
-                        navController.navigate(NeverZeroDestination.Discover.route)
-                    },
-                    onEnableNotifications = { onToggleNotifications(true) }
-                )
+            NavHost(
+                navController = navController,
+                startDestination = NeverZeroDestination.Dashboard.route
+            ) {
+                composable(NeverZeroDestination.Dashboard.route) {
+                    DashboardScreen(
+                        state = uiState,
+                        onRefreshQuote = onRefreshQuote,
+                        onSelectStreak = onSelectStreak,
+                        onToggleTask = onToggleTask,
+                        onNavigateToReading = {
+                            navController.navigate(NeverZeroDestination.Reading.route)
+                        },
+                        onNavigateToVocabulary = {
+                            navController.navigate(NeverZeroDestination.Vocabulary.route)
+                        },
+                        onNavigateToStats = {
+                            navController.navigate(NeverZeroDestination.Stats.route)
+                        },
+                        onNavigateToDiscover = {
+                            navController.navigate(NeverZeroDestination.Discover.route)
+                        },
+                        onEnableNotifications = { onToggleNotifications(true) }
+                    )
+                }
+                composable(NeverZeroDestination.Stats.route) {
+                    StatsScreen(state = uiState.statsState)
+                }
+                composable(NeverZeroDestination.Discover.route) {
+                    DiscoverScreen(state = uiState.discoverState)
+                }
+                composable(NeverZeroDestination.Profile.route) {
+                    ProfileScreen(
+                        userName = uiState.userName,
+                        state = uiState.profileState,
+                        onToggleNotifications = onToggleNotifications,
+                        onChangeReminderFrequency = onChangeReminderFrequency,
+                        onToggleWeeklySummary = onToggleWeeklySummary,
+                        onChangeTheme = onChangeTheme,
+                        onToggleHaptics = onToggleHaptics,
+                        onNavigateToSettings = {
+                            navController.navigate(NeverZeroDestination.Settings.route)
+                        }
+                    )
+                }
+                composable(NeverZeroDestination.Reading.route) {
+                    ReadingTrackerScreen(
+                        state = uiState.readingTrackerState,
+                        onAddProgress = onLogReadingProgress
+                    )
+                }
+                composable(NeverZeroDestination.Vocabulary.route) {
+                    VocabularyScreen(
+                        state = uiState.vocabularyState,
+                        onAddWord = onAddVocabularyWord
+                    )
+                }
+                composable(NeverZeroDestination.Settings.route) {
+                    SettingsScreen(
+                        state = uiState.settingsState,
+                        onThemeChange = onSettingsThemeChange,
+                        onDailyRemindersToggle = onSettingsDailyRemindersToggle,
+                        onWeeklyBackupsToggle = onSettingsWeeklyBackupsToggle,
+                        onReminderTimeChange = onSettingsReminderTimeChange,
+                        onHapticFeedbackToggle = onSettingsHapticFeedbackToggle,
+                        onCreateBackup = onSettingsCreateBackup,
+                        onRestoreBackup = onSettingsRestoreBackup,
+                        onRestoreFileSelected = onSettingsRestoreFileSelected,
+                        onDismissRestoreDialog = onSettingsDismissRestoreDialog,
+                        onDismissMessage = onSettingsDismissMessage
+                    )
+                }
             }
-            composable(NeverZeroDestination.Stats.route) {
-                StatsScreen(state = uiState.statsState)
-            }
-            composable(NeverZeroDestination.Discover.route) {
-                DiscoverScreen(state = uiState.discoverState)
-            }
-            composable(NeverZeroDestination.Profile.route) {
-                ProfileScreen(
-                    userName = uiState.userName,
-                    state = uiState.profileState,
-                    onToggleNotifications = onToggleNotifications,
-                    onChangeReminderFrequency = onChangeReminderFrequency,
-                    onToggleWeeklySummary = onToggleWeeklySummary,
-                    onChangeTheme = onChangeTheme,
-                    onToggleHaptics = onToggleHaptics,
-                    onNavigateToSettings = {
-                        navController.navigate(NeverZeroDestination.Settings.route)
-                    }
-                )
-            }
-            composable(NeverZeroDestination.Reading.route) {
-                ReadingTrackerScreen(
-                    state = uiState.readingTrackerState,
-                    onAddProgress = onLogReadingProgress
-                )
-            }
-            composable(NeverZeroDestination.Vocabulary.route) {
-                VocabularyScreen(
-                    state = uiState.vocabularyState,
-                    onAddWord = onAddVocabularyWord
-                )
-            }
-            composable(NeverZeroDestination.Settings.route) {
-                SettingsScreen(
-                    state = uiState.settingsState,
-                    onThemeChange = onSettingsThemeChange,
-                    onDailyRemindersToggle = onSettingsDailyRemindersToggle,
-                    onWeeklyBackupsToggle = onSettingsWeeklyBackupsToggle,
-                    onReminderTimeChange = onSettingsReminderTimeChange,
-                    onHapticFeedbackToggle = onSettingsHapticFeedbackToggle,
-                    onCreateBackup = onSettingsCreateBackup,
-                    onRestoreBackup = onSettingsRestoreBackup,
-                    onRestoreFileSelected = onSettingsRestoreFileSelected,
-                    onDismissRestoreDialog = onSettingsDismissRestoreDialog,
-                    onDismissMessage = onSettingsDismissMessage
-                )
-            }
+
+            CenterAddMenu(
+                visible = uiState.addUiState.isMenuOpen,
+                onDismiss = onDismissAddMenu,
+                onSelect = onAddEntrySelected
+            )
+
+            AddFormSheets(
+                activeForm = uiState.addUiState.activeForm,
+                isSubmitting = uiState.addUiState.isSubmitting,
+                onDismiss = onDismissAddForm,
+                onSubmitHabit = onSubmitHabit,
+                onSubmitWord = onSubmitWord,
+                onSubmitJournal = onSubmitJournal
+            )
         }
     }
 }
@@ -225,55 +261,123 @@ private fun shouldShowBottomBar(route: String?): Boolean {
  * Modern Navigation Bar with Material 3 design
  */
 @Composable
-private fun NeverZeroNavigationBar(
+private fun NeverZeroBottomBar(
     destinations: List<NeverZeroDestination>,
     currentRoute: String?,
-    onNavigate: (NeverZeroDestination) -> Unit
+    onNavigate: (NeverZeroDestination) -> Unit,
+    onAddTapped: () -> Unit
 ) {
-    NavigationBar(
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
         tonalElevation = Elevation.level2,
-        containerColor = MaterialTheme.colorScheme.surface
+        shadowElevation = 16.dp
     ) {
-        destinations.forEach { destination ->
-            val selected = currentRoute == destination.route
-            NavigationBarItem(
-                selected = selected,
-                onClick = { onNavigate(destination) },
-                icon = {
-                    destination.icon?.let { icon ->
-                        Icon(
-                            painter = rememberVectorPainter(icon),
-                            contentDescription = destination.label,
-                            tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
-                label = {
-                    Text(
-                        text = destination.label,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 12.dp)
+                .navigationBarsPadding(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            val leading = destinations.take(2)
+            val trailing = destinations.drop(2)
+
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                leading.forEach { destination ->
+                    NavBarItem(
+                        destination = destination,
+                        selected = currentRoute == destination.route,
+                        onClick = { onNavigate(destination) }
                     )
-                },
-                alwaysShowLabel = false
-            )
+                }
+            }
+
+            AddCenterButton(onClick = onAddTapped)
+
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                trailing.forEach { destination ->
+                    NavBarItem(
+                        destination = destination,
+                        selected = currentRoute == destination.route,
+                        onClick = { onNavigate(destination) }
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun PrimaryActionFab(onClick: () -> Unit) {
-    FloatingActionButton(
-        onClick = onClick,
-        containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
-        elevation = FloatingActionButtonDefaults.elevation(
-            defaultElevation = Elevation.level3,
-            pressedElevation = Elevation.level4
-        )
+private fun NavBarItem(
+    destination: NeverZeroDestination,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val contentColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    Column(
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Icon(
-            imageVector = Icons.Rounded.Add,
-            contentDescription = "Add new habit"
+        destination.icon?.let { icon ->
+            Icon(
+                painter = rememberVectorPainter(icon),
+                contentDescription = destination.label,
+                tint = contentColor
+            )
+        }
+        Text(
+            text = destination.label,
+            style = MaterialTheme.typography.labelSmall,
+            color = contentColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+private fun AddCenterButton(onClick: () -> Unit) {
+    Column(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.linearGradient(
+                        listOf(Color(0xFF5F7BFF), Color(0xFF8C6AFF))
+                    )
+                )
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Add,
+                contentDescription = "Add",
+                tint = Color.White
+            )
+        }
+        Text(
+            text = "Add",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }

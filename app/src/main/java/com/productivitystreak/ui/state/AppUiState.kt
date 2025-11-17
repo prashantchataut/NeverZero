@@ -25,6 +25,7 @@ data class AppUiState(
     val profileState: ProfileState = ProfileState(),
     val onboardingState: OnboardingState = OnboardingState(),
     val settingsState: SettingsState = SettingsState(),
+    val addUiState: AddUiState = AddUiState(),
     val showOnboarding: Boolean = true,
     val onboardingCelebration: Boolean = false,
     val permissionState: PermissionUiState = PermissionUiState(),
@@ -47,3 +48,11 @@ data class UiMessage(
     val isBlocking: Boolean = false,
     val actionLabel: String? = null
 )
+
+data class AddUiState(
+    val isMenuOpen: Boolean = false,
+    val activeForm: AddEntryType? = null,
+    val isSubmitting: Boolean = false
+)
+
+enum class AddEntryType { HABIT, WORD, JOURNAL }

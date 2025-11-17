@@ -8,6 +8,8 @@ import com.productivitystreak.NeverZeroApplication
 import com.productivitystreak.data.QuoteRepository
 import com.productivitystreak.data.local.PreferencesManager
 import com.productivitystreak.data.model.Streak
+import com.productivitystreak.data.repository.ReflectionRepository
+import com.productivitystreak.data.repository.RepositoryResult
 import com.productivitystreak.data.repository.StreakRepository
 import com.productivitystreak.data.repository.onSuccess
 import com.productivitystreak.notifications.StreakReminderScheduler
@@ -17,6 +19,8 @@ import com.productivitystreak.ui.state.settings.ThemeMode
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.productivitystreak.ui.state.AddEntryType
+import com.productivitystreak.ui.state.AddUiState
 import com.productivitystreak.ui.state.DashboardTask
 import com.productivitystreak.ui.state.discover.CategoryItem
 import com.productivitystreak.ui.state.discover.ChallengeItem
@@ -62,6 +66,7 @@ class AppViewModel(
     application: Application,
     private val quoteRepository: QuoteRepository,
     private val streakRepository: StreakRepository,
+    private val reflectionRepository: ReflectionRepository,
     private val reminderScheduler: StreakReminderScheduler,
     private val preferencesManager: PreferencesManager
 ) : AndroidViewModel(application) {
@@ -77,6 +82,122 @@ class AppViewModel(
         .add(KotlinJsonAdapterFactory())
         .build()
 
+    fun onAddButtonTapped() {
+        updateAddState { it.copy(isMenuOpen = true, activeForm = null) }
+    }
+
+    fun onDismissAddMenu() {
+        updateAddState { it.copy(isMenuOpen = false) }
+    }
+
+    fun onAddEntrySelected(type: AddEntryType) {
+        updateAddState { it.copy(activeForm = type, isMenuOpen = false) }
+    }
+
+    fun onDismissAddForm() {
+        completeAddFlow()
+    }
+
+    fun onSubmitNewHabit(
+        name: String,
+        goalPerDay: Int,
+        unit: String,
+        category: String,
+        colorHex: String?,
+        iconName: String?
+    ) {
+        val trimmedName = name.trim()
+        if (trimmedName.isBlank()) {
+            showAddError("Habit name can’t be empty.")
+            return
+        }
+        val safeUnit = unit.trim().ifBlank { "count" }
+        val safeCategory = category.trim().ifBlank { "Focus" }
+        val goal = goalPerDay.coerceAtLeast(1)
+        val tint = colorHex?.ifBlank { null } ?: "#6366F1"
+        val icon = iconName?.ifBlank { null } ?: "flag"
+
+        setAddSubmitting(true)
+        viewModelScope.launch {
+            when (
+                val result = streakRepository.createStreak(
+                    name = trimmedName,
+                    goalPerDay = goal,
+                    unit = safeUnit,
+                    category = safeCategory,
+                    color = tint,
+                    icon = icon
+                )
+            ) {
+                is RepositoryResult.Success -> {
+                    completeAddFlow()
+                    pushUiMessage("Habit added to your dashboard")
+                }
+                else -> {
+                    setAddSubmitting(false)
+                    showAddError("Couldn’t create habit. Please try again.")
+                }
+            }
+        }
+    }
+
+    fun onSubmitVocabularyEntry(word: String, definition: String, example: String?) {
+        val trimmedWord = word.trim()
+        val trimmedDefinition = definition.trim()
+        val cleanedExample = example?.trim()?.takeIf { it.isNotBlank() }
+        if (trimmedWord.isBlank() || trimmedDefinition.isBlank()) {
+            showAddError("Word and definition are required.")
+            return
+        }
+        setAddSubmitting(true)
+        onAddVocabularyWord(trimmedWord, trimmedDefinition, cleanedExample) { success ->
+            if (success) {
+                completeAddFlow()
+                pushUiMessage("Word logged")
+            } else {
+                setAddSubmitting(false)
+                showAddError("Unable to save word. Try again.")
+            }
+        }
+    }
+
+    fun onSubmitJournalEntry(
+        mood: Int,
+        notes: String,
+        highlights: String?,
+        gratitude: String?,
+        tomorrowGoals: String?
+    ) {
+        val trimmedNotes = notes.trim()
+        if (trimmedNotes.isBlank()) {
+            showAddError("Journal entry can’t be empty.")
+            return
+        }
+        val safeMood = mood.coerceIn(1, 5)
+        val cleanedHighlights = highlights?.trim()?.takeIf { it.isNotBlank() }
+        val cleanedGratitude = gratitude?.trim()?.takeIf { it.isNotBlank() }
+        val cleanedTomorrow = tomorrowGoals?.trim()?.takeIf { it.isNotBlank() }
+
+        setAddSubmitting(true)
+        viewModelScope.launch {
+            try {
+                reflectionRepository.saveReflection(
+                    mood = safeMood,
+                    notes = trimmedNotes,
+                    highlights = cleanedHighlights,
+                    gratitude = cleanedGratitude,
+                    tomorrowGoals = cleanedTomorrow
+                )
+                completeAddFlow()
+                pushUiMessage("Journal entry saved")
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error saving journal entry", e)
+                setAddSubmitting(false)
+                showAddError("Couldn’t save journal entry. Please retry.")
+            }
+        }
+    }
+
     init {
         loadUserPreferences()
         loadReadingTrackerData()
@@ -85,6 +206,26 @@ class AppViewModel(
         bootstrapStaticState()
         observeStreaks()
         refreshQuote()
+    }
+
+    private fun updateAddState(transform: (AddUiState) -> AddUiState) {
+        _uiState.update { state -> state.copy(addUiState = transform(state.addUiState)) }
+    }
+
+    private fun setAddSubmitting(isSubmitting: Boolean) {
+        updateAddState { it.copy(isSubmitting = isSubmitting) }
+    }
+
+    private fun completeAddFlow() {
+        _uiState.update { it.copy(addUiState = AddUiState()) }
+    }
+
+    private fun showAddError(message: String) {
+        pushUiMessage(message)
+    }
+
+    private fun pushUiMessage(message: String, actionLabel: String? = null) {
+        _uiState.update { it.copy(uiMessage = UiMessage(text = message, actionLabel = actionLabel)) }
     }
 
     fun onSetOnboardingGoal(goal: String) {
@@ -845,7 +986,12 @@ class AppViewModel(
         simulateTaskCompletion("reading", pages)
     }
 
-    fun onAddVocabularyWord(word: String, definition: String, example: String?) {
+    fun onAddVocabularyWord(
+        word: String,
+        definition: String,
+        example: String?,
+        onComplete: ((Boolean) -> Unit)? = null
+    ) {
         if (word.isBlank() || definition.isBlank()) return
         val today = LocalDate.now()
 
@@ -896,8 +1042,10 @@ class AppViewModel(
                 // Check achievements
                 checkVocabularyAchievements(updatedWords.size, updatedStreakDays)
 
+                onComplete?.invoke(true)
             } catch (e: Exception) {
                 Log.e("AppViewModel", "Error saving vocabulary word", e)
+                onComplete?.invoke(false)
             }
         }
 

@@ -5,11 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -34,6 +36,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.productivitystreak.ui.state.stats.LeaderboardEntry
 import com.productivitystreak.ui.state.stats.StatsState
@@ -49,7 +52,8 @@ fun StatsScreen(state: StatsState) {
         modifier = Modifier
             .fillMaxSize()
             .background(gradient)
-            .padding(horizontal = 24.dp, vertical = 24.dp),
+            .padding(horizontal = 24.dp, vertical = 24.dp)
+            .navigationBarsPadding(),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         StatsHeader()
@@ -61,6 +65,7 @@ fun StatsScreen(state: StatsState) {
         )
         TrendSection(points = state.averageDailyTrend?.points.orEmpty())
         LeaderboardSection(entries = state.leaderboard)
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
@@ -104,32 +109,23 @@ private fun StatsHeroCard(current: Int) {
                 }
             }
 
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                color = Color(0xFFF7F5FF)
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(text = "Momentum", style = MaterialTheme.typography.labelLarge, color = Color(0xFF7C819C))
-                        Text(text = "Daily progress is on track", style = MaterialTheme.typography.bodySmall, color = Color(0xFF7C819C))
-                    }
-                    Text(text = "Keep logging", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium, color = Color(0xFF6A63FF))
-                }
-            }
+            MomentumHighlights(
+                highlights = listOf(
+                    HighlightCard(title = "Momentum", detail = "Daily progress is on track", action = "Keep logging")
+                )
+            )
         }
     }
 }
 
 @Composable
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 private fun MetricsRow(current: Int, longestName: String, average: Int) {
-    Row(
+    FlowRow(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        maxItemsInEachRow = 3
     ) {
         MetricCard(
             title = "Current streak",
@@ -150,9 +146,12 @@ private fun MetricsRow(current: Int, longestName: String, average: Int) {
 }
 
 @Composable
-private fun RowScope.MetricCard(title: String, value: String, helper: String) {
+private fun FlowRowScope.MetricCard(title: String, value: String, helper: String) {
     Surface(
-        modifier = Modifier.weight(1f),
+        modifier = Modifier
+            .weight(1f, fill = true)
+            .fillMaxWidth()
+            .width(200.dp),
         shape = RoundedCornerShape(24.dp),
         color = Color.White,
         tonalElevation = 8.dp
@@ -162,11 +161,54 @@ private fun RowScope.MetricCard(title: String, value: String, helper: String) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(text = title, style = MaterialTheme.typography.labelLarge, color = Color(0xFF7C819C))
-            Text(text = value, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text(
+                text = value,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                softWrap = false
+            )
             Text(text = helper, style = MaterialTheme.typography.bodySmall, color = Color(0xFF9A9EB8))
         }
     }
 }
+
+@Composable
+private fun MomentumHighlights(highlights: List<HighlightCard>) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        highlights.distinctBy { it.title }.forEach { highlight ->
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                color = Color(0xFFF7F5FF)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(text = highlight.title, style = MaterialTheme.typography.labelLarge, color = Color(0xFF7C819C))
+                        Text(text = highlight.detail, style = MaterialTheme.typography.bodySmall, color = Color(0xFF7C819C))
+                    }
+                    Text(
+                        text = highlight.action,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF6A63FF)
+                    )
+                }
+            }
+        }
+    }
+}
+
+private data class HighlightCard(
+    val title: String,
+    val detail: String,
+    val action: String
+)
 
 @Composable
 private fun TrendSection(points: List<TrendPoint>) {

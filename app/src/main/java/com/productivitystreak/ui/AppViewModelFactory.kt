@@ -16,6 +16,7 @@ class AppViewModelFactory(private val application: Application) : ViewModelProvi
                 application = application,
                 quoteRepository = QuoteRepository(),
                 streakRepository = app.streakRepository,
+                reflectionRepository = app.reflectionRepository,
                 reminderScheduler = StreakReminderScheduler(application),
                 preferencesManager = app.preferencesManager
             ) as T
