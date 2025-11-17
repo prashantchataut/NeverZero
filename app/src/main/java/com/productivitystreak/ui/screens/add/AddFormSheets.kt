@@ -3,12 +3,14 @@ package com.productivitystreak.ui.screens.add
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Mood
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedAssistChip
@@ -44,14 +47,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardOptions
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import com.productivitystreak.ui.state.AddEntryType
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AddFormSheets(
     activeForm: AddEntryType?,
@@ -81,10 +85,91 @@ fun AddFormSheets(
                 AddEntryType.WORD -> WordForm(isSubmitting, onDismiss, onSubmitWord)
                 AddEntryType.JOURNAL -> JournalForm(isSubmitting, onDismiss, onSubmitJournal)
             }
+
+@Composable
+private fun MoodSelector(mood: Int, onSelect: (Int) -> Unit) {
+    val options = listOf(
+        1 to "😔",
+        2 to "😐",
+        3 to "🙂",
+        4 to "😄",
+        5 to "🔥"
+    )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        options.forEach { (value, label) ->
+            val selected = value == mood
+            Surface(
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(CircleShape)
+                    .clickable { onSelect(value) },
+                color = if (selected) Color(0xFFE8E5FF) else Color(0xFFF4F4FA)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(text = label, style = MaterialTheme.typography.headlineSmall)
+                }
+            }
         }
     }
 }
 
+@Composable
+private fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
+    ElevatedAssistChip(
+        onClick = onClick,
+        label = {
+            Text(
+                text = label,
+                color = if (selected) Color(0xFF4C52FF) else MaterialTheme.colorScheme.onSurface
+            )
+        },
+        shape = CircleShape,
+        modifier = Modifier.height(40.dp),
+        colors = androidx.compose.material3.AssistChipDefaults.elevatedAssistChipColors(
+            containerColor = if (selected) Color(0xFFE8E5FF) else MaterialTheme.colorScheme.surface
+        )
+    )
+}
+
+@Composable
+private fun ColorChip(colorHex: String, selected: Boolean, onSelect: () -> Unit) {
+    val color = Color(colorHex.toColorInt())
+    Surface(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .clickable(onClick = onSelect),
+        color = color,
+        tonalElevation = if (selected) 8.dp else 2.dp,
+        border = if (selected) BorderStroke(2.dp, Color.White) else null
+    ) {
+        if (selected) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Rounded.CheckCircle,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+    }
+}
+
+private fun String.toColorInt(): Int = try {
+    Color(android.graphics.Color.parseColor(this)).toArgb()
+} catch (_: IllegalArgumentException) {
+    Color(0xFF5F7BFF).toArgb()
+}
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun HabitForm(
     isSubmitting: Boolean,
@@ -215,7 +300,7 @@ private fun JournalForm(
 
     SheetHeader(title = "Add Journal Entry", subtitle = "Reflect on momentum, gratitude, and what’s next.")
 
-    MoodSelector(mood = mood, onSelect = { mood = it })
+    MoodSelector(mood = mood, onSelect = { selected -> mood = selected })
 
     OutlinedTextField(
         value = notes,
