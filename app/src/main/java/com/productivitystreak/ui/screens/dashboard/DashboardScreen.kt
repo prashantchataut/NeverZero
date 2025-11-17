@@ -79,7 +79,8 @@ fun DashboardScreen(
     onNavigateToVocabulary: () -> Unit,
     onNavigateToStats: () -> Unit,
     onNavigateToDiscover: () -> Unit,
-    onEnableNotifications: () -> Unit
+    onEnableNotifications: () -> Unit,
+    onOpenAddEntry: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     val gradient = Brush.verticalGradient(
@@ -92,6 +93,7 @@ fun DashboardScreen(
     val selectedStreak = state.streaks.firstOrNull { it.id == state.selectedStreakId } ?: state.streaks.firstOrNull()
     val headlineQuote = state.quote?.text ?: "The secret of getting ahead is getting started."
     val completedTasks = state.todayTasks.count { it.isCompleted }
+    val totalTasks = state.todayTasks.size
     val pendingTask = state.todayTasks.firstOrNull { !it.isCompleted }
 
     Column(
@@ -116,6 +118,17 @@ fun DashboardScreen(
             onNavigateToStats = onNavigateToStats,
             onNavigateToDiscover = onNavigateToDiscover
         )
+
+        if (totalTasks > 0) {
+            DailyMomentumCard(
+                completed = completedTasks,
+                total = totalTasks,
+                onLogProgress = {
+                    pendingTask?.let { onToggleTask(it.id) } ?: onOpenAddEntry()
+                },
+                onQuickAdd = onOpenAddEntry
+            )
+        }
 
         if (state.streaks.isEmpty()) {
             FirstTimeChecklist(
@@ -168,6 +181,78 @@ fun DashboardScreen(
             onNavigateToDiscover = onNavigateToDiscover
         )
         Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun DailyMomentumCard(
+    completed: Int,
+    total: Int,
+    onLogProgress: () -> Unit,
+    onQuickAdd: () -> Unit
+) {
+    val progress = if (total == 0) 0f else completed.coerceAtLeast(0) / total.toFloat()
+    val animatedProgress by animateFloatAsState(targetValue = progress, label = "momentum-progress")
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = Shapes.extraLarge,
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 6.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(text = "Daily momentum", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(
+                    text = "$completed of $total habits logged",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                LinearProgressIndicator(
+                    progress = { animatedProgress.coerceIn(0f, 1f) },
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = if (progress >= 1f) "Streak secured" else "Keep logging to stay never zero",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "${(progress * 100).coerceIn(0f, 100f).roundToInt()}%",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = onLogProgress,
+                    modifier = Modifier.weight(1f),
+                    enabled = progress < 1f
+                ) {
+                    Text(text = if (progress < 1f) "Log next habit" else "Logged")
+                }
+                TextButton(
+                    onClick = onQuickAdd,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Quick add")
+                }
+            }
+        }
     }
 }
 
