@@ -92,6 +92,115 @@ fun DashboardScreen(
     val selectedStreak = state.streaks.firstOrNull { it.id == state.selectedStreakId } ?: state.streaks.firstOrNull()
     val headlineQuote = state.quote?.text ?: "The secret of getting ahead is getting started."
     val completedTasks = state.todayTasks.count { it.isCompleted }
+    val pendingTask = state.todayTasks.firstOrNull { !it.isCompleted }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(gradient)
+            .verticalScroll(scrollState)
+            .padding(horizontal = 24.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        DashboardTopBar(userName = state.userName)
+
+        HeroStreakCard(
+            streak = selectedStreak,
+            totalStreaks = state.streaks.size,
+            onRefreshQuote = onRefreshQuote
+        )
+
+        QuickActionsRow(
+            onNavigateToReading = onNavigateToReading,
+            onNavigateToVocabulary = onNavigateToVocabulary,
+            onNavigateToStats = onNavigateToStats,
+            onNavigateToDiscover = onNavigateToDiscover
+        )
+
+        if (state.streaks.isEmpty()) {
+            FirstTimeChecklist(
+                notificationsEnabled = state.profileState.notificationEnabled,
+                hasLoggedToday = state.todayTasks.any { it.isCompleted },
+                onAddHabit = onNavigateToDiscover,
+                onEnableNotifications = onEnableNotifications,
+                onReviewProgress = onNavigateToStats,
+                goalHabit = state.onboardingState.goalHabit,
+                commitmentMinutes = state.onboardingState.commitmentDurationMinutes,
+                commitmentFrequency = state.onboardingState.commitmentFrequencyPerWeek
+            )
+        }
+
+        if (!state.profileState.notificationEnabled) {
+            NotificationNudgeCard(onEnableNotifications = onEnableNotifications)
+        }
+
+        HabitCalloutCard(onNavigateToDiscover = onNavigateToDiscover)
+
+        StreakGridSection(
+            streaks = state.streaks,
+            selectedId = state.selectedStreakId,
+            onSelectStreak = onSelectStreak,
+            onAddHabit = onNavigateToDiscover
+        )
+
+        PrimaryActionButton(
+            label = if (pendingTask == null) stringResource(R.string.dashboard_label_all_streaks_logged) else stringResource(
+                R.string.dashboard_button_log_streak
+            ),
+            enabled = pendingTask != null,
+            onClick = { pendingTask?.let { onToggleTask(it.id) } }
+        )
+
+        DailyInspirationPanel(
+            quote = headlineQuote,
+            author = state.quote?.author,
+            isLoading = state.isQuoteLoading,
+            onRefresh = onRefreshQuote
+        )
+
+        TaskListSection(
+            tasks = state.todayTasks,
+            completedTasks = completedTasks,
+            onToggleTask = onToggleTask
+        )
+
+        CommunityTeaser(
+            onNavigateToDiscover = onNavigateToDiscover
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun DashboardTopBar(userName: String) {
+    val greeting = remember {
+        val hour = LocalTime.now().hour
+        when {
+            hour < 12 -> "Good Morning"
+            hour < 17 -> "Good Afternoon"
+            else -> "Good Evening"
+        }
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(text = stringResource(R.string.app_name), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = "$greeting, $userName", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        }
+        Surface(shape = CircleShape, tonalElevation = 6.dp, color = MaterialTheme.colorScheme.surfaceVariant) {
+            IconButton(onClick = {}) {
+                Icon(
+                    imageVector = Icons.Rounded.Person,
+                    contentDescription = stringResource(R.string.cd_profile_avatar),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+}
 
 @Composable
 private fun FirstTimeChecklist(
@@ -195,111 +304,6 @@ private fun NotificationNudgeCard(onEnableNotifications: () -> Unit) {
             }
             TextButton(onClick = onEnableNotifications) {
                 Text(text = "Enable")
-            }
-        }
-    }
-}
-    val pendingTask = state.todayTasks.firstOrNull { !it.isCompleted }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(gradient)
-            .verticalScroll(scrollState)
-            .padding(horizontal = 24.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        DashboardTopBar(userName = state.userName)
-
-        HeroStreakCard(
-            streak = selectedStreak,
-            totalStreaks = state.streaks.size,
-            onRefreshQuote = onRefreshQuote
-        )
-
-        QuickActionsRow(
-            onNavigateToReading = onNavigateToReading,
-            onNavigateToVocabulary = onNavigateToVocabulary,
-            onNavigateToStats = onNavigateToStats,
-            onNavigateToDiscover = onNavigateToDiscover
-        )
-
-        if (state.streaks.isEmpty()) {
-            FirstTimeChecklist(
-                notificationsEnabled = state.profileState.notificationEnabled,
-                hasLoggedToday = state.todayTasks.any { it.isCompleted },
-                onAddHabit = onNavigateToDiscover,
-                onEnableNotifications = onEnableNotifications,
-                onReviewProgress = onNavigateToStats,
-                goalHabit = state.onboardingState.goalHabit,
-                commitmentMinutes = state.onboardingState.commitmentDurationMinutes,
-                commitmentFrequency = state.onboardingState.commitmentFrequencyPerWeek
-            )
-        }
-
-        if (!state.profileState.notificationEnabled) {
-            NotificationNudgeCard(onEnableNotifications = onEnableNotifications)
-        }
-
-        HabitCalloutCard(onNavigateToDiscover = onNavigateToDiscover)
-
-        StreakGridSection(
-            streaks = state.streaks,
-            selectedId = state.selectedStreakId,
-            onSelectStreak = onSelectStreak,
-            onAddHabit = onNavigateToDiscover
-        )
-
-        PrimaryActionButton(
-            label = if (pendingTask == null) stringResource(R.string.dashboard_label_all_streaks_logged) else stringResource(
-                R.string.dashboard_button_log_streak
-            ),
-            enabled = pendingTask != null,
-            onClick = { pendingTask?.let { onToggleTask(it.id) } }
-        )
-
-        DailyInspirationPanel(
-            quote = headlineQuote,
-            author = state.quote?.author,
-            isLoading = state.isQuoteLoading,
-            onRefresh = onRefreshQuote
-        )
-
-        TaskListSection(
-            tasks = state.todayTasks,
-            completedTasks = completedTasks,
-            onToggleTask = onToggleTask
-        )
-
-        CommunityTeaser(
-            onNavigateToDiscover = onNavigateToDiscover
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-    }
-}
-
-@Composable
-private fun DashboardTopBar(userName: String) {
-    val greeting = remember {
-        val hour = LocalTime.now().hour
-        when {
-            hour < 12 -> "Good Morning"
-            hour < 17 -> "Good Afternoon"
-            else -> "Good Evening"
-        }
-    }
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(text = stringResource(R.string.app_name), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(text = "$greeting, $userName", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        }
-        Surface(shape = CircleShape, tonalElevation = 6.dp, color = MaterialTheme.colorScheme.surfaceVariant) {
-            IconButton(onClick = {}, contentDescription = stringResource(R.string.cd_profile_avatar)) {
-                Icon(imageVector = Icons.Rounded.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             }
         }
     }
