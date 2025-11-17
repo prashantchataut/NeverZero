@@ -20,6 +20,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedAssistChip
@@ -46,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardOptions
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.BorderStroke
 import com.productivitystreak.ui.state.AddEntryType
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -308,4 +311,6 @@ private fun PrimaryActions(
 
         TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
             Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
- 546 more bytes
+        }
+    }
+}
