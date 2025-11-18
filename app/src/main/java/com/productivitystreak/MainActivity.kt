@@ -56,7 +56,15 @@ class MainActivity : ComponentActivity() {
                         onSettingsRestoreBackup = viewModel::onSettingsRestoreBackup,
                         onSettingsRestoreFileSelected = viewModel::onSettingsRestoreFromFile,
                         onSettingsDismissRestoreDialog = viewModel::onSettingsDismissRestoreDialog,
-                        onSettingsDismissMessage = viewModel::onSettingsDismissMessage
+                        onSettingsDismissMessage = viewModel::onSettingsDismissMessage,
+                        onOpenAddEntry = viewModel::onAddButtonTapped,
+                        onAddButtonTapped = viewModel::onAddButtonTapped,
+                        onDismissAddMenu = viewModel::onDismissAddMenu,
+                        onAddEntrySelected = viewModel::onAddEntrySelected,
+                        onDismissAddForm = viewModel::onDismissAddForm,
+                        onSubmitHabit = viewModel::onSubmitNewHabit,
+                        onSubmitWord = viewModel::onSubmitVocabularyEntry,
+                        onSubmitJournal = viewModel::onSubmitJournalEntry
                     )
                 }
             }

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,7 +23,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Mood
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedAssistChip
@@ -39,15 +37,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardOptions
@@ -85,6 +82,9 @@ fun AddFormSheets(
                 AddEntryType.WORD -> WordForm(isSubmitting, onDismiss, onSubmitWord)
                 AddEntryType.JOURNAL -> JournalForm(isSubmitting, onDismiss, onSubmitJournal)
             }
+        }
+    }
+}
 
 @Composable
 private fun MoodSelector(mood: Int, onSelect: (Int) -> Unit) {
@@ -137,7 +137,7 @@ private fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
 
 @Composable
 private fun ColorChip(colorHex: String, selected: Boolean, onSelect: () -> Unit) {
-    val color = Color(colorHex.toColorInt())
+    val color = runCatching { Color(android.graphics.Color.parseColor(colorHex)) }.getOrElse { Color(0xFF5F7BFF) }
     Surface(
         modifier = Modifier
             .size(40.dp)
@@ -156,15 +156,6 @@ private fun ColorChip(colorHex: String, selected: Boolean, onSelect: () -> Unit)
                     modifier = Modifier.size(18.dp)
                 )
             }
-        }
-    }
-}
-
-private fun String.toColorInt(): Int = try {
-    Color(android.graphics.Color.parseColor(this)).toArgb()
-} catch (_: IllegalArgumentException) {
-    Color(0xFF5F7BFF).toArgb()
-}
         }
     }
 }
