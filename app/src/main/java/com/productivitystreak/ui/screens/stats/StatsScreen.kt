@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -119,8 +121,9 @@ private fun StatsHeroCard(current: Int) {
 }
 
 @Composable
-@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 private fun MetricsRow(current: Int, longestName: String, average: Int) {
+    Spacer(modifier = Modifier.height(16.dp))
     FlowRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -145,6 +148,7 @@ private fun MetricsRow(current: Int, longestName: String, average: Int) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun FlowRowScope.MetricCard(title: String, value: String, helper: String) {
     Surface(
