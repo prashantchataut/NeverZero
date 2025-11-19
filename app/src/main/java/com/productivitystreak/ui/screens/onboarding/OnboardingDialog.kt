@@ -1,4 +1,4 @@
-package com.productivitystreak.ui.screens.onboarding
+﻿package com.productivitystreak.ui.screens.onboarding
 
 // Onboarding UI removed during architectural sanitization.
 
@@ -294,7 +294,7 @@ private fun OnboardingWelcomeStep() {
         }
 
         Text(
-            text = "You don’t need a perfect day — just never hit zero.",
+            text = "You donâ€™t need a perfect day â€” just never hit zero.",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
             textAlign = TextAlign.Center
@@ -414,7 +414,7 @@ private fun OnboardingLeadHabitConceptStep() {
         }
 
         Text(
-            text = "We’ll start with one small habit — your lead habit.",
+            text = "Weâ€™ll start with one small habit â€” your lead habit.",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -502,7 +502,7 @@ private fun OnboardingPermissionStep(
         }
 
         Text(
-            text = "If you’d rather skip this for now, you can always turn reminders on later from Settings.",
+            text = "If youâ€™d rather skip this for now, you can always turn reminders on later from Settings.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
         )
