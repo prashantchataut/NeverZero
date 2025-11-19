@@ -235,7 +235,7 @@ private fun CircularProgressRing(
     Canvas(modifier = modifier.size(size)) {
         val sweep = 360f * progress
         val stroke = strokeWidth.toPx()
-        val radius = size.minDimension.toPx() / 2 - stroke
+        val radius = size.minDimension / 2f - stroke
 
         drawCircle(
             color = Color.White.copy(alpha = 0.25f),
