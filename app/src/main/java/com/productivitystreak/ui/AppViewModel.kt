@@ -29,6 +29,7 @@ import com.productivitystreak.ui.state.discover.FeaturedContent
 import com.productivitystreak.ui.state.discover.SuggestionItem
 import com.productivitystreak.ui.state.onboarding.OnboardingState
 import com.productivitystreak.ui.state.UiMessage
+import com.productivitystreak.ui.state.UiMessageType
 import com.productivitystreak.ui.state.profile.ProfileState
 import com.productivitystreak.ui.state.profile.ProfileTheme
 import com.productivitystreak.ui.state.profile.ReminderFrequency
@@ -131,7 +132,7 @@ class AppViewModel(
             ) {
                 is RepositoryResult.Success -> {
                     completeAddFlow()
-                    pushUiMessage("Habit added to your dashboard")
+                    pushUiMessage("Habit added to your dashboard", type = UiMessageType.SUCCESS)
                 }
                 else -> {
                     setAddSubmitting(false)
@@ -153,7 +154,7 @@ class AppViewModel(
         onAddVocabularyWord(trimmedWord, trimmedDefinition, cleanedExample) { success ->
             if (success) {
                 completeAddFlow()
-                pushUiMessage("Word logged")
+                pushUiMessage("Word logged", type = UiMessageType.SUCCESS)
             } else {
                 setAddSubmitting(false)
                 showAddError("Unable to save word. Try again.")
@@ -189,7 +190,7 @@ class AppViewModel(
                     tomorrowGoals = cleanedTomorrow
                 )
                 completeAddFlow()
-                pushUiMessage("Journal entry saved")
+                pushUiMessage("Journal entry saved", type = UiMessageType.SUCCESS)
             } catch (e: Exception) {
                 Log.e("AppViewModel", "Error saving journal entry", e)
                 setAddSubmitting(false)
@@ -221,11 +222,15 @@ class AppViewModel(
     }
 
     private fun showAddError(message: String) {
-        pushUiMessage(message)
+        pushUiMessage(message, type = UiMessageType.ERROR)
     }
 
-    private fun pushUiMessage(message: String, actionLabel: String? = null) {
-        _uiState.update { it.copy(uiMessage = UiMessage(text = message, actionLabel = actionLabel)) }
+    private fun pushUiMessage(
+        message: String,
+        actionLabel: String? = null,
+        type: UiMessageType = UiMessageType.INFO
+    ) {
+        _uiState.update { it.copy(uiMessage = UiMessage(text = message, actionLabel = actionLabel, type = type)) }
     }
 
     fun onDismissUiMessage() {

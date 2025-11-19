@@ -3,6 +3,7 @@ package com.productivitystreak.ui.screens.dashboard
 // Dashboard UI removed during architectural sanitization.
 
 import android.graphics.Color.parseColor
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -48,7 +49,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -72,15 +72,13 @@ fun DashboardScreen(
     modifier: Modifier = Modifier
 ) {
     val haptics = LocalHapticFeedback.current
-    val context = LocalContext.current
-
-    val greeting = remember {
+    val greetingPrefix = remember {
         val hour = LocalTime.now().hour
         when {
-            hour in 5..11 -> "Good Morning"
-            hour in 12..16 -> "Good Afternoon"
-            hour in 17..21 -> "Good Evening"
-            else -> "Welcome back"
+            hour in 5..11 -> "Hello"
+            hour in 12..16 -> "Hello"
+            hour in 17..21 -> "Hello"
+            else -> "Hello"
         }
     }
 
@@ -102,11 +100,16 @@ fun DashboardScreen(
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "$greeting, ${uiState.userName}.",
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        AnimatedContent(
+            targetState = uiState.userName,
+            label = "dashboard-greeting"
+        ) { name ->
+            Text(
+                text = "$greetingPrefix, $name! Let’s get to work.",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
 
         leadStreak?.let { streak ->
             LeadHabitCard(
@@ -149,7 +152,7 @@ fun DashboardScreen(
 
                     LaunchedEffect(showConfetti) {
                         if (showConfetti) {
-                            delay(700)
+                            delay(450)
                             confettiState[task.id] = false
                         }
                     }
@@ -274,7 +277,7 @@ private fun DashboardTaskRow(
         Box(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier
-                    .padding(horizontal = 18.dp, vertical = 14.dp),
+                    .padding(horizontal = 18.dp, vertical = 18.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
@@ -340,16 +343,22 @@ private fun DashboardTaskRow(
 private fun ConfettiOverlay(color: Color) {
     Canvas(modifier = Modifier.fillMaxSize()) {
         val random = kotlin.random.Random
-        val particleCount = 28
+        val particleCount = 24
         repeat(particleCount) { index ->
-            val x = size.width * random.nextFloat()
-            val y = size.height * random.nextFloat()
-            val radius = (4 + random.nextInt(6)).toFloat()
+            val startX = size.width * random.nextFloat()
+            val startY = size.height * random.nextFloat()
+            val velocity = (40 + random.nextInt(80)).toFloat()
+            val end = Offset(
+                x = startX + random.nextFloat() * 12f - 6f,
+                y = (startY + velocity).coerceAtMost(size.height)
+            )
             val tint = if (index % 3 == 0) MaterialTheme.colorScheme.primary else color
-            drawCircle(
-                color = tint.copy(alpha = 0.8f),
-                radius = radius,
-                center = Offset(x, y)
+            drawLine(
+                color = tint.copy(alpha = 0.55f),
+                start = Offset(startX, startY),
+                end = end,
+                strokeWidth = 3.dp.toPx(),
+                cap = androidx.compose.ui.graphics.StrokeCap.Round
             )
         }
     }

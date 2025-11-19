@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -30,6 +31,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -123,7 +125,7 @@ private fun StatisticCard(
             )
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.SemiBold
             )
             Text(
@@ -381,20 +383,22 @@ private fun HeatMapGrid(heatMap: CalendarHeatMap) {
         weeks.forEachIndexed { xIndex, week ->
             week.days.forEachIndexed { yIndex, day ->
                 val intensity = day.intensity.coerceIn(0f, 1f)
-                if (intensity <= 0f) return@forEachIndexed
-
-                val color = Brush.verticalGradient(
-                    listOf(
-                        NeverZeroTheme.gradientColors.SunriseStart.copy(alpha = 0.3f + 0.5f * intensity),
-                        NeverZeroTheme.gradientColors.SunriseEnd.copy(alpha = 0.3f + 0.5f * intensity)
+                val brush = if (intensity <= 0f) {
+                    SolidColor(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                } else {
+                    Brush.verticalGradient(
+                        listOf(
+                            NeverZeroTheme.gradientColors.SunriseStart.copy(alpha = 0.3f + 0.5f * intensity),
+                            NeverZeroTheme.gradientColors.SunriseEnd.copy(alpha = 0.3f + 0.5f * intensity)
+                        )
                     )
-                )
+                }
                 val left = xIndex * cellWidth + 4f
                 val top = yIndex * cellHeight + 4f
                 val cellSize = Size(cellWidth - 8f, cellHeight - 8f)
 
                 drawRoundRect(
-                    brush = color,
+                    brush = brush,
                     topLeft = Offset(left, top),
                     size = cellSize,
                     cornerRadius = androidx.compose.ui.geometry.CornerRadius(6.dp.toPx(), 6.dp.toPx())

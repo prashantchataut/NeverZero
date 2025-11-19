@@ -4,8 +4,13 @@ package com.productivitystreak.ui.screens.onboarding
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -30,10 +35,13 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberInfiniteTransition
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +58,7 @@ import com.productivitystreak.ui.state.AppUiState
 import com.productivitystreak.ui.state.onboarding.OnboardingCategory
 import com.productivitystreak.ui.theme.NeverZeroTheme
 import com.productivitystreak.ui.utils.PermissionManager
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -68,6 +77,9 @@ fun OnboardingFlow(
     onRequestExactAlarmPermission: () -> Unit
 ) {
     val onboarding = uiState.onboardingState
+    val coroutineScope = rememberCoroutineScope()
+    var showFinishRipple by remember { mutableStateOf(false) }
+    val finishRipple = remember { Animatable(0f) }
 
     Box(
         modifier = Modifier
@@ -124,21 +136,51 @@ fun OnboardingFlow(
                 }
             }
 
+            val isFinalStep = onboarding.currentStep == onboarding.totalSteps - 1
             OnboardingFooter(
                 currentStep = onboarding.currentStep,
                 totalSteps = onboarding.totalSteps,
                 canGoBack = onboarding.currentStep > 0,
+                isFinalStep = isFinalStep,
                 onBack = {
                     if (onboarding.currentStep == 0) onDismissOnboarding() else onPreviousStep()
                 },
-                onNext = {
-                    if (onboarding.currentStep < onboarding.totalSteps - 1) {
-                        onNextStep()
+                onPrimaryClick = {
+                    if (isFinalStep) {
+                        if (!showFinishRipple) {
+                            coroutineScope.launch {
+                                showFinishRipple = true
+                                finishRipple.snapTo(0f)
+                                finishRipple.animateTo(
+                                    1f,
+                                    animationSpec = tween(durationMillis = 650, easing = FastOutSlowInEasing)
+                                )
+                                showFinishRipple = false
+                                onCompleteOnboarding()
+                            }
+                        }
                     } else {
-                        onCompleteOnboarding()
+                        onNextStep()
                     }
                 }
             )
+        }
+
+        if (showFinishRipple) {
+            Canvas(modifier = Modifier.matchParentSize()) {
+                val radius = size.maxDimension * finishRipple.value
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            NeverZeroTheme.gradientColors.PremiumStart,
+                            NeverZeroTheme.gradientColors.PremiumEnd
+                        )
+                    ),
+                    radius = radius,
+                    center = center,
+                    alpha = (1f - finishRipple.value).coerceAtLeast(0f)
+                )
+            }
         }
     }
 }
@@ -148,8 +190,9 @@ private fun StepHeader(currentStep: Int, totalSteps: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = "Never Zero",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+            style = MaterialTheme.typography.displaySmall,
+            fontWeight = FontWeight.Black,
+            color = MaterialTheme.colorScheme.onBackground
         )
         Text(
             text = when (currentStep) {
@@ -186,6 +229,26 @@ private fun StepHeader(currentStep: Int, totalSteps: Int) {
 
 @Composable
 private fun OnboardingWelcomeStep() {
+    val infiniteTransition = rememberInfiniteTransition(label = "sunrise-pulse")
+    val pulse by infiniteTransition.animateFloat(
+        initialValue = 0.92f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 4200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "sunrise-radius"
+    )
+    val drift by infiniteTransition.animateFloat(
+        initialValue = -0.04f,
+        targetValue = 0.04f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 5200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "sunrise-drift"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -201,8 +264,9 @@ private fun OnboardingWelcomeStep() {
             contentAlignment = Alignment.Center
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
-                val center = Offset(size.width / 2, size.height * 0.65f)
-                val radius = size.minDimension / 3f
+                val baseCenter = Offset(size.width / 2, size.height * 0.65f)
+                val center = baseCenter.copy(x = baseCenter.x + drift * size.width * 0.2f)
+                val radius = (size.minDimension / 3f) * pulse
                 drawCircle(
                     brush = Brush.verticalGradient(
                         listOf(
@@ -215,8 +279,8 @@ private fun OnboardingWelcomeStep() {
                 )
                 drawCircle(
                     color = MaterialTheme.colorScheme.surface,
-                    radius = radius * 1.1f,
-                    center = center.copy(y = center.y + radius)
+                    radius = radius * 1.15f,
+                    center = center.copy(y = center.y + radius * 0.9f)
                 )
             }
         }
@@ -388,7 +452,7 @@ private fun OnboardingPermissionStep(
 
         PermissionCard(
             title = "Exact alarms",
-            description = "Allows precise wake-ups for critical habits like medication or sleep.",
+            description = "Guaranteed reminders for high-priority habits.",
             enabled = exactAlarmsGranted,
             actionLabel = if (exactAlarmsGranted) "Enabled" else "Enable",
             onClick = {
@@ -443,7 +507,7 @@ private fun PermissionCard(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(32.dp),
         tonalElevation = 2.dp,
         color = MaterialTheme.colorScheme.surface,
         onClick = onClick
@@ -694,8 +758,9 @@ private fun OnboardingFooter(
     currentStep: Int,
     totalSteps: Int,
     canGoBack: Boolean,
+    isFinalStep: Boolean,
     onBack: () -> Unit,
-    onNext: () -> Unit
+    onPrimaryClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -715,8 +780,8 @@ private fun OnboardingFooter(
             Spacer(modifier = Modifier.width(40.dp))
         }
 
-        val primaryLabel = if (currentStep == totalSteps - 1) "Finish" else "Continue"
-        PrimaryOnboardingButton(text = primaryLabel, onClick = onNext)
+        val primaryLabel = if (isFinalStep) "Finish" else "Continue"
+        PrimaryOnboardingButton(text = primaryLabel, onClick = onPrimaryClick)
     }
 }
 

@@ -42,11 +42,14 @@ data class DashboardTask(
     val accentHex: String
 )
 
+enum class UiMessageType { SUCCESS, ERROR, INFO }
+
 data class UiMessage(
     val id: Long = System.currentTimeMillis(),
     val text: String,
     val isBlocking: Boolean = false,
-    val actionLabel: String? = null
+    val actionLabel: String? = null,
+    val type: UiMessageType = UiMessageType.INFO
 )
 
 data class AddUiState(

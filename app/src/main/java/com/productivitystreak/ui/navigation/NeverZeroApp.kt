@@ -1,6 +1,7 @@
 package com.productivitystreak.ui.navigation
 
 import android.net.Uri
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -24,6 +25,9 @@ import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -45,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -63,6 +68,7 @@ import com.productivitystreak.ui.screens.profile.ProfileScreen
 import com.productivitystreak.ui.screens.stats.StatsScreen
 import com.productivitystreak.ui.state.AddEntryType
 import com.productivitystreak.ui.state.AppUiState
+import com.productivitystreak.ui.state.UiMessageType
 import com.productivitystreak.ui.theme.NeverZeroTheme
 import kotlinx.coroutines.launch
 
@@ -137,9 +143,11 @@ fun NeverZeroApp(
     val snackbarHostState = remember { SnackbarHostState() }
     val uiMessage = uiState.uiMessage
     val scope = rememberCoroutineScope()
+    var snackbarType by remember { mutableStateOf(UiMessageType.INFO) }
 
     LaunchedEffect(uiMessage) {
         uiMessage?.let { message ->
+            snackbarType = message.type
             scope.launch {
                 snackbarHostState.showSnackbar(message.text)
                 onDismissUiMessage()
@@ -157,18 +165,35 @@ fun NeverZeroApp(
         modifier = Modifier.fillMaxSize(),
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState) { snackbarData ->
+                val (icon, iconTint) = when (snackbarType) {
+                    UiMessageType.SUCCESS -> Icons.Filled.CheckCircle to MaterialTheme.colorScheme.primary
+                    UiMessageType.ERROR -> Icons.Filled.Warning to MaterialTheme.colorScheme.error
+                    UiMessageType.INFO -> Icons.Filled.Info to MaterialTheme.colorScheme.secondary
+                }
                 Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 4.dp,
-                    shadowElevation = 8.dp
+                    shape = RoundedCornerShape(18.dp),
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    tonalElevation = 6.dp,
+                    shadowElevation = 10.dp
                 ) {
-                    Text(
-                        text = snackbarData.visuals.message,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        AnimatedContent(targetState = iconTint, label = "snackbar-icon") { tint ->
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = tint
+                            )
+                        }
+                        Text(
+                            text = snackbarData.visuals.message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
         },
@@ -280,7 +305,7 @@ private fun NeverZeroBottomBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .blur(20.dp),
-            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
             tonalElevation = 6.dp,
             shape = RoundedCornerShape(26.dp)
         ) {}
@@ -313,6 +338,7 @@ private fun NeverZeroBottomBar(
                 Box(
                     modifier = Modifier
                         .size(56.dp)
+                        .shadow(18.dp, CircleShape, clip = false)
                         .clip(CircleShape)
                         .background(NeverZeroTheme.gradientColors.PremiumStart)
                         .clickable(onClick = onAddTapped),
