@@ -243,7 +243,7 @@ private fun OnboardingWelcomeStep() {
         ),
         label = "sunrise-radius"
     )
-    )
+
     val drift by infiniteTransition.animateFloat(
         initialValue = -0.04f,
         targetValue = 0.04f,
