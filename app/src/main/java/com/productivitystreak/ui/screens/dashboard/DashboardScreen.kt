@@ -229,13 +229,13 @@ private fun CircularProgressRing(
     modifier: Modifier = Modifier,
     progress: Float
 ) {
-    val size = 80.dp
+    val ringSize = 80.dp
     val strokeWidth = 10.dp
 
-    Canvas(modifier = modifier.size(size)) {
+    Canvas(modifier = modifier.size(ringSize)) {
         val sweep = 360f * progress
         val stroke = strokeWidth.toPx()
-        val radius = kotlin.math.min(size.width, size.height) / 2f - stroke
+        val radius = size.minDimension / 2f - stroke
 
         drawCircle(
             color = Color.White.copy(alpha = 0.25f),
