@@ -62,6 +62,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.productivitystreak.notifications.TimeCapsuleDeliveryWorker
+import java.util.concurrent.TimeUnit
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import com.productivitystreak.ui.utils.hapticFeedbackManager
@@ -146,6 +151,51 @@ class AppViewModel(
                 }
             }
         }
+    }
+
+    fun onCreateTimeCapsule(message: String, goalDescription: String, daysFromNow: Int) {
+        val trimmedMessage = message.trim()
+        val trimmedGoal = goalDescription.trim()
+        if (trimmedMessage.isBlank() || trimmedGoal.isBlank()) {
+            pushUiMessage("Both the promise and the letter need to be filled.", type = UiMessageType.ERROR)
+            return
+        }
+
+        val safeDays = daysFromNow.coerceAtLeast(1)
+
+        viewModelScope.launch {
+            try {
+                val now = System.currentTimeMillis()
+                val deliveryMillis = now + TimeUnit.DAYS.toMillis(safeDays.toLong())
+                val id = timeCapsuleRepository.createTimeCapsule(
+                    message = trimmedMessage,
+                    deliveryDateMillis = deliveryMillis,
+                    goalDescription = trimmedGoal
+                )
+                scheduleTimeCapsuleDelivery(id, deliveryMillis)
+                pushUiMessage("Time capsule scheduled", type = UiMessageType.SUCCESS)
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error creating time capsule", e)
+                pushUiMessage("Unable to schedule time capsule. Try again.", type = UiMessageType.ERROR)
+            }
+        }
+    }
+
+    private fun scheduleTimeCapsuleDelivery(id: String, deliveryMillis: Long) {
+        val now = System.currentTimeMillis()
+        val delayMillis = (deliveryMillis - now).coerceAtLeast(0L)
+
+        val workRequest = OneTimeWorkRequestBuilder<TimeCapsuleDeliveryWorker>()
+            .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
+            .setInputData(TimeCapsuleDeliveryWorker.createInputData(id))
+            .build()
+
+        val workManager = WorkManager.getInstance(getApplication())
+        workManager.enqueueUniqueWork(
+            "time_capsule_$id",
+            ExistingWorkPolicy.REPLACE,
+            workRequest
+        )
     }
 
     fun onSubmitVocabularyEntry(word: String, definition: String, example: String?) {

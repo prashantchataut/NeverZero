@@ -18,12 +18,14 @@ class NotificationHelper(private val context: Context) {
         private const val CHANNEL_ID_MILESTONES = "milestones"
         private const val CHANNEL_ID_BACKUP = "backup_reminders"
         private const val CHANNEL_ID_STREAK_DANGER = "streak_danger"
+        private const val CHANNEL_ID_TIME_CAPSULE = "time_capsule"
 
         private const val NOTIFICATION_ID_DAILY_REMINDER = 1
         private const val NOTIFICATION_ID_ACHIEVEMENT = 2
         private const val NOTIFICATION_ID_MILESTONE = 3
         private const val NOTIFICATION_ID_BACKUP = 4
         private const val NOTIFICATION_ID_STREAK_DANGER = 5
+        private const val NOTIFICATION_ID_TIME_CAPSULE = 6
     }
 
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -83,8 +85,18 @@ class NotificationHelper(private val context: Context) {
                 enableVibration(true)
             }
 
+            // Time Capsule deliveries
+            val timeCapsuleChannel = NotificationChannel(
+                CHANNEL_ID_TIME_CAPSULE,
+                "Time Capsules",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Scheduled reflections from your past self"
+                enableVibration(true)
+            }
+
             notificationManager.createNotificationChannels(
-                listOf(remindersChannel, achievementsChannel, milestonesChannel, backupChannel, dangerChannel)
+                listOf(remindersChannel, achievementsChannel, milestonesChannel, backupChannel, dangerChannel, timeCapsuleChannel)
             )
         }
     }
@@ -221,5 +233,35 @@ class NotificationHelper(private val context: Context) {
             .build()
 
         notificationManager.notify(NOTIFICATION_ID_STREAK_DANGER, notification)
+    }
+
+    fun showTimeCapsuleDelivery(goalDescription: String) {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val title = "Message from your past self"
+        val message = if (goalDescription.isNotBlank()) {
+            "Revisit the commitment: $goalDescription"
+        } else {
+            "Take a moment to compare who you intended to be with who you are today."
+        }
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID_TIME_CAPSULE)
+            .setSmallIcon(R.drawable.ic_launcher)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        notificationManager.notify(NOTIFICATION_ID_TIME_CAPSULE, notification)
     }
 }

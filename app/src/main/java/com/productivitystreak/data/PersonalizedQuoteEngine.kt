@@ -165,7 +165,8 @@ class PersonalizedQuoteEngine {
         }
 
         // Use deterministic selection based on day of year + user name hash
-        val seed = userContext.timeOfDay.dayOfYear + userContext.userName.hashCode()
+        val dayOfYear = java.time.LocalDate.now().dayOfYear
+        val seed = dayOfYear + userContext.userName.hashCode()
         val selectedTemplate = matchingTemplates[abs(seed) % matchingTemplates.size]
 
         return Quote(

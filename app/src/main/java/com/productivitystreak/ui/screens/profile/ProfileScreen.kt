@@ -102,10 +102,9 @@ fun ProfileScreen(
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        ProfileHeader(
+        AccountCard(
             userName = userName,
-            email = profileState.email,
-            onEditProfile = onEditProfile
+            email = profileState.email
         )
 
         Text(

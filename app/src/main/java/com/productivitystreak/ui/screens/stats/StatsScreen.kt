@@ -110,7 +110,8 @@ private fun LeaderboardSection(
 ) {
     if (entries.isEmpty()) return
 
-    var selectedPosition by remember { mutableStateOf<Int?>(null) }
+    val selectedPositionState = remember { mutableStateOf<Int?>(null) }
+    var selectedPosition by selectedPositionState
 
     Card(
         modifier = Modifier.fillMaxWidth(),
