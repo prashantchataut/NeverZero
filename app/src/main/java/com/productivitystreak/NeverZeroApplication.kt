@@ -23,6 +23,7 @@ class NeverZeroApplication : Application() {
     val bookRepository by lazy { BookRepository(database.bookDao(), database.readingSessionDao()) }
     val reflectionRepository by lazy { ReflectionRepository(database.dailyReflectionDao()) }
     val achievementRepository by lazy { AchievementRepository(database.achievementDao()) }
+    val assetRepository by lazy { AssetRepository() }
 
     // Utilities
     val backupManager by lazy { BackupManager(this, database) }

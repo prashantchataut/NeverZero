@@ -26,6 +26,7 @@ data class AppUiState(
     val onboardingState: OnboardingState = OnboardingState(),
     val settingsState: SettingsState = SettingsState(),
     val addUiState: AddUiState = AddUiState(),
+    val totalPoints: Int = 0,
     val showOnboarding: Boolean = true,
     val onboardingCelebration: Boolean = false,
     val permissionState: PermissionUiState = PermissionUiState(),

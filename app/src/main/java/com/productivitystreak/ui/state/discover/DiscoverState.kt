@@ -1,12 +1,15 @@
 package com.productivitystreak.ui.state.discover
 
+import com.productivitystreak.data.model.Asset
+
 data class DiscoverState(
     val featuredContent: FeaturedContent = FeaturedContent(),
     val categories: List<CategoryItem> = emptyList(),
     val suggestions: List<SuggestionItem> = emptyList(),
     val communityChallenges: List<ChallengeItem> = emptyList(),
     val articles: List<ArticleItem> = emptyList(),
-    val communityStories: List<CommunityStory> = emptyList()
+    val communityStories: List<CommunityStory> = emptyList(),
+    val assets: List<Asset> = emptyList()
 )
 
 data class FeaturedContent(

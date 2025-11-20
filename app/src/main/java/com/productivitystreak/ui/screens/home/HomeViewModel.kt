@@ -1,7 +1,8 @@
 package com.productivitystreak.ui.screens.home
 
 import androidx.lifecycle.ViewModel
-import com.productivitystreak.ui.state.vocabulary.VocabularyWord
+import com.productivitystreak.ui.state.home.ContentType
+import com.productivitystreak.ui.state.home.DailyContent
 import java.time.LocalDate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,27 +16,27 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 class HomeViewModel : ViewModel() {
 
-    private val _wordOfTheDay = MutableStateFlow<VocabularyWord?>(null)
-    val wordOfTheDay: StateFlow<VocabularyWord?> = _wordOfTheDay.asStateFlow()
+    private val _dailyContent = MutableStateFlow<DailyContent?>(null)
+    val dailyContent: StateFlow<DailyContent?> = _dailyContent.asStateFlow()
 
-    /**
-     * Selects a deterministic "word of the day" from the provided list.
-     * Call this whenever the vocabulary list is updated or on app start.
-     */
-    fun refreshWordForToday(words: List<VocabularyWord>) {
-        if (words.isEmpty()) {
-            _wordOfTheDay.value = null
-            return
-        }
-        val todayIndex = LocalDate.now().dayOfYear % words.size
-        _wordOfTheDay.value = words[todayIndex]
+    init {
+        // In a real app, this would come from a repository
+        loadDailyContent()
     }
 
-    fun markWordKnown() {
-        // Hook for persistence / analytics when a user confirms mastery.
+    private fun loadDailyContent() {
+        // Sample content for "The Zeigarnik Effect"
+        _dailyContent.value = DailyContent(
+            id = "zeigarnik_effect",
+            type = ContentType.PSYCHOLOGY_TRICK,
+            title = "The Zeigarnik Effect",
+            subtitle = "Cognitive Bias",
+            content = "Your brain remembers unfinished tasks better than finished ones. Use this to your advantage: start a difficult task, then deliberately pause. Your brain will itch to complete it.",
+            actionLabel = "Claim Upgrade"
+        )
     }
 
-    fun startLearningWord() {
-        // Hook for navigation into a detailed learning experience.
+    fun onContentAction(content: DailyContent) {
+        // Handle action (e.g., mark as collected, open details)
     }
 }

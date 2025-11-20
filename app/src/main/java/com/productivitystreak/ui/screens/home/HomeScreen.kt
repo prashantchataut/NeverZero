@@ -45,7 +45,7 @@ import com.productivitystreak.ui.icons.AppIcons
 import com.productivitystreak.ui.state.AppUiState
 import com.productivitystreak.ui.state.DashboardTask
 import com.productivitystreak.ui.state.profile.ReminderFrequency
-import com.productivitystreak.ui.state.vocabulary.VocabularyWord
+import com.productivitystreak.ui.state.home.DailyContent
 import com.productivitystreak.ui.theme.NeverZeroTheme
 import java.time.LocalTime
 import kotlinx.coroutines.delay
@@ -59,12 +59,24 @@ fun HomeScreen(
     onOpenNotificationsSettings: () -> Unit = {},
     onOpenVocabulary: () -> Unit = {}
 ) {
-    val wordOfTheDay by viewModel.wordOfTheDay.collectAsStateWithLifecycle()
+    val dailyContent by viewModel.dailyContent.collectAsStateWithLifecycle()
     val greeting = remember { getGreeting() }
     val streakDays = uiState.vocabularyState.currentStreakDays
 
-    LaunchedEffect(uiState.vocabularyState.words) {
-        viewModel.refreshWordForToday(uiState.vocabularyState.words)
+    // Rescue Mode Logic
+    val currentHour = LocalTime.now().hour
+    val hasIncompleteTasks = uiState.todayTasks.any { !it.isCompleted }
+    val showRescue = currentHour >= 17 && hasIncompleteTasks
+    var showRescueDialog by remember { mutableStateOf(false) }
+
+    if (showRescueDialog) {
+        RescueProtocolDialog(
+            onDismiss = { showRescueDialog = false },
+            onAccept = {
+                showRescueDialog = false
+                // TODO: Add logic to mark a "mini-win" or log the rescue
+            }
+        )
     }
 
     Column(
@@ -73,6 +85,12 @@ fun HomeScreen(
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        if (showRescue) {
+            RescueButton(
+                onClick = { showRescueDialog = true }
+            )
+        }
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -87,7 +105,7 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
-                    text = "Vocabulary teacher",
+                    text = "Cognitive Performance",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -100,7 +118,7 @@ fun HomeScreen(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.LocalFireDepartment,
-                    contentDescription = "Vocabulary streak",
+                    contentDescription = "Streak",
                     tint = streakColor
                 )
                 Text(
@@ -111,11 +129,10 @@ fun HomeScreen(
             }
         }
 
-        WordOfTheDayCard(
-            word = wordOfTheDay,
-            onPrimaryAction = {
-                viewModel.startLearningWord()
-                onOpenVocabulary()
+        DailyUpgradeTile(
+            content = dailyContent,
+            onAction = {
+                dailyContent?.let { viewModel.onContentAction(it) }
             },
             modifier = Modifier.fillMaxWidth()
         )
@@ -142,15 +159,12 @@ fun HomeScreen(
 }
 
 @Composable
-fun WordOfTheDayCard(
-    word: VocabularyWord?,
-    onPrimaryAction: () -> Unit,
+fun DailyUpgradeTile(
+    content: DailyContent?,
+    onAction: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val displayWord = word?.word ?: "Stoicism"
-    val displayPronunciation = word?.let { "/${it.word.lowercase()}/" } ?: "/ˈstōəˌsizəm/"
-    val displayDefinition = word?.definition
-        ?: "The endurance of hardship without complaint; a calm acceptance of life’s ups and downs."
+    if (content == null) return
 
     ElevatedCard(modifier = modifier) {
         Column(
@@ -160,27 +174,29 @@ fun WordOfTheDayCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "WORD OF THE DAY",
+                text = "DAILY UPGRADE • ${content.type.name.replace("_", " ")}",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.primary
             )
 
             Text(
-                text = displayWord,
+                text = content.title,
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
 
-            Text(
-                text = displayPronunciation,
-                style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            content.subtitle?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             Text(
-                text = displayDefinition,
+                text = content.content,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -188,11 +204,10 @@ fun WordOfTheDayCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             Button(
-                onClick = onPrimaryAction,
-                enabled = word != null,
+                onClick = onAction,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Add to Vocabulary")
+                Text(text = content.actionLabel)
             }
         }
     }

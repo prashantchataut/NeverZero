@@ -8,6 +8,7 @@ import com.productivitystreak.NeverZeroApplication
 import com.productivitystreak.data.QuoteRepository
 import com.productivitystreak.data.local.PreferencesManager
 import com.productivitystreak.data.model.Streak
+import com.productivitystreak.data.repository.AssetRepository
 import com.productivitystreak.data.repository.ReflectionRepository
 import com.productivitystreak.data.repository.RepositoryResult
 import com.productivitystreak.data.repository.StreakRepository
@@ -71,7 +72,8 @@ class AppViewModel(
     private val streakRepository: StreakRepository,
     private val reflectionRepository: ReflectionRepository,
     private val reminderScheduler: StreakReminderScheduler,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val assetRepository: AssetRepository
 ) : AndroidViewModel(application) {
 
     private val hapticManager = application.hapticFeedbackManager()
@@ -208,6 +210,7 @@ class AppViewModel(
         loadSettingsPreferences()
         bootstrapStaticState()
         observeStreaks()
+        observeAssets()
         refreshQuote()
     }
 
@@ -405,6 +408,34 @@ class AppViewModel(
                 }
             } catch (e: Exception) {
                 Log.e("AppViewModel", "Error loading reminder frequency", e)
+            }
+        }
+        
+        viewModelScope.launch {
+            try {
+                preferencesManager.totalPoints.collect { points ->
+                    _uiState.update { state ->
+                        state.copy(totalPoints = points)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error loading total points", e)
+            }
+        }
+    }
+
+    private fun observeAssets() {
+        viewModelScope.launch {
+            try {
+                assetRepository.observeAssets().collect { assets ->
+                    _uiState.update { state ->
+                        state.copy(
+                            discoverState = state.discoverState.copy(assets = assets)
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error observing assets", e)
             }
         }
     }
