@@ -4,7 +4,9 @@ data class DiscoverState(
     val featuredContent: FeaturedContent = FeaturedContent(),
     val categories: List<CategoryItem> = emptyList(),
     val suggestions: List<SuggestionItem> = emptyList(),
-    val communityChallenges: List<ChallengeItem> = emptyList()
+    val communityChallenges: List<ChallengeItem> = emptyList(),
+    val articles: List<ArticleItem> = emptyList(),
+    val communityStories: List<CommunityStory> = emptyList()
 )
 
 data class FeaturedContent(
@@ -33,4 +35,18 @@ data class ChallengeItem(
     val durationLabel: String,
     val participantCount: Int,
     val accentHex: String
+)
+
+data class ArticleItem(
+    val id: String,
+    val title: String,
+    val tag: String,
+    val readTimeMinutes: Int,
+    val imageUrl: String
+)
+
+data class CommunityStory(
+    val id: String,
+    val author: String,
+    val avatarUrl: String
 )

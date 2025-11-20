@@ -22,8 +22,10 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.productivitystreak.ui.state.AddEntryType
 import com.productivitystreak.ui.state.AddUiState
 import com.productivitystreak.ui.state.DashboardTask
+import com.productivitystreak.ui.state.discover.ArticleItem
 import com.productivitystreak.ui.state.discover.CategoryItem
 import com.productivitystreak.ui.state.discover.ChallengeItem
+import com.productivitystreak.ui.state.discover.CommunityStory
 import com.productivitystreak.ui.state.discover.DiscoverState
 import com.productivitystreak.ui.state.discover.FeaturedContent
 import com.productivitystreak.ui.state.discover.SuggestionItem
@@ -1233,6 +1235,51 @@ class AppViewModel(
         communityChallenges = listOf(
             ChallengeItem("meditation", "30-Day Meditation", "Day 12 of 30", 4281, "#6C63FF"),
             ChallengeItem("journal", "Weekly Journaling", "2 days left", 1372, "#FF6584")
+        ),
+        articles = listOf(
+            ArticleItem(
+                id = "micro-choices",
+                title = "Micro choices that compound into macro habits",
+                tag = "Behavioral Science",
+                readTimeMinutes = 6,
+                imageUrl = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=80"
+            ),
+            ArticleItem(
+                id = "focus-sprints",
+                title = "Designing 25-minute focus sprints for deep work",
+                tag = "Productivity",
+                readTimeMinutes = 4,
+                imageUrl = "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=400&q=80"
+            ),
+            ArticleItem(
+                id = "mindful-evenings",
+                title = "Mindful evening rituals that calm the nervous system",
+                tag = "Mindfulness",
+                readTimeMinutes = 7,
+                imageUrl = "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80"
+            )
+        ),
+        communityStories = listOf(
+            CommunityStory(
+                id = "story-alex",
+                author = "Alex R.",
+                avatarUrl = "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=200&q=80"
+            ),
+            CommunityStory(
+                id = "story-mei",
+                author = "Mei Chen",
+                avatarUrl = "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80"
+            ),
+            CommunityStory(
+                id = "story-luca",
+                author = "Luca S.",
+                avatarUrl = "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=200&q=80"
+            ),
+            CommunityStory(
+                id = "story-asha",
+                author = "Asha P.",
+                avatarUrl = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80"
+            )
         )
     )
 

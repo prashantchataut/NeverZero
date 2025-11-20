@@ -6,19 +6,23 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,15 +33,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.productivitystreak.ui.state.discover.ArticleItem
 import com.productivitystreak.ui.state.discover.CategoryItem
-import com.productivitystreak.ui.state.discover.ChallengeItem
+import com.productivitystreak.ui.state.discover.CommunityStory
 import com.productivitystreak.ui.state.discover.DiscoverState
 import com.productivitystreak.ui.state.discover.FeaturedContent
-import com.productivitystreak.ui.state.discover.SuggestionItem
 import com.productivitystreak.ui.theme.NeverZeroTheme
 
 @Composable
@@ -45,64 +52,83 @@ fun DiscoverScreen(
     state: DiscoverState,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .background(MaterialTheme.colorScheme.background),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        Text(
-            text = "Discover",
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        FeaturedCard(content = state.featuredContent)
-
-        if (state.categories.isNotEmpty()) {
+        item {
             Text(
-                text = "Focus areas",
-                style = MaterialTheme.typography.titleMedium,
+                text = "Discover",
+                style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onBackground
             )
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(state.categories) { category ->
-                    CategoryChip(category)
+        }
+
+        if (state.featuredContent.title.isNotBlank()) {
+            item {
+                FeaturedCard(content = state.featuredContent)
+            }
+        }
+
+        if (state.categories.isNotEmpty()) {
+            item {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Focus areas",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp)
+                    ) {
+                        items(state.categories, key = { it.id }) { category ->
+                            FocusAreaChip(category)
+                        }
+                    }
                 }
             }
         }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            if (state.suggestions.isNotEmpty()) {
-                item {
-                    Text(
-                        text = "Suggested for you",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-                items(state.suggestions) { suggestion ->
-                    SuggestionCard(suggestion)
-                }
+        if (state.articles.isNotEmpty()) {
+            item {
+                Text(
+                    text = "Resource feed",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
             }
+            items(state.articles, key = { it.id }) { article ->
+                ArticleCard(
+                    article = article,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
 
-            if (state.communityChallenges.isNotEmpty()) {
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
+        if (state.communityStories.isNotEmpty()) {
+            item {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     Text(
-                        text = "Community challenges",
+                        text = "Community stories",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onBackground
                     )
-                }
-                items(state.communityChallenges) { challenge ->
-                    ChallengeCard(challenge)
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(state.communityStories, key = { it.id }) { story ->
+                            CommunityStoryAvatar(story)
+                        }
+                    }
                 }
             }
         }
@@ -110,9 +136,138 @@ fun DiscoverScreen(
 }
 
 @Composable
-private fun FeaturedCard(content: FeaturedContent) {
-    if (content.title.isBlank()) return
+fun ArticleCard(
+    article: ArticleItem,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
+) {
+    val shape = RoundedCornerShape(22.dp)
+    Surface(
+        modifier = modifier,
+        tonalElevation = 2.dp,
+        shadowElevation = 2.dp,
+        shape = shape,
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(RoundedCornerShape(18.dp)),
+                model = article.imageUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop
+            )
 
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = article.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = article.tag.uppercase(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        letterSpacing = 0.5.sp
+                    )
+                    Text(
+                        text = "•",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "${article.readTimeMinutes} min read",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CommunityStoryAvatar(story: CommunityStory) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        AsyncImage(
+            modifier = Modifier
+                .size(64.dp)
+                .clip(CircleShape),
+            model = story.avatarUrl,
+            contentDescription = "${story.author} avatar",
+            contentScale = ContentScale.Crop
+        )
+        Text(
+            modifier = Modifier.widthIn(max = 72.dp),
+            text = story.author,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun FocusAreaChip(item: CategoryItem) {
+    val primary = MaterialTheme.colorScheme.primary
+    val accent = remember(item.accentHex) {
+        runCatching { Color(android.graphics.Color.parseColor(item.accentHex)) }
+            .getOrElse { primary }
+    }
+
+    FilterChip(
+        selected = false,
+        onClick = {},
+        label = {
+            Text(
+                text = item.title,
+                style = MaterialTheme.typography.bodySmall
+            )
+        },
+        leadingIcon = {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .clip(CircleShape)
+                    .background(accent)
+            )
+        },
+        colors = FilterChipDefaults.filterChipColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            labelColor = MaterialTheme.colorScheme.onSurface,
+            leadingIconColor = accent
+        ),
+        border = FilterChipDefaults.filterChipBorder(
+            enabled = true,
+            selected = false,
+            borderColor = MaterialTheme.colorScheme.outlineVariant
+        )
+    )
+}
+
+@Composable
+private fun FeaturedCard(content: FeaturedContent) {
     val defaultColor = NeverZeroTheme.gradientColors.PremiumStart
     val accent = remember(content.accentHex) {
         runCatching { Color(android.graphics.Color.parseColor(content.accentHex)) }
@@ -128,16 +283,16 @@ private fun FeaturedCard(content: FeaturedContent) {
     ) {
         Box(
             modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.linearGradient(
-                    listOf(
-                        accent,
-                        NeverZeroTheme.gradientColors.PremiumEnd
+                .fillMaxSize()
+                .background(
+                    Brush.linearGradient(
+                        listOf(
+                            accent,
+                            NeverZeroTheme.gradientColors.PremiumEnd
+                        )
                     )
                 )
-            )
-            .padding(18.dp)
+                .padding(18.dp)
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -166,140 +321,3 @@ private fun FeaturedCard(content: FeaturedContent) {
         }
     }
 }
-
-@Composable
-private fun CategoryChip(item: CategoryItem) {
-    val primary = MaterialTheme.colorScheme.primary
-    val accent = remember(item.accentHex) {
-        runCatching { Color(android.graphics.Color.parseColor(item.accentHex)) }
-            .getOrElse { primary }
-    }
-    Surface(
-        shape = RoundedCornerShape(22.dp),
-        tonalElevation = 2.dp,
-        color = MaterialTheme.colorScheme.surface
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(accent)
-            )
-            Text(
-                text = item.title,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
-@Composable
-private fun SuggestionCard(item: SuggestionItem) {
-    val primary = MaterialTheme.colorScheme.primary
-    val accent = remember(item.accentHex) {
-        runCatching { Color(android.graphics.Color.parseColor(item.accentHex)) }
-            .getOrElse { primary }
-    }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Text(
-                text = item.title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = item.subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(width = 60.dp, height = 4.dp)
-                        .clip(RoundedCornerShape(999.dp))
-                        .background(accent)
-                )
-                Text(
-                    text = "Tap + to turn into a habit",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ChallengeCard(item: ChallengeItem) {
-    val twilightStart = NeverZeroTheme.gradientColors.TwilightStart
-    val accent = remember(item.accentHex) {
-        runCatching { Color(android.graphics.Color.parseColor(item.accentHex)) }
-            .getOrElse { twilightStart }
-    }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    text = item.title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = item.durationLabel,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = "${item.participantCount}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "joined",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
