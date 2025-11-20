@@ -12,6 +12,11 @@ import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.SelfImprovement
 import androidx.compose.material.icons.outlined.Vibration
 import androidx.compose.material.icons.outlined.Work
+import androidx.compose.material.icons.rounded.EmojiEvents
+import androidx.compose.material.icons.rounded.LocalFireDepartment
+import androidx.compose.material.icons.rounded.Bolt
+import androidx.compose.material.icons.rounded.Spa
+import androidx.compose.material.icons.rounded.TrendingUp
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
@@ -33,6 +38,13 @@ object AppIcons {
     // Vibration icon better represents haptic feedback than headphones
     val Haptics: ImageVector = Icons.Outlined.Vibration
     val Default: ImageVector = Icons.Outlined.CheckCircle
+    
+    // Stats & Leaderboard Icons
+    val Crown: ImageVector = Icons.Rounded.EmojiEvents // Trophy/Crown for #1
+    val FireStreak: ImageVector = Icons.Rounded.LocalFireDepartment // Flame for streaks
+    val Lightning: ImageVector = Icons.Rounded.Bolt // Lightning for XP/energy
+    val Seedling: ImageVector = Icons.Rounded.Spa // Zen/growth for beginner
+    val TrendUp: ImageVector = Icons.Rounded.TrendingUp // Upward trend
 
     private val categoryMap: Map<String, ImageVector> = mapOf(
         "health" to Health,

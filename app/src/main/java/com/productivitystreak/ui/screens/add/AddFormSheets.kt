@@ -37,6 +37,11 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.SelfImprovement
+import androidx.compose.material.icons.outlined.SentimentDissatisfied
+import androidx.compose.material.icons.outlined.SentimentNeutral
+import androidx.compose.material.icons.outlined.SentimentSatisfied
+import androidx.compose.material.icons.outlined.SentimentVeryDissatisfied
+import androidx.compose.material.icons.outlined.SentimentVerySatisfied
 import androidx.compose.material.icons.outlined.WaterDrop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -275,7 +280,7 @@ fun JournalFormSheet(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(text = moodEmoji(mood), fontSize = 32.sp)
+            MoodIndicator(value = mood, color = moodColor)
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = "Mood", style = MaterialTheme.typography.labelMedium)
                 Box(
@@ -454,12 +459,22 @@ private fun JournalField(
     )
 }
 
-private fun moodEmoji(value: Float): String = when (value.toInt()) {
-    1 -> "😔"
-    2 -> "😐"
-    3 -> "🙂"
-    4 -> "😊"
-    else -> "🤩"
+@Composable
+private fun MoodIndicator(value: Float, color: Color) {
+    val icon = when (value.toInt()) {
+        1 -> Icons.Outlined.SentimentVeryDissatisfied
+        2 -> Icons.Outlined.SentimentDissatisfied
+        3 -> Icons.Outlined.SentimentNeutral
+        4 -> Icons.Outlined.SentimentSatisfied
+        else -> Icons.Outlined.SentimentVerySatisfied
+    }
+    
+    Icon(
+        imageVector = icon,
+        contentDescription = "Mood indicator",
+        tint = color,
+        modifier = Modifier.size(36.dp)
+    )
 }
 
 private fun moodColorForValue(value: Float): Color = when (value.toInt()) {

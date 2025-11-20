@@ -17,14 +17,14 @@ data class OnboardingState(
 data class OnboardingCategory(
     val id: String,
     val label: String,
-    val emoji: String
+    val iconId: String // Maps to AppIcons (health, fitness, mindfulness, etc.)
 )
 
 private val defaultOnboardingCategories = listOf(
-    OnboardingCategory("health", "Health", "💗"),
-    OnboardingCategory("fitness", "Fitness", "🏋️"),
-    OnboardingCategory("mindfulness", "Mindfulness", "🧘"),
-    OnboardingCategory("learning", "Learning", "📚"),
-    OnboardingCategory("career", "Career", "💼"),
-    OnboardingCategory("finance", "Finance", "🏦")
+    OnboardingCategory("health", "Health", "health"),
+    OnboardingCategory("fitness", "Fitness", "fitness"),
+    OnboardingCategory("mindfulness", "Mindfulness", "mindfulness"),
+    OnboardingCategory("learning", "Learning", "learning"),
+    OnboardingCategory("career", "Career", "career"),
+    OnboardingCategory("finance", "Finance", "finance")
 )

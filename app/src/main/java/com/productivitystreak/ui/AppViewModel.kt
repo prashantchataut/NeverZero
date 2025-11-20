@@ -12,6 +12,7 @@ import com.productivitystreak.data.repository.AssetRepository
 import com.productivitystreak.data.repository.ReflectionRepository
 import com.productivitystreak.data.repository.RepositoryResult
 import com.productivitystreak.data.repository.StreakRepository
+import com.productivitystreak.data.repository.TimeCapsuleRepository
 import com.productivitystreak.data.repository.onSuccess
 import com.productivitystreak.notifications.StreakReminderScheduler
 import com.productivitystreak.ui.state.AppUiState
@@ -73,7 +74,8 @@ class AppViewModel(
     private val reflectionRepository: ReflectionRepository,
     private val reminderScheduler: StreakReminderScheduler,
     private val preferencesManager: PreferencesManager,
-    private val assetRepository: AssetRepository
+    private val assetRepository: AssetRepository,
+    private val timeCapsuleRepository: TimeCapsuleRepository
 ) : AndroidViewModel(application) {
 
     private val hapticManager = application.hapticFeedbackManager()
@@ -211,6 +213,7 @@ class AppViewModel(
         bootstrapStaticState()
         observeStreaks()
         observeAssets()
+        observeTimeCapsules()
         refreshQuote()
     }
 
@@ -436,6 +439,20 @@ class AppViewModel(
                 }
             } catch (e: Exception) {
                 Log.e("AppViewModel", "Error observing assets", e)
+            }
+        }
+    }
+
+    private fun observeTimeCapsules() {
+        viewModelScope.launch {
+            try {
+                timeCapsuleRepository.observeTimeCapsules().collect { capsules ->
+                    _uiState.update { state ->
+                        state.copy(timeCapsules = capsules)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error observing time capsules", e)
             }
         }
     }

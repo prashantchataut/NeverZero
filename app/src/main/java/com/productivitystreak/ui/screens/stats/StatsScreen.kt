@@ -1,6 +1,6 @@
 package com.productivitystreak.ui.screens.stats
 
-// Stats UI removed during architectural sanitization.
+// Stats UI - Enhanced with personalized leaderboard and consistency tracking
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -75,6 +76,11 @@ fun StatsScreen(
         )
 
         SummaryRow(statsState = statsState)
+
+        // Consistency Score Card
+        statsState.consistencyScore?.let {
+            ConsistencyScoreCard(score = it)
+        }
 
         statsState.averageDailyTrend?.let {
             StreakTrendCard(trend = it)
@@ -121,15 +127,43 @@ private fun LeaderboardSection(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = "Consistency leaderboard",
-                style = MaterialTheme.typography.titleMedium
-            )
-            Text(
-                text = "Top streaks over the last 30 days",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Momentum Leaderboard",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Ranked by consistency & performance",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
+                // Top 3 podium indicator
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = AppIcons.Celebration,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "Top ${entries.take(5).size}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -138,7 +172,7 @@ private fun LeaderboardSection(
                     .take(5)
                     .forEach { entry ->
                         val isSelected = selectedPosition == entry.position
-                        LeaderboardRow(
+                        EnhancedLeaderboardRow(
                             entry = entry,
                             highlight = entry.position == 1,
                             selected = isSelected,
@@ -154,17 +188,17 @@ private fun LeaderboardSection(
 }
 
 @Composable
-private fun LeaderboardRow(
+private fun EnhancedLeaderboardRow(
     entry: LeaderboardEntry,
     highlight: Boolean,
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = if (selected) {
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-    } else {
-        Color.Transparent
+    val backgroundColor = when {
+        selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+        entry.position == 1 -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+        else -> Color.Transparent
     }
 
     val avatarColors = listOf(
@@ -182,15 +216,15 @@ private fun LeaderboardRow(
         entry.name.trim().firstOrNull()?.uppercaseChar()?.toString() ?: ""
     }
 
-    val badgeBackground = when (entry.position) {
-        1 -> MaterialTheme.colorScheme.primaryContainer
-        2 -> MaterialTheme.colorScheme.secondaryContainer
-        3 -> MaterialTheme.colorScheme.tertiaryContainer
+    val rankBadgeColor = when (entry.position) {
+        1 -> Color(0xFFFFD700) // Gold
+        2 -> Color(0xFFC0C0C0) // Silver
+        3 -> Color(0xFFCD7F32) // Bronze
         else -> MaterialTheme.colorScheme.surfaceVariant
     }
 
-    val badgeTextColor = when (entry.position) {
-        1, 2, 3 -> MaterialTheme.colorScheme.onPrimaryContainer
+    val rankBadgeTextColor = when (entry.position) {
+        1, 2, 3 -> Color.Black
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
@@ -200,77 +234,142 @@ private fun LeaderboardRow(
             .clip(RoundedCornerShape(16.dp))
             .background(backgroundColor)
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f)
         ) {
+            // Rank Badge
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(32.dp)
+                    .background(rankBadgeColor, shape = CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "#${entry.position}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = rankBadgeTextColor,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            // Avatar
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
                     .background(color = avatarColor, shape = CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = initial,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
+
+            // Name and Stats
             Column(
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Text(
-                    text = entry.name,
-                    style = if (highlight) {
-                        MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold)
-                    } else {
-                        MaterialTheme.typography.bodyMedium
-                    },
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = "${entry.streakDays} days streak",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = entry.name,
+                        style = if (highlight) {
+                            MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                        } else {
+                            MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+                        },
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    
+                    // Crown for #1
+                    if (entry.position == 1) {
+                        Icon(
+                            imageVector = AppIcons.Crown,
+                            contentDescription = "Top Rank",
+                            tint = Color(0xFFFFD700),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+                
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Streak indicator
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = AppIcons.FireStreak,
+                            contentDescription = null,
+                            tint = Color(0xFFFF5722),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = "${entry.streakDays} days",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    // XP indicator (simulated from streak)
+                    val xp = entry.streakDays * 10
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = AppIcons.Lightning,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = "${xp} XP",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             }
         }
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (entry.position == 1) {
-                Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                            shape = CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = AppIcons.Celebration,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-            Box(
+        // Trend indicator (simulated - could be actual trend data)
+        val trendUp = entry.position <= 3
+        if (trendUp) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .background(badgeBackground, shape = RoundedCornerShape(999.dp))
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                    .background(
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
+                Icon(
+                    imageVector = AppIcons.TrendUp,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
                 Text(
-                    text = "#${entry.position}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = badgeTextColor
+                    text = "Rising",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }

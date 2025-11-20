@@ -211,7 +211,7 @@ class NotificationHelper(private val context: Context) {
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID_STREAK_DANGER)
             .setSmallIcon(R.drawable.ic_launcher)
-            .setContentTitle("⚠️ Streak Alert!")
+            .setContentTitle("Streak Alert!")
             .setContentText("$streakName streak will break in $hoursRemaining hour(s)!")
             .setStyle(NotificationCompat.BigTextStyle()
                 .bigText("Your '$streakName' streak is in danger! You have only $hoursRemaining hour(s) left to maintain it. Take action now!"))

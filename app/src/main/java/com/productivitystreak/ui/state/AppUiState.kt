@@ -2,6 +2,7 @@ package com.productivitystreak.ui.state
 
 import com.productivitystreak.data.model.Quote
 import com.productivitystreak.data.model.Streak
+import com.productivitystreak.data.model.TimeCapsule
 import com.productivitystreak.ui.state.discover.DiscoverState
 import com.productivitystreak.ui.state.onboarding.OnboardingState
 import com.productivitystreak.ui.state.profile.ProfileState
@@ -26,6 +27,7 @@ data class AppUiState(
     val onboardingState: OnboardingState = OnboardingState(),
     val settingsState: SettingsState = SettingsState(),
     val addUiState: AddUiState = AddUiState(),
+    val timeCapsules: List<TimeCapsule> = emptyList(),
     val totalPoints: Int = 0,
     val showOnboarding: Boolean = true,
     val onboardingCelebration: Boolean = false,

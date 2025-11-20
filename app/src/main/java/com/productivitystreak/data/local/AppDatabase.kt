@@ -16,9 +16,10 @@ import com.productivitystreak.data.local.entity.*
         BookEntity::class,
         ReadingSessionEntity::class,
         DailyReflectionEntity::class,
-        AchievementEntity::class
+        AchievementEntity::class,
+        TimeCapsuleEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -30,6 +31,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun readingSessionDao(): ReadingSessionDao
     abstract fun dailyReflectionDao(): DailyReflectionDao
     abstract fun achievementDao(): AchievementDao
+    abstract fun timeCapsuleDao(): TimeCapsuleDao
 
     companion object {
         @Volatile

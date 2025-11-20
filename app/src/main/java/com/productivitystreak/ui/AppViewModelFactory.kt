@@ -19,7 +19,8 @@ class AppViewModelFactory(private val application: Application) : ViewModelProvi
                 reflectionRepository = app.reflectionRepository,
                 reminderScheduler = StreakReminderScheduler(application),
                 preferencesManager = app.preferencesManager,
-                assetRepository = app.assetRepository
+                assetRepository = app.assetRepository,
+                timeCapsuleRepository = app.timeCapsuleRepository
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
