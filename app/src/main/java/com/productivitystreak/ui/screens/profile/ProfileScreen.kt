@@ -36,10 +36,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,6 +57,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.productivitystreak.data.model.TimeCapsule
 import com.productivitystreak.ui.state.profile.ProfileState
 import com.productivitystreak.ui.state.profile.ReminderFrequency
 import com.productivitystreak.ui.state.settings.SettingsState
@@ -67,6 +70,7 @@ fun ProfileScreen(
     profileState: ProfileState,
     settingsState: SettingsState,
     totalPoints: Int,
+    timeCapsules: List<TimeCapsule>,
     onSettingsThemeChange: (ThemeMode) -> Unit,
     onSettingsDailyRemindersToggle: (Boolean) -> Unit,
     onSettingsWeeklyBackupsToggle: (Boolean) -> Unit,
@@ -83,10 +87,13 @@ fun ProfileScreen(
     onToggleHaptics: (Boolean) -> Unit,
     onRequestNotificationPermission: () -> Unit,
     onRequestExactAlarmPermission: () -> Unit,
+    onCreateTimeCapsule: (message: String, goal: String, daysFromNow: Int) -> Unit,
+    onSaveTimeCapsuleReflection: (id: String, reflection: String) -> Unit,
     onEditProfile: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
+    var showTimeCapsuleSheet by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -111,6 +118,11 @@ fun ProfileScreen(
             text = "Cognitive XP: $totalPoints",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground
+        )
+
+        TimeCapsuleOverviewCard(
+            capsules = timeCapsules,
+            onWriteNew = { showTimeCapsuleSheet = true }
         )
 
         NotificationPreferencesCard(
@@ -144,10 +156,181 @@ fun ProfileScreen(
         LegalLinks(profileState)
     }
 
+    if (showTimeCapsuleSheet) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = { showTimeCapsuleSheet = false },
+            sheetState = sheetState,
+            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        ) {
+            TimeCapsuleCreationSheet(
+                onDismiss = { showTimeCapsuleSheet = false },
+                onCreate = { message, goal, days ->
+                    onCreateTimeCapsule(message, goal, days)
+                    showTimeCapsuleSheet = false
+                }
+            )
+        }
+    }
+
     if (settingsState.errorMessage != null || settingsState.showBackupSuccessMessage || settingsState.showRestoreSuccessMessage || settingsState.showTimePickerDialog) {
         // Let the central snackbar represent messages; here we just clear flags when invoked externally
         // via onSettingsDismissMessage from NeverZeroApp when needed.
         // No additional dialogs to avoid duplication.
+    }
+}
+
+@Composable
+private fun TimeCapsuleOverviewCard(
+    capsules: List<TimeCapsule>,
+    onWriteNew: () -> Unit
+) {
+    val now = System.currentTimeMillis()
+    val upcoming = capsules.filter { !it.opened && it.deliveryDateMillis > now }.minByOrNull { it.deliveryDateMillis }
+    val pendingReflection = capsules.filter { !it.opened && it.deliveryDateMillis <= now }.minByOrNull { it.deliveryDateMillis }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                text = "Time Capsule Protocol",
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text = "Write a serious letter to your future self and revisit whether you kept your promises.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            upcoming?.let {
+                Text(
+                    text = "Next delivery scheduled",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = it.goalDescription,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            pendingReflection?.let {
+                Text(
+                    text = "Awaiting reflection",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = it.goalDescription,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            Text(
+                text = "Write to future self",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .clickable(onClick = onWriteNew)
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+            )
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun TimeCapsuleCreationSheet(
+    onDismiss: () -> Unit,
+    onCreate: (message: String, goal: String, daysFromNow: Int) -> Unit
+) {
+    var goal by rememberSaveable { mutableStateOf("") }
+    var message by rememberSaveable { mutableStateOf("") }
+    var daysText by rememberSaveable { mutableStateOf("30") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = "Write to your future self",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Text(
+            text = "Describe the person you intend to be, and when you want to be reminded.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        OutlinedTextField(
+            value = goal,
+            onValueChange = { goal = it },
+            label = { Text("Promise / goal to revisit") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = message,
+            onValueChange = { message = it },
+            label = { Text("Letter to future self") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(140.dp),
+            maxLines = 6
+        )
+
+        OutlinedTextField(
+            value = daysText,
+            onValueChange = { daysText = it.filter { ch -> ch.isDigit() }.take(3) },
+            label = { Text("Deliver in (days)") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "Cancel",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .clickable(onClick = onDismiss)
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Text(
+                text = "Schedule capsule",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .clickable {
+                        val days = daysText.toIntOrNull() ?: 30
+                        onCreate(message, goal, days)
+                    }
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+            )
+        }
     }
 }
 

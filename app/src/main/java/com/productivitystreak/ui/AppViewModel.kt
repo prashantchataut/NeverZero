@@ -153,6 +153,24 @@ class AppViewModel(
         }
     }
 
+    fun onSaveTimeCapsuleReflection(id: String, reflection: String) {
+        val trimmed = reflection.trim()
+        if (trimmed.isBlank()) {
+            pushUiMessage("Reflection can’t be empty.", type = UiMessageType.ERROR)
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                timeCapsuleRepository.saveReflection(id, trimmed)
+                pushUiMessage("Reflection saved", type = UiMessageType.SUCCESS)
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error saving time capsule reflection", e)
+                pushUiMessage("Unable to save reflection.", type = UiMessageType.ERROR)
+            }
+        }
+    }
+
     fun onCreateTimeCapsule(message: String, goalDescription: String, daysFromNow: Int) {
         val trimmedMessage = message.trim()
         val trimmedGoal = goalDescription.trim()

@@ -60,6 +60,8 @@ class MainActivity : ComponentActivity() {
                         onSettingsDismissMessage = viewModel::onSettingsDismissMessage,
                         onAssetConsumed = viewModel::onAssetConsumed,
                         onAssetTestPassed = viewModel::onAssetTestPassed,
+                        onCreateTimeCapsule = viewModel::onCreateTimeCapsule,
+                        onSaveTimeCapsuleReflection = viewModel::onSaveTimeCapsuleReflection,
                         onDismissUiMessage = viewModel::onDismissUiMessage,
                         onOpenAddEntry = viewModel::onAddButtonTapped,
                         onAddButtonTapped = viewModel::onAddButtonTapped,
