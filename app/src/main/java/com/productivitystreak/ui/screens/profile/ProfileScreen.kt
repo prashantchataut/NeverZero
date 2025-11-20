@@ -66,6 +66,7 @@ fun ProfileScreen(
     userName: String,
     profileState: ProfileState,
     settingsState: SettingsState,
+    totalPoints: Int,
     onSettingsThemeChange: (ThemeMode) -> Unit,
     onSettingsDailyRemindersToggle: (Boolean) -> Unit,
     onSettingsWeeklyBackupsToggle: (Boolean) -> Unit,
@@ -105,6 +106,12 @@ fun ProfileScreen(
             userName = userName,
             email = profileState.email,
             onEditProfile = onEditProfile
+        )
+
+        Text(
+            text = "Cognitive XP: $totalPoints",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground
         )
 
         NotificationPreferencesCard(

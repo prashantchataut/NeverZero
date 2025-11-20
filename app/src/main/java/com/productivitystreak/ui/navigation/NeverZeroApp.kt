@@ -63,6 +63,7 @@ import com.productivitystreak.ui.screens.add.HabitFormSheet
 import com.productivitystreak.ui.screens.add.JournalFormSheet
 import com.productivitystreak.ui.screens.add.VocabularyFormSheet
 import com.productivitystreak.ui.screens.dashboard.DashboardScreen
+import com.productivitystreak.ui.screens.discover.AssetDetailScreen
 import com.productivitystreak.ui.screens.discover.DiscoverScreen
 import com.productivitystreak.ui.screens.onboarding.OnboardingFlow
 import com.productivitystreak.ui.screens.profile.ProfileScreen
@@ -109,6 +110,8 @@ fun NeverZeroApp(
     onSettingsRestoreFileSelected: (Uri) -> Unit = {},
     onSettingsDismissRestoreDialog: () -> Unit = {},
     onSettingsDismissMessage: () -> Unit = {},
+    onAssetConsumed: (String) -> Unit = {},
+    onAssetTestPassed: (String) -> Unit = {},
     onDismissUiMessage: () -> Unit,
     onOpenAddEntry: () -> Unit,
     onAddButtonTapped: () -> Unit,
@@ -158,6 +161,7 @@ fun NeverZeroApp(
     }
 
     var currentDestination by rememberSaveable { mutableStateOf(MainDestination.HOME) }
+    var selectedAssetId by rememberSaveable { mutableStateOf<String?>(null) }
 
     val addUi = uiState.addUiState
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -237,11 +241,15 @@ fun NeverZeroApp(
                         onSelectStreak = onSelectStreak
                     )
                     MainDestination.STATS -> StatsScreen(statsState = uiState.statsState)
-                    MainDestination.DISCOVER -> DiscoverScreen(state = uiState.discoverState)
+                    MainDestination.DISCOVER -> DiscoverScreen(
+                        state = uiState.discoverState,
+                        onAssetSelected = { assetId -> selectedAssetId = assetId }
+                    )
                     MainDestination.PROFILE -> ProfileScreen(
                         userName = uiState.userName,
                         profileState = uiState.profileState,
                         settingsState = uiState.settingsState,
+                        totalPoints = uiState.totalPoints,
                         onSettingsThemeChange = onSettingsThemeChange,
                         onSettingsDailyRemindersToggle = onSettingsDailyRemindersToggle,
                         onSettingsWeeklyBackupsToggle = onSettingsWeeklyBackupsToggle,
@@ -285,6 +293,26 @@ fun NeverZeroApp(
                             onSubmit = onSubmitJournal
                         )
                     }
+                }
+            }
+
+            val selectedAsset = selectedAssetId?.let { id ->
+                uiState.discoverState.assets.firstOrNull { it.id == id }
+            }
+
+            if (selectedAsset != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.4f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AssetDetailScreen(
+                        asset = selectedAsset,
+                        onDismiss = { selectedAssetId = null },
+                        onComplete = { onAssetConsumed(selectedAsset.id) },
+                        onTestPassed = { onAssetTestPassed(selectedAsset.id) }
+                    )
                 }
             }
         }

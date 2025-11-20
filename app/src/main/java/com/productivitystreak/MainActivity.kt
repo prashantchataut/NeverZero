@@ -58,6 +58,8 @@ class MainActivity : ComponentActivity() {
                         onSettingsRestoreFileSelected = viewModel::onSettingsRestoreFromFile,
                         onSettingsDismissRestoreDialog = viewModel::onSettingsDismissRestoreDialog,
                         onSettingsDismissMessage = viewModel::onSettingsDismissMessage,
+                        onAssetConsumed = viewModel::onAssetConsumed,
+                        onAssetTestPassed = viewModel::onAssetTestPassed,
                         onDismissUiMessage = viewModel::onDismissUiMessage,
                         onOpenAddEntry = viewModel::onAddButtonTapped,
                         onAddButtonTapped = viewModel::onAddButtonTapped,

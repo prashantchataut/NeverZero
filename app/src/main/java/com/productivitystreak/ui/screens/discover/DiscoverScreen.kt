@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,6 +40,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.productivitystreak.data.model.Asset
+import com.productivitystreak.data.model.AssetCategory
 import com.productivitystreak.ui.state.discover.ArticleItem
 import com.productivitystreak.ui.state.discover.CategoryItem
 import com.productivitystreak.ui.state.discover.CommunityStory
@@ -49,6 +52,7 @@ import com.productivitystreak.ui.theme.NeverZeroTheme
 @Composable
 fun DiscoverScreen(
     state: DiscoverState,
+    onAssetSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -117,6 +121,15 @@ fun DiscoverScreen(
             }
         }
 
+        if (state.assets.isNotEmpty()) {
+            item {
+                AssetLibrarySection(
+                    assets = state.assets,
+                    onAssetClick = { asset -> onAssetSelected(asset.id) }
+                )
+            }
+        }
+
         if (state.articles.isNotEmpty()) {
             item {
                 Text(
@@ -132,6 +145,114 @@ fun DiscoverScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun AssetLibrarySection(
+    assets: List<Asset>,
+    onAssetClick: (Asset) -> Unit
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = "High-value asset library",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        val grouped = assets.groupBy { it.category }
+        grouped.forEach { (category, categoryAssets) ->
+            val label = when (category) {
+                AssetCategory.PSYCHOLOGY_TRICKS -> "Psychology tricks"
+                AssetCategory.MEMORY_TECHNIQUES -> "Memory techniques"
+                AssetCategory.NEGOTIATION_SCRIPTS -> "Negotiation scripts"
+                AssetCategory.MARKETING_MENTAL_MODELS -> "Marketing mental models"
+                AssetCategory.BOOK_SUMMARIES -> "Book summaries"
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                val rows = categoryAssets.chunked(2)
+                rows.forEach { rowAssets ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        rowAssets.forEach { asset ->
+                            AssetCard(
+                                asset = asset,
+                                modifier = Modifier.weight(1f),
+                                onClick = { onAssetClick(asset) }
+                            )
+                        }
+                        if (rowAssets.size == 1) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AssetCard(
+    asset: Asset,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    val accent = assetCategoryColor(asset.category)
+
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        onClick = onClick
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text(
+                text = asset.title,
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = "60–90 second read",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (asset.certified) {
+                Text(
+                    text = "Certified",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = accent
+                )
+            }
+        }
+    }
+}
+
+private fun assetCategoryColor(category: AssetCategory): Color {
+    return when (category) {
+        AssetCategory.PSYCHOLOGY_TRICKS -> Color(0xFF80CBC4)
+        AssetCategory.MEMORY_TECHNIQUES -> Color(0xFF81D4FA)
+        AssetCategory.NEGOTIATION_SCRIPTS -> Color(0xFFFFB74D)
+        AssetCategory.MARKETING_MENTAL_MODELS -> Color(0xFFBA68C8)
+        AssetCategory.BOOK_SUMMARIES -> Color(0xFFAED581)
     }
 }
 

@@ -688,7 +688,20 @@ class AppViewModel(
         quoteRefreshJob = viewModelScope.launch {
             _uiState.update { it.copy(isQuoteLoading = true, uiMessage = null) }
             try {
-                val quote = quoteRepository.getDailyQuote(tags = "motivational|success")
+                val snapshot = _uiState.value
+                
+                // Build UserContext from current app state
+                val userContext = com.productivitystreak.data.model.UserContext(
+                    userName = snapshot.userName,
+                    currentStreakDays = snapshot.vocabularyState.currentStreakDays,
+                    totalTasksToday = snapshot.todayTasks.size,
+                    completedTasksToday = snapshot.todayTasks.count { it.isCompleted },
+                    timeOfDay = java.time.LocalTime.now(),
+                    lastActivityDate = java.time.LocalDate.now(), // TODO: Track actual last activity
+                    totalPoints = snapshot.totalPoints
+                )
+                
+                val quote = quoteRepository.getPersonalizedQuote(userContext)
                 _uiState.update { state ->
                     state.copy(
                         quote = quote,
@@ -1342,6 +1355,33 @@ class AppViewModel(
         theme = ProfileTheme.Dark,
         activeCategories = _uiState.value.onboardingState.selectedCategories
     )
+
+    fun onAssetConsumed(assetId: String) {
+        viewModelScope.launch {
+            try {
+                val asset = assetRepository.getAssetById(assetId) ?: return@launch
+                if (asset.xpValue > 0) {
+                    preferencesManager.addPoints(asset.xpValue)
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error applying XP for asset consumption $assetId", e)
+            }
+        }
+    }
+
+    fun onAssetTestPassed(assetId: String) {
+        viewModelScope.launch {
+            try {
+                val updated = assetRepository.markCertified(assetId)
+                val xp = updated?.xpValue ?: 0
+                if (xp > 0) {
+                    preferencesManager.addPoints(xp)
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error applying XP for asset test $assetId", e)
+            }
+        }
+    }
 
     fun simulateTaskCompletion(streakId: String, value: Int) {
         viewModelScope.launch {

@@ -1,12 +1,14 @@
 package com.productivitystreak.data
 
 import com.productivitystreak.data.model.Quote
-import com.productivitystreak.data.remote.QuoteService
+import com.productivitystreak.data.model.UserContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 class QuoteRepository {
+    private val personalizedEngine = PersonalizedQuoteEngine()
+    
     private val fallbackQuotes = listOf(
         Quote(
             text = "Discipline is the bridge between goals and accomplishment.",
@@ -26,12 +28,17 @@ class QuoteRepository {
         )
     )
 
-    suspend fun getDailyQuote(tags: String? = null): Quote = withContext(Dispatchers.IO) {
+    suspend fun getPersonalizedQuote(userContext: UserContext): Quote = withContext(Dispatchers.IO) {
         try {
-            val response = QuoteService.api.getRandomQuote(tags)
-            Quote(text = response.content, author = response.author)
+            personalizedEngine.generateQuote(userContext)
         } catch (exception: Exception) {
             fallbackQuotes.random(Random(System.currentTimeMillis()))
         }
+    }
+
+    // Legacy method for backward compatibility
+    @Deprecated("Use getPersonalizedQuote instead", ReplaceWith("getPersonalizedQuote(userContext)"))
+    suspend fun getDailyQuote(tags: String? = null): Quote = withContext(Dispatchers.IO) {
+        fallbackQuotes.random(Random(System.currentTimeMillis()))
     }
 }

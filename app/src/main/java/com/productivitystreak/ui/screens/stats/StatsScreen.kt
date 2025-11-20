@@ -4,6 +4,7 @@ package com.productivitystreak.ui.screens.stats
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,16 +18,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -39,13 +44,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.productivitystreak.ui.icons.AppIcons
 import com.productivitystreak.ui.state.stats.AverageDailyTrend
 import com.productivitystreak.ui.state.stats.CalendarHeatMap
 import com.productivitystreak.ui.state.stats.ConsistencyLevel
 import com.productivitystreak.ui.state.stats.ConsistencyScore
 import com.productivitystreak.ui.state.stats.HabitBreakdown
+import com.productivitystreak.ui.state.stats.LeaderboardEntry
 import com.productivitystreak.ui.state.stats.StatsState
 import com.productivitystreak.ui.theme.NeverZeroTheme
+import kotlin.math.absoluteValue
 
 @Composable
 fun StatsScreen(
@@ -75,8 +83,186 @@ fun StatsScreen(
             BreakdownRow(breakdown = statsState.habitBreakdown)
         }
 
+        if (statsState.leaderboard.isNotEmpty()) {
+            LeaderboardSection(entries = statsState.leaderboard)
+        }
+
         statsState.calendarHeatMap?.let {
             HeatMapCard(heatMap = it)
+        }
+    }
+}
+
+@Composable
+private fun LeaderboardSection(entries: List<LeaderboardEntry>) {
+    if (entries.isEmpty()) return
+
+    var selectedPosition by remember { mutableStateOf<Int?>(null) }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "Consistency leaderboard",
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text = "Top streaks over the last 30 days",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                entries
+                    .sortedBy { it.position }
+                    .take(5)
+                    .forEach { entry ->
+                        val isSelected = selectedPosition == entry.position
+                        LeaderboardRow(
+                            entry = entry,
+                            highlight = entry.position == 1,
+                            selected = isSelected,
+                            onClick = { selectedPosition = entry.position }
+                        )
+                    }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LeaderboardRow(
+    entry: LeaderboardEntry,
+    highlight: Boolean,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val backgroundColor = if (selected) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+    } else {
+        Color.Transparent
+    }
+
+    val avatarColors = listOf(
+        MaterialTheme.colorScheme.primaryContainer,
+        MaterialTheme.colorScheme.secondaryContainer,
+        MaterialTheme.colorScheme.tertiaryContainer,
+        MaterialTheme.colorScheme.surfaceVariant
+    )
+    val avatarColor = remember(entry.name) {
+        val index = entry.name.hashCode().absoluteValue % avatarColors.size
+        avatarColors[index]
+    }
+
+    val initial = remember(entry.name) {
+        entry.name.trim().firstOrNull()?.uppercaseChar()?.toString() ?: ""
+    }
+
+    val badgeBackground = when (entry.position) {
+        1 -> MaterialTheme.colorScheme.primaryContainer
+        2 -> MaterialTheme.colorScheme.secondaryContainer
+        3 -> MaterialTheme.colorScheme.tertiaryContainer
+        else -> MaterialTheme.colorScheme.surfaceVariant
+    }
+
+    val badgeTextColor = when (entry.position) {
+        1, 2, 3 -> MaterialTheme.colorScheme.onPrimaryContainer
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(backgroundColor)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(color = avatarColor, shape = CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = initial,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+            Column(
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = entry.name,
+                    style = if (highlight) {
+                        MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold)
+                    } else {
+                        MaterialTheme.typography.bodyMedium
+                    },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "${entry.streakDays} days streak",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (entry.position == 1) {
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = AppIcons.Celebration,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .background(badgeBackground, shape = RoundedCornerShape(999.dp))
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "#${entry.position}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = badgeTextColor
+                )
+            }
         }
     }
 }

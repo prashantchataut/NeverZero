@@ -1,6 +1,7 @@
 package com.productivitystreak.ui.screens.discover
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -82,8 +83,7 @@ fun AssetDetailScreen(
                         .padding(start = 16.dp)
                         .background(Color.Transparent)
                         .padding(4.dp)
-                        .then(Modifier)
-                        .clickableWithoutRipple(onDismiss)
+                        .clickable { onDismiss() }
                 )
             }
 
@@ -268,7 +268,6 @@ private fun QuestionCard(
             )
             question.options.forEachIndexed { index, option ->
                 val isSelected = selectedIndex == index
-                val borderColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -276,8 +275,8 @@ private fun QuestionCard(
                             color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f) else Color.Transparent,
                             shape = MaterialTheme.shapes.medium
                         )
+                        .clickable { onOptionSelected(index) }
                         .padding(horizontal = 10.dp, vertical = 8.dp)
-                        .clickableWithoutRipple { onOptionSelected(index) }
                 ) {
                     Text(
                         text = option,
@@ -288,9 +287,4 @@ private fun QuestionCard(
             }
         }
     }
-}
-
-@Composable
-private fun BoxScope.clickableWithoutRipple(onClick: () -> Unit) {
-    this@clickableWithoutRipple
 }
