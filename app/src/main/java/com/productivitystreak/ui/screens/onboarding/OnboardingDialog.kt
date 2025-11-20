@@ -17,6 +17,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,11 +34,17 @@ import androidx.compose.foundation.layout.width
 
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Remove
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,14 +55,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.productivitystreak.R
 import com.productivitystreak.ui.state.AppUiState
 import com.productivitystreak.ui.state.onboarding.OnboardingCategory
 import com.productivitystreak.ui.theme.NeverZeroTheme
@@ -82,6 +93,7 @@ fun OnboardingFlow(
     val coroutineScope = rememberCoroutineScope()
     var showFinishRipple by remember { mutableStateOf(false) }
     val finishRipple = remember { Animatable(0f) }
+    var showPermissionDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -162,7 +174,13 @@ fun OnboardingFlow(
                             }
                         }
                     } else {
-                        onNextStep()
+                        // Step 3 is the Reminders screen; show permission dialog instead of
+                        // immediately requesting notification permission.
+                        if (onboarding.currentStep == 3) {
+                            showPermissionDialog = true
+                        } else {
+                            onNextStep()
+                        }
                     }
                 }
             )
@@ -186,18 +204,38 @@ fun OnboardingFlow(
                 )
             }
         }
+
+        if (showPermissionDialog) {
+            PermissionDialog(
+                onAllow = {
+                    showPermissionDialog = false
+                    onRequestNotificationPermission()
+                    onToggleNotificationsAllowed(true)
+                    onNextStep()
+                },
+                onSkip = {
+                    showPermissionDialog = false
+                    onToggleNotificationsAllowed(false)
+                    onNextStep()
+                }
+            )
+        }
     }
 }
 
 @Composable
 private fun StepHeader(currentStep: Int, totalSteps: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = "Never Zero",
-            style = MaterialTheme.typography.displaySmall,
-            fontWeight = FontWeight.Black,
-            color = MaterialTheme.colorScheme.onBackground
+        Image(
+            painter = painterResource(id = R.drawable.logo_transparent),
+            contentDescription = "Never Zero logo",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .fillMaxWidth()
+                .scale(0.8f)
+                .padding(bottom = 4.dp)
         )
+
         Text(
             text = when (currentStep) {
                 0 -> "Build habits that last"
@@ -295,7 +333,7 @@ private fun OnboardingWelcomeStep() {
         }
 
         Text(
-            text = "You donâ€™t need a perfect day â€” just never hit zero.",
+            text = "You don’t need a perfect day — just never hit zero.",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
             textAlign = TextAlign.Center
@@ -415,7 +453,7 @@ private fun OnboardingLeadHabitConceptStep() {
         }
 
         Text(
-            text = "Weâ€™ll start with one small habit â€” your lead habit.",
+            text = "We’ll start with one small habit — your lead habit.",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -455,12 +493,9 @@ private fun OnboardingPermissionStep(
         PermissionCard(
             title = "Notifications",
             description = "Daily nudges so your streak never silently breaks.",
-            enabled = notificationsGranted && allowNotifications,
-            actionLabel = if (notificationsGranted) "Enabled" else "Enable",
-            onClick = {
-                if (!notificationsGranted) onRequestNotificationPermission()
-                onToggleNotificationsAllowed(true)
-            }
+            enabled = allowNotifications && notificationsGranted,
+            actionLabel = if (allowNotifications) "On" else "Off",
+            onClick = { onToggleNotificationsAllowed(!allowNotifications) }
         )
 
         PermissionCard(
@@ -503,7 +538,7 @@ private fun OnboardingPermissionStep(
         }
 
         Text(
-            text = "If youâ€™d rather skip this for now, you can always turn reminders on later from Settings.",
+            text = "If you’d rather skip this for now, you can always turn reminders on later from Settings.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
         )
@@ -708,65 +743,117 @@ private fun CommitmentRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            CommitmentChip(
-                label = "$minutes min/day",
-                onMinus = { if (minutes > 1) onMinutesChanged(minutes - 1) },
-                onPlus = { if (minutes < 60) onMinutesChanged(minutes + 1) },
-                modifier = Modifier.weight(1f)
-            )
-            CommitmentChip(
-                label = "$frequencyPerWeek days/week",
-                onMinus = { if (frequencyPerWeek > 1) onFrequencyChanged(frequencyPerWeek - 1) },
-                onPlus = { if (frequencyPerWeek < 7) onFrequencyChanged(frequencyPerWeek + 1) },
-                modifier = Modifier.weight(1f)
-            )
-        }
-    }
-}
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "Minutes per day",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                QuantitySelector(
+                    value = minutes,
+                    onValueChange = onMinutesChanged,
+                    min = 1,
+                    max = 60,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-@Composable
-private fun CommitmentChip(
-    label: String,
-    onMinus: () -> Unit,
-    onPlus: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surface
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = label, style = MaterialTheme.typography.bodyMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                MiniIconButton(text = "-") { onMinus() }
-                MiniIconButton(text = "+") { onPlus() }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "Days per week",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                QuantitySelector(
+                    value = frequencyPerWeek,
+                    onValueChange = onFrequencyChanged,
+                    min = 1,
+                    max = 7,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }
 }
 
 @Composable
-private fun MiniIconButton(text: String, onClick: () -> Unit) {
-    Surface(
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-        onClick = onClick
+private fun QuantitySelector(
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    min: Int = 1,
+    max: Int? = null,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        FilledTonalIconButton(
+            onClick = {
+                val newValue = (value - 1).coerceAtLeast(min)
+                if (newValue != value) onValueChange(newValue)
+            },
+            enabled = value > min
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Remove,
+                contentDescription = "Decrease"
+            )
+        }
+
         Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.labelMedium,
-            textAlign = TextAlign.Center
+            text = value.toString(),
+            style = MaterialTheme.typography.titleMedium
         )
+
+        FilledTonalIconButton(
+            onClick = {
+                val upper = max ?: Int.MAX_VALUE
+                val newValue = (value + 1).coerceAtMost(upper)
+                if (newValue != value) onValueChange(newValue)
+            },
+            enabled = max?.let { value < it } ?: true
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Add,
+                contentDescription = "Increase"
+            )
+        }
     }
+}
+
+@Composable
+private fun PermissionDialog(
+    onAllow: () -> Unit,
+    onSkip: () -> Unit,
+    onDismissRequest: () -> Unit = onSkip
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text("Let us nudge you gently?") },
+        text = {
+            Text(
+                "Turn on notifications so we can send a small reminder when it’s time for your habit. You can change this anytime in Settings."
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onAllow) {
+                Text("Allow reminders")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onSkip) {
+                Text("Not now")
+            }
+        }
+    )
 }
 
 @Composable

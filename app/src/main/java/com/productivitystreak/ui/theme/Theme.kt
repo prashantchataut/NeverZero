@@ -11,6 +11,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * Light Color Scheme
@@ -104,12 +105,16 @@ val LocalSemanticColors = staticCompositionLocalOf { SemanticColors }
  * @param content The composable content to theme
  */
 @Composable
-fun ProductivityStreakTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+fun AppTheme(
+    darkTheme: Boolean,
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    val context = LocalContext.current
     val colorScheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
@@ -126,6 +131,19 @@ fun ProductivityStreakTheme(
             content = content
         )
     }
+}
+
+@Composable
+fun ProductivityStreakTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    dynamicColor: Boolean = true,
+    content: @Composable () -> Unit
+) {
+    AppTheme(
+        darkTheme = darkTheme,
+        dynamicColor = dynamicColor,
+        content = content
+    )
 }
 
 /**

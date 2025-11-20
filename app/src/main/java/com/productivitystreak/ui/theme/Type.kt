@@ -51,10 +51,10 @@ val NeverZeroTypography = Typography(
     // Headline styles - High-emphasis text
     headlineLarge = TextStyle(
         fontFamily = PoppinsFontFamily,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Bold,
         fontSize = 32.sp,
         lineHeight = 40.sp,
-        letterSpacing = 0.sp
+        letterSpacing = (-0.5).sp
     ),
     headlineMedium = TextStyle(
         fontFamily = PoppinsFontFamily,
@@ -99,7 +99,7 @@ val NeverZeroTypography = Typography(
         fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
-        lineHeight = 24.sp,
+        lineHeight = 26.sp,
         letterSpacing = 0.5.sp
     ),
     bodyMedium = TextStyle(

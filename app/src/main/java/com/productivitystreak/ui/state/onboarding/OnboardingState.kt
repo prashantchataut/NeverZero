@@ -9,7 +9,7 @@ data class OnboardingState(
     val commitmentDurationMinutes: Int = 5,
     val commitmentFrequencyPerWeek: Int = 3,
     val reminderTime: String = "08:30 PM",
-    val allowNotifications: Boolean = true,
+    val allowNotifications: Boolean = false,
     val showNotificationPrompt: Boolean = false,
     val hasCompleted: Boolean = false
 )
