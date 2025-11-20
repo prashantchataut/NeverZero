@@ -187,14 +187,14 @@ private fun VocabularyEmptyState(onAddWord: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
+        val primary = MaterialTheme.colorScheme.primary
         Canvas(modifier = Modifier.size(160.dp)) {
             val bookWidth = size.width * 0.7f
             val bookHeight = size.height * 0.45f
             val leftPage = Offset((size.width - bookWidth) / 2f, size.height * 0.2f)
             val rightPage = Offset(leftPage.x + bookWidth / 2f, leftPage.y)
 
-            val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
-            val primary = MaterialTheme.colorScheme.primary
             val minDim = kotlin.math.min(size.width, size.height)
             
             drawRoundRect(

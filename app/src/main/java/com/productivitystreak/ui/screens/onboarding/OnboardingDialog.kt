@@ -169,9 +169,9 @@ fun OnboardingFlow(
         }
 
         if (showFinishRipple) {
+            val premiumStart = NeverZeroTheme.gradientColors.PremiumStart
+            val premiumEnd = NeverZeroTheme.gradientColors.PremiumEnd
             Canvas(modifier = Modifier.matchParentSize()) {
-                val premiumStart = NeverZeroTheme.gradientColors.PremiumStart
-                val premiumEnd = NeverZeroTheme.gradientColors.PremiumEnd
                 val radius = size.maxDimension * finishRipple.value
                 drawCircle(
                     brush = Brush.radialGradient(
@@ -268,11 +268,12 @@ private fun OnboardingWelcomeStep() {
                 .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)),
             contentAlignment = Alignment.Center
         ) {
+            val sunriseStart = NeverZeroTheme.gradientColors.SunriseStart
+            val sunriseEnd = NeverZeroTheme.gradientColors.SunriseEnd
+            val surfaceColor = MaterialTheme.colorScheme.surface
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val baseCenter = Offset(size.width / 2, size.height * 0.65f)
                 val center = baseCenter.copy(x = baseCenter.x + drift * size.width * 0.2f)
-                val sunriseStart = NeverZeroTheme.gradientColors.SunriseStart
-                val sunriseEnd = NeverZeroTheme.gradientColors.SunriseEnd
                 val minDim = kotlin.math.min(size.width, size.height)
                 val radius = (minDim / 3f) * pulse
                 drawCircle(
@@ -286,7 +287,7 @@ private fun OnboardingWelcomeStep() {
                     center = center
                 )
                 drawCircle(
-                    color = MaterialTheme.colorScheme.surface,
+                    color = surfaceColor,
                     radius = radius * 1.15f,
                     center = center.copy(y = center.y + radius * 0.9f)
                 )
@@ -379,11 +380,11 @@ private fun OnboardingLeadHabitConceptStep() {
         ) {
             val surfaceColor = MaterialTheme.colorScheme.surface
             val successColor = NeverZeroTheme.semanticColors.Success
+            val oceanStart = NeverZeroTheme.gradientColors.OceanStart
+            val oceanEnd = NeverZeroTheme.gradientColors.OceanEnd
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val start = Offset(size.width * 0.15f, size.height * 0.65f)
                 val end = Offset(size.width * 0.85f, size.height * 0.35f)
-                val oceanStart = NeverZeroTheme.gradientColors.OceanStart
-                val oceanEnd = NeverZeroTheme.gradientColors.OceanEnd
                 drawLine(
                     brush = Brush.horizontalGradient(
                         listOf(

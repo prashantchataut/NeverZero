@@ -182,6 +182,10 @@ private fun TrendChart(trend: AverageDailyTrend) {
 
     val maxPercent = 100f
     val minPercent = 0f
+    val gridColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.18f)
+    val oceanStart = NeverZeroTheme.gradientColors.OceanStart
+    val oceanEnd = NeverZeroTheme.gradientColors.OceanEnd
+    val surfaceColor = MaterialTheme.colorScheme.surface
 
     Canvas(
         modifier = Modifier
@@ -198,7 +202,6 @@ private fun TrendChart(trend: AverageDailyTrend) {
 
         // Baseline grid
         // Baseline grid
-        val gridColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.18f)
         repeat(4) { index ->
             val y = verticalPadding + (usableHeight / 3f) * index
             drawLine(
@@ -234,7 +237,6 @@ private fun TrendChart(trend: AverageDailyTrend) {
         fillPath.lineTo(lastX, chartHeight - verticalPadding)
         fillPath.close()
 
-        val oceanStart = NeverZeroTheme.gradientColors.OceanStart
         val gradient = Brush.verticalGradient(
             colors = listOf(
                 oceanStart.copy(alpha = 0.35f),
@@ -246,7 +248,6 @@ private fun TrendChart(trend: AverageDailyTrend) {
 
         drawPath(path = fillPath, brush = gradient)
 
-        val oceanEnd = NeverZeroTheme.gradientColors.OceanEnd
         drawPath(
             path = path,
             color = oceanEnd,
@@ -258,7 +259,6 @@ private fun TrendChart(trend: AverageDailyTrend) {
             val normalized = (percent - minPercent) / (maxPercent - minPercent)
             val x = horizontalPadding + stepX * index
             val y = verticalPadding + usableHeight * (1f - normalized)
-            val surfaceColor = MaterialTheme.colorScheme.surface
             drawCircle(
                 color = surfaceColor,
                 radius = 6.dp.toPx(),
@@ -378,6 +378,10 @@ private fun HeatMapGrid(heatMap: CalendarHeatMap) {
     val weeks = heatMap.weeks
     if (weeks.isEmpty()) return
 
+    val sunriseStart = NeverZeroTheme.gradientColors.SunriseStart
+    val sunriseEnd = NeverZeroTheme.gradientColors.SunriseEnd
+    val onSurface = MaterialTheme.colorScheme.onSurface
+
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
@@ -392,10 +396,7 @@ private fun HeatMapGrid(heatMap: CalendarHeatMap) {
         weeks.forEachIndexed { xIndex, week ->
             week.days.forEachIndexed { yIndex, day ->
                 val intensity = day.intensity.coerceIn(0f, 1f)
-                val sunriseStart = NeverZeroTheme.gradientColors.SunriseStart
-                val sunriseEnd = NeverZeroTheme.gradientColors.SunriseEnd
-                val onSurface = MaterialTheme.colorScheme.onSurface
-                
+
                 val brush = if (intensity <= 0f) {
                     SolidColor(onSurface.copy(alpha = 0.05f))
                 } else {

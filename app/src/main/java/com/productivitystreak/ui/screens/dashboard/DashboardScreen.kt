@@ -344,6 +344,7 @@ private fun DashboardTaskRow(
 
 @Composable
 private fun ConfettiOverlay(color: Color) {
+    val primary = MaterialTheme.colorScheme.primary
     Canvas(modifier = Modifier.fillMaxSize()) {
         val random = kotlin.random.Random
         val particleCount = 24
@@ -355,7 +356,6 @@ private fun ConfettiOverlay(color: Color) {
                 x = startX + random.nextFloat() * 12f - 6f,
                 y = (startY + velocity).coerceAtMost(size.height)
             )
-            val primary = MaterialTheme.colorScheme.primary
             val tint = if (index % 3 == 0) primary else color
             drawLine(
                 color = tint.copy(alpha = 0.55f),
@@ -394,13 +394,13 @@ private fun DashboardEmptyState(onAddHabitClick: () -> Unit) {
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.07f)),
                 contentAlignment = Alignment.Center
             ) {
+                val primaryAlpha = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+                val oceanStart = NeverZeroTheme.gradientColors.OceanStart.copy(alpha = 0.9f)
+                val oceanEnd = NeverZeroTheme.gradientColors.OceanEnd.copy(alpha = 0.9f)
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val center = Offset(size.width / 2, size.height / 2)
-                    val primaryAlpha = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-                    val oceanStart = NeverZeroTheme.gradientColors.OceanStart.copy(alpha = 0.9f)
-                    val oceanEnd = NeverZeroTheme.gradientColors.OceanEnd.copy(alpha = 0.9f)
                     val minDim = kotlin.math.min(size.width, size.height)
-                    
+
                     drawCircle(
                         color = primaryAlpha,
                         radius = minDim / 3
