@@ -229,7 +229,7 @@ fun OnboardingFlow(
 private fun StepHeader(currentStep: Int, totalSteps: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Image(
-            painter = painterResource(id = R.drawable.logo_transparent),
+            painter = painterResource(id = R.drawable.ic_launcher),
             contentDescription = "Never Zero logo",
             contentScale = ContentScale.Fit,
             modifier = Modifier
