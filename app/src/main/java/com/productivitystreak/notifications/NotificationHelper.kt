@@ -148,6 +148,37 @@ class NotificationHelper(private val context: Context) {
         notificationManager.notify(NOTIFICATION_ID_DAILY_REMINDER, notification)
     }
 
+    fun showAdaptiveReminder(streakName: String, milestone: SmartNotificationEngine.MilestoneType?) {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            streakName.hashCode(), // Unique ID per streak
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val title = "Time for $streakName"
+        val message = if (milestone != null) {
+            "Do it today to reach ${milestone.title}! ${milestone.message}"
+        } else {
+            "It's your usual time to work on $streakName. Keep the momentum going!"
+        }
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID_REMINDERS)
+            .setSmallIcon(R.drawable.ic_launcher)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        notificationManager.notify(streakName.hashCode(), notification)
+    }
+
     fun showAchievementUnlocked(title: String, description: String) {
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

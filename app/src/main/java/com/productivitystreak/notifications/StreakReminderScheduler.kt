@@ -28,13 +28,13 @@ class StreakReminderScheduler(private val context: Context) {
         createChannel()
 
         val repeatInterval = when (frequency) {
-            ReminderFrequency.Daily -> Duration.ofDays(1)
+            ReminderFrequency.Daily -> Duration.ofHours(1) // Run hourly to check for optimal times
             ReminderFrequency.Weekly -> Duration.ofDays(7)
             ReminderFrequency.None -> return
         }
 
         val workRequest = PeriodicWorkRequestBuilder<StreakReminderWorker>(repeatInterval)
-            .setInputData(StreakReminderWorker.createInputData(categories, userName))
+            .setInputData(StreakReminderWorker.createInputData(categories, userName, frequency.name))
             .build()
 
         workManager.enqueueUniquePeriodicWork(

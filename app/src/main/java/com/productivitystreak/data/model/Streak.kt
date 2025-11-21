@@ -40,7 +40,8 @@ data class StreakDayRecord(
     val date: String,
     val completed: Int,
     val goal: Int,
-    val wasRescued: Boolean = false
+    val wasRescued: Boolean = false,
+    val completedAt: Long? = null
 ) {
     val completionFraction: Float
         get() = if (goal == 0) 0f else (completed / goal.toFloat()).coerceAtMost(1f)

@@ -65,6 +65,17 @@ class StreakRepository(private val streakDao: StreakDao) {
         }
     }
 
+    suspend fun createStreakFromTemplate(template: com.productivitystreak.data.model.StreakTemplate): RepositoryResult<String> {
+        return createStreak(
+            name = template.name,
+            goalPerDay = template.goalPerDay,
+            unit = template.unit,
+            category = template.category,
+            color = template.color,
+            icon = template.icon
+        )
+    }
+
     suspend fun logProgress(streakId: String, value: Int): RepositoryResult<Unit> {
         return try {
             val streak = streakDao.getStreakById(streakId)
@@ -76,14 +87,16 @@ class StreakRepository(private val streakDao: StreakDao) {
 
             if (lastEntry?.date == today) {
                 updatedHistory[updatedHistory.lastIndex] = lastEntry.copy(
-                    completed = (lastEntry.completed + value).coerceAtLeast(value)
+                    completed = (lastEntry.completed + value).coerceAtLeast(value),
+                    completedAt = System.currentTimeMillis()
                 )
             } else {
                 updatedHistory.add(
                     StreakDayRecord(
                         date = today,
                         completed = value,
-                        goal = streak.goalPerDay
+                        goal = streak.goalPerDay,
+                        completedAt = System.currentTimeMillis()
                     )
                 )
             }
