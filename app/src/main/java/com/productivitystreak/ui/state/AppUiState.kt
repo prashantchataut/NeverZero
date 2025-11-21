@@ -8,6 +8,7 @@ import com.productivitystreak.ui.state.onboarding.OnboardingState
 import com.productivitystreak.ui.state.profile.ProfileState
 import com.productivitystreak.ui.state.reading.ReadingTrackerState
 import com.productivitystreak.ui.state.settings.SettingsState
+import com.productivitystreak.ui.state.skills.SkillPathsState
 import com.productivitystreak.ui.state.stats.StatsState
 import com.productivitystreak.ui.state.vocabulary.VocabularyState
 
@@ -20,6 +21,7 @@ data class AppUiState(
     val selectedStreakId: String? = null,
     val todayTasks: List<DashboardTask> = emptyList(),
     val statsState: StatsState = StatsState(),
+    val skillPathsState: SkillPathsState = SkillPathsState(),
     val discoverState: DiscoverState = DiscoverState(),
     val readingTrackerState: ReadingTrackerState = ReadingTrackerState(),
     val vocabularyState: VocabularyState = VocabularyState(),

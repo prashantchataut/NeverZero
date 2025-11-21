@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.productivitystreak.ui.theme.*
@@ -194,6 +195,7 @@ fun GradientCard(
                 .fillMaxWidth()
                 .drawWithContent {
                     drawRect(gradient)
+                    drawContent()
                 }
         ) {
             content()
@@ -293,13 +295,3 @@ private fun ColumnScope.StatCardContent(
         }
     }
 }
-
-// Extension function for gradient drawing
-private fun Modifier.drawWithContent(
-    onDraw: androidx.compose.ui.graphics.drawscope.DrawScope.() -> Unit
-): Modifier = this.then(
-    androidx.compose.ui.draw.drawWithContent {
-        onDraw()
-        drawContent()
-    }
-)

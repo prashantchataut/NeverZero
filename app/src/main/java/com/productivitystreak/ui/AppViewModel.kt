@@ -1203,23 +1203,6 @@ class AppViewModel(
 
         simulateTaskCompletion("vocabulary", 1)
     }
-
-    private fun observeStreaks() {
-        viewModelScope.launch {
-            streakRepository.observeStreaks().collectLatest { streaks ->
-                val stats = withContext(Dispatchers.Default) { buildStatsStateFromStreaks(streaks) }
-                _uiState.update { state ->
-                    val selectedId = state.selectedStreakId ?: streaks.firstOrNull()?.id
-                    state.copy(
-                        streaks = streaks,
-                        selectedStreakId = selectedId,
-                        todayTasks = buildTasksForStreaks(streaks),
-                        statsState = stats
-                    )
-                }
-            }
-        }
-
         viewModelScope.launch {
             streakRepository.observeTopStreaks(5).collectLatest { topStreaks ->
                 _uiState.update { state ->
