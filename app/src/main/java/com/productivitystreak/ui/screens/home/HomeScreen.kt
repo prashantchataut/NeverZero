@@ -60,7 +60,8 @@ fun HomeScreen(
     onHabitToggle: (String) -> Unit,
     modifier: Modifier = Modifier,
     onOpenNotificationsSettings: () -> Unit = {},
-    onOpenVocabulary: () -> Unit = {}
+    onOpenVocabulary: () -> Unit = {},
+    onRescueQuickAction: (streakId: String, value: Int) -> Unit = { _, _ -> }
 ) {
     val dailyContent by viewModel.dailyContent.collectAsStateWithLifecycle()
     val greeting = remember { getGreeting() }
@@ -86,7 +87,7 @@ fun HomeScreen(
                 showRescueDialog = false
                 // Mark today's record as "rescued" for the first incomplete streak
                 endangeredStreak?.let { streak ->
-                    onSimulateTask(streak.id, 1) // Log minimal progress
+                    onRescueQuickAction(streak.id, 1) // Log minimal progress
                 }
             }
         )

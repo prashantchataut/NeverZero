@@ -6,27 +6,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.productivitystreak.data.model.*
-import com.productivitystreak.ui.components.SkillPathCard
-import com.productivitystreak.ui.theme.Spacing
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SkillPathsScreen(
-    onBack: () -> Unit
-) {
-    // Dummy Data for Visualization
-    val paths = rememberDummySkillPaths()
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Skill Paths") },
-                navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
