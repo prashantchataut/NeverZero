@@ -11,6 +11,7 @@ plugins {
 
 configurations.all {
     exclude(group = "androidx.compose.ui", module = "ui-release")
+    exclude(group = "androidx.compose.ui", module = "ui-android")
 }
 
 val localProperties = Properties().apply {
@@ -74,7 +75,8 @@ android {
             }
         }
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             if (releaseSigningConfigured) {
                 signingConfig = signingConfigs.getByName("release")
             }
