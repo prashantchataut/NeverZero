@@ -27,8 +27,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -77,9 +79,10 @@ fun StatsScreen(
 
         SummaryRow(statsState = statsState)
 
-        // Consistency Score Card
-        statsState.consistencyScore?.let {
-            ConsistencyScoreCard(score = it)
+        // Consistency Score Card - use top consistency streak if available
+        val topConsistency = statsState.streakConsistency.maxByOrNull { it.score }
+        if (topConsistency != null) {
+            ConsistencyScoreCard(score = topConsistency)
         }
 
         statsState.averageDailyTrend?.let {
@@ -110,8 +113,7 @@ private fun LeaderboardSection(
 ) {
     if (entries.isEmpty()) return
 
-    val selectedPositionState = remember { mutableStateOf<Int?>(null) }
-    var selectedPosition by selectedPositionState
+    var selectedPosition by remember { mutableStateOf<Int?>(null) }
 
     Card(
         modifier = Modifier.fillMaxWidth(),

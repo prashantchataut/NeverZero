@@ -3,6 +3,7 @@ package com.productivitystreak.ui.screens.home
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -166,23 +168,37 @@ fun DailyUpgradeTile(
 ) {
     if (content == null) return
 
-    ElevatedCard(modifier = modifier) {
+    com.productivitystreak.ui.components.InteractiveCard(
+        onClick = onAction,
+        modifier = modifier,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = "DAILY UPGRADE • ${content.type.name.replace("_", " ")}",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary
-            )
+            // Label with subtle background
+            androidx.compose.foundation.layout.Box(
+                modifier = Modifier
+                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = "DAILY UPGRADE • ${content.type.name.replace("_", " ")}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                )
+            }
 
             Text(
                 text = content.title,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -198,17 +214,17 @@ fun DailyUpgradeTile(
             Text(
                 text = content.content,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                lineHeight = androidx.compose.ui.unit.sp(20)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            Button(
+            com.productivitystreak.ui.components.PrimaryButton(
+                text = content.actionLabel,
                 onClick = onAction,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = content.actionLabel)
-            }
+            )
         }
     }
 }

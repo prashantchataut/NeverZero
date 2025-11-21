@@ -268,7 +268,9 @@ fun NeverZeroApp(
                         onToggleWeeklySummary = onToggleWeeklySummary,
                         onToggleHaptics = onToggleHaptics,
                         onRequestNotificationPermission = onRequestNotificationPermission,
-                        onRequestExactAlarmPermission = onRequestExactAlarmPermission
+                        onRequestExactAlarmPermission = onRequestExactAlarmPermission,
+                        onCreateTimeCapsule = onCreateTimeCapsule,
+                        onSaveTimeCapsuleReflection = onSaveTimeCapsuleReflection
                     )
                 }
             }

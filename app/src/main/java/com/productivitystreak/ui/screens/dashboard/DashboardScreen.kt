@@ -6,9 +6,13 @@ import android.graphics.Color.parseColor
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
@@ -79,9 +83,9 @@ fun DashboardScreen(
     val greetingPrefix = remember {
         val hour = LocalTime.now().hour
         when {
-            hour in 5..11 -> "Hello"
-            hour in 12..16 -> "Hello"
-            hour in 17..21 -> "Hello"
+            hour in 5..11 -> "Good Morning"
+            hour in 12..16 -> "Good Afternoon"
+            hour in 17..21 -> "Good Evening"
             else -> "Hello"
         }
     }
@@ -91,7 +95,10 @@ fun DashboardScreen(
 
     val progress by animateFloatAsState(
         targetValue = leadStreak?.progress ?: 0f,
-        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
         label = "lead-progress"
     )
 
@@ -370,6 +377,20 @@ private fun ConfettiOverlay(color: Color) {
 
 @Composable
 private fun DashboardEmptyState(onAddHabitClick: () -> Unit) {
+    val infiniteTransition = rememberInfiniteTransition(label = "empty-state-breathing")
+    val breathingScale by infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 2000,
+                easing = androidx.compose.animation.core.FastOutSlowInEasing
+            ),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "breathing-scale"
+    )
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -378,20 +399,25 @@ private fun DashboardEmptyState(onAddHabitClick: () -> Unit) {
             containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(24.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 modifier = Modifier
                     .size(120.dp)
                     .clip(RoundedCornerShape(32.dp))
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.07f)),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.07f))
+                    .graphicsLayer {
+                        scaleX = breathingScale
+                        scaleY = breathingScale
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 val primaryAlpha = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
@@ -420,7 +446,7 @@ private fun DashboardEmptyState(onAddHabitClick: () -> Unit) {
 
             Text(
                 text = "No habits for today",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold
             )
@@ -432,10 +458,14 @@ private fun DashboardEmptyState(onAddHabitClick: () -> Unit) {
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
 
-            SoftPrimaryButton(
+            com.productivitystreak.ui.components.PrimaryButton(
                 text = "Add a habit",
-                onClick = onAddHabitClick
+                onClick = onAddHabitClick,
+                modifier = Modifier.padding(top = 8.dp)
             )
+        }
+    }
+}
         }
     }
 }

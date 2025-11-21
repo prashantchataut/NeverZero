@@ -138,7 +138,7 @@ fun ConsistencyScoreCard(score: ConsistencyScore) {
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "${score.percentToNextLevel}% to next",
+                        text = "${percentToNextLevel}% to next",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
