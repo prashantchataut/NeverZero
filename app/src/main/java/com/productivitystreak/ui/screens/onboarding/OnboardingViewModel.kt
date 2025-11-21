@@ -1,0 +1,137 @@
+package com.productivitystreak.ui.screens.onboarding
+
+import android.util.Log
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.productivitystreak.data.local.PreferencesManager
+import com.productivitystreak.data.repository.StreakRepository
+import com.productivitystreak.data.repository.onSuccess
+import com.productivitystreak.notifications.StreakReminderScheduler
+import com.productivitystreak.ui.state.onboarding.OnboardingState
+import com.productivitystreak.ui.state.profile.ReminderFrequency
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+class OnboardingViewModel(
+    private val preferencesManager: PreferencesManager,
+    private val streakRepository: StreakRepository,
+    private val reminderScheduler: StreakReminderScheduler
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(OnboardingState())
+    val uiState: StateFlow<OnboardingState> = _uiState.asStateFlow()
+    
+    private val _showOnboarding = MutableStateFlow(true)
+    val showOnboarding: StateFlow<Boolean> = _showOnboarding.asStateFlow()
+
+    init {
+        loadOnboardingState()
+    }
+
+    private fun loadOnboardingState() {
+        viewModelScope.launch {
+            preferencesManager.onboardingCompleted.collect { completed ->
+                _showOnboarding.value = !completed
+            }
+        }
+        // Load other onboarding prefs if needed
+    }
+
+    fun onSetOnboardingGoal(goal: String) {
+        _uiState.update { it.copy(goalHabit = goal) }
+        viewModelScope.launch {
+            preferencesManager.setOnboardingGoal(goal)
+        }
+    }
+
+    fun onSetOnboardingCommitment(durationMinutes: Int, frequencyPerWeek: Int) {
+        _uiState.update {
+            it.copy(
+                commitmentDurationMinutes = durationMinutes,
+                commitmentFrequencyPerWeek = frequencyPerWeek
+            )
+        }
+        viewModelScope.launch {
+            preferencesManager.setOnboardingCommitmentDuration(durationMinutes)
+            preferencesManager.setOnboardingCommitmentFrequency(frequencyPerWeek)
+        }
+    }
+
+    fun onToggleOnboardingCategory(category: String) {
+        _uiState.update { state ->
+            val current = state.selectedCategories
+            val updated = if (current.contains(category) && current.size > 1) {
+                current - category
+            } else {
+                current + category
+            }
+            state.copy(selectedCategories = updated)
+        }
+    }
+
+    fun onNextOnboardingStep() {
+        _uiState.update { state ->
+            val next = (state.currentStep + 1).coerceAtMost(state.totalSteps - 1)
+            state.copy(currentStep = next)
+        }
+    }
+
+    fun onPreviousOnboardingStep() {
+        _uiState.update { state ->
+            val previous = (state.currentStep - 1).coerceAtLeast(0)
+            state.copy(currentStep = previous)
+        }
+    }
+
+    fun onToggleOnboardingNotifications(enabled: Boolean) {
+        _uiState.update { it.copy(allowNotifications = enabled) }
+    }
+
+    fun onSetOnboardingReminderTime(time: String) {
+        _uiState.update { it.copy(reminderTime = time) }
+    }
+
+    fun onCompleteOnboarding(userName: String) {
+        val snapshot = _uiState.value
+        _uiState.update { it.copy(hasCompleted = true) }
+        _showOnboarding.value = false
+
+        viewModelScope.launch {
+            preferencesManager.setOnboardingCompleted(true)
+        }
+
+        seedInitialHabitFromOnboarding(snapshot)
+
+        if (snapshot.allowNotifications) {
+            reminderScheduler.scheduleReminder(
+                frequency = deriveReminderFrequency(snapshot.commitmentFrequencyPerWeek),
+                categories = snapshot.selectedCategories,
+                userName = userName
+            )
+        }
+    }
+
+    private fun seedInitialHabitFromOnboarding(stateSnapshot: OnboardingState) {
+        val goal = stateSnapshot.goalHabit.trim()
+        if (goal.isBlank()) return
+
+        viewModelScope.launch {
+            val minutes = stateSnapshot.commitmentDurationMinutes.coerceAtLeast(1)
+            val category = stateSnapshot.selectedCategories.firstOrNull() ?: "Focus"
+            val result = streakRepository.createStreak(
+                name = goal,
+                goalPerDay = minutes,
+                unit = "minutes",
+                category = category
+            )
+            // Handle result if needed
+        }
+    }
+    
+    private fun deriveReminderFrequency(frequencyPerWeek: Int): ReminderFrequency {
+        return if (frequencyPerWeek >= 7) ReminderFrequency.Daily else ReminderFrequency.Weekly
+    }
+}
