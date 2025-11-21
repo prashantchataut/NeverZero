@@ -1,8 +1,3 @@
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -11,6 +6,29 @@ plugins {
     id("org.jetbrains.kotlinx.kover")
     id("org.owasp.dependencycheck")
 }
+
+configurations.all {
+    exclude(group = "androidx.compose.ui", module = "ui-release")
+}
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+
+fun credential(key: String): String? = localProperties.getProperty(key) ?: System.getenv(key)
+
+val releaseSigningCredentialKeys = listOf(
+    "RELEASE_STORE_PASSWORD",
+    "RELEASE_KEY_ALIAS",
+    "RELEASE_KEY_PASSWORD"
+)
+
+val releaseSigningCredentials = releaseSigningCredentialKeys.associateWith { credential(it) }
+val releaseSigningConfigured = releaseSigningCredentials.values.all { !it.isNullOrBlank() }
+val geminiApiKey = credential("GEMINI_API_KEY") ?: ""
 
 android {
     namespace = "com.productivitystreak"
@@ -29,27 +47,35 @@ android {
         buildConfigField(
             "String",
             "GEMINI_API_KEY",
-            "\"\""
-        )
+            "\"$geminiApiKey\""
+        ) // Set GEMINI_API_KEY in local.properties or environment variables to expose it at runtime.
     }
 
     signingConfigs {
         create("release") {
-            storeFile = rootProject.file("keystore/release.keystore")
-            storePassword = "android"
-            keyAlias = "android"
-            keyPassword = "android"
+            if (releaseSigningConfigured) {
+                storeFile = rootProject.file("keystore/release.keystore")
+                storePassword = releaseSigningCredentials["RELEASE_STORE_PASSWORD"]
+                keyAlias = releaseSigningCredentials["RELEASE_KEY_ALIAS"]
+                keyPassword = releaseSigningCredentials["RELEASE_KEY_PASSWORD"]
+            } else {
+                println("[NeverZero] Release signing credentials not configured. Define RELEASE_* values in local.properties or environment variables to enable signed builds.")
+            }
         }
     }
 
     buildTypes {
         getByName("debug") {
-            // Use the release signing config so debug builds produce installable APKs with the public key.
-            signingConfig = signingConfigs.getByName("release")
+            // Use the release signing config for debug builds when credentials are available.
+            if (releaseSigningConfigured) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
         getByName("release") {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
+            if (releaseSigningConfigured) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -102,12 +128,8 @@ dependencies {
 
     implementation("androidx.compose.material3:material3:1.2.1")
     implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.foundation:foundation-layout")
-
     implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-text")
-    implementation("androidx.compose.ui:ui-text-google-fonts")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.animation:animation")
     implementation("androidx.navigation:navigation-compose:2.8.0")
@@ -123,19 +145,20 @@ dependencies {
     implementation("com.squareup.moshi:moshi-kotlin:1.15.1")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("androidx.work:work-runtime-ktx:2.9.1")
-    implementation("io.coil-kt:coil-compose:2.7.0")
 
     // Room for local database
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
+    // Biometric authentication
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
+
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.7")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:5.7.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
@@ -150,6 +173,7 @@ dependencies {
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
+    implementation(files("libs/ui-release-fixed/ui-release.aar"))
 }
 
 // Configure Kover for code coverage

@@ -22,9 +22,14 @@ class PreferencesManager(context: Context) {
         val REMINDER_FREQUENCY = stringPreferencesKey("reminder_frequency")
         val WEEKLY_SUMMARY_ENABLED = booleanPreferencesKey("weekly_summary_enabled")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val ONBOARDING_COMPLETED_AT = longPreferencesKey("onboarding_completed_at")
         val ONBOARDING_GOAL = stringPreferencesKey("onboarding_goal")
+        val ONBOARDING_GOAL_ARCHETYPE = stringPreferencesKey("onboarding_goal_archetype")
         val ONBOARDING_COMMITMENT_DURATION = intPreferencesKey("onboarding_commitment_duration")
         val ONBOARDING_COMMITMENT_FREQUENCY = intPreferencesKey("onboarding_commitment_frequency")
+        val QUICK_WIN_COMPLETED = booleanPreferencesKey("quick_win_completed")
+        val FEATURE_ACHIEVEMENTS_UNLOCKED = booleanPreferencesKey("feature_achievements_unlocked")
+        val FEATURE_STATS_UNLOCKED = booleanPreferencesKey("feature_stats_unlocked")
         val APP_LOCK_ENABLED = booleanPreferencesKey("app_lock_enabled")
         val BIOMETRIC_ENABLED = booleanPreferencesKey("biometric_enabled")
         val HAPTIC_FEEDBACK_ENABLED = booleanPreferencesKey("haptic_feedback_enabled")
@@ -173,6 +178,24 @@ class PreferencesManager(context: Context) {
         }
     }
 
+    val onboardingCompletedAt: Flow<Long?> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.ONBOARDING_COMPLETED_AT]
+        }
+
+    suspend fun setOnboardingCompletedAt(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.ONBOARDING_COMPLETED_AT] = timestamp
+        }
+    }
+
     val onboardingGoal: Flow<String> = dataStore.data
         .catch { exception ->
             if (exception is IOException) {
@@ -188,6 +211,28 @@ class PreferencesManager(context: Context) {
     suspend fun setOnboardingGoal(goal: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.ONBOARDING_GOAL] = goal
+        }
+    }
+
+    val onboardingGoalArchetype: Flow<String?> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.ONBOARDING_GOAL_ARCHETYPE]
+        }
+
+    suspend fun setOnboardingGoalArchetype(id: String?) {
+        dataStore.edit { preferences ->
+            if (id == null) {
+                preferences.remove(PreferencesKeys.ONBOARDING_GOAL_ARCHETYPE)
+            } else {
+                preferences[PreferencesKeys.ONBOARDING_GOAL_ARCHETYPE] = id
+            }
         }
     }
 
@@ -224,6 +269,60 @@ class PreferencesManager(context: Context) {
     suspend fun setOnboardingCommitmentFrequency(frequency: Int) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.ONBOARDING_COMMITMENT_FREQUENCY] = frequency
+        }
+    }
+
+    val quickWinCompleted: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.QUICK_WIN_COMPLETED] ?: false
+        }
+
+    suspend fun setQuickWinCompleted(completed: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.QUICK_WIN_COMPLETED] = completed
+        }
+    }
+
+    val achievementsUnlocked: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.FEATURE_ACHIEVEMENTS_UNLOCKED] ?: false
+        }
+
+    suspend fun setAchievementsUnlocked(unlocked: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.FEATURE_ACHIEVEMENTS_UNLOCKED] = unlocked
+        }
+    }
+
+    val statsUnlocked: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.FEATURE_STATS_UNLOCKED] ?: false
+        }
+
+    suspend fun setStatsUnlocked(unlocked: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.FEATURE_STATS_UNLOCKED] = unlocked
         }
     }
 

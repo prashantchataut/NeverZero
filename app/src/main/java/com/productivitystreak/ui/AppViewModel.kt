@@ -510,6 +510,11 @@ class AppViewModel(
             } catch (e: Exception) {
                 Log.e("AppViewModel", "Error loading reminder frequency", e)
             }
+        }
+    }
+
+    private fun observeAssets() {
+        viewModelScope.launch {
             try {
                 assetRepository.observeAssets().collect { assets ->
                     _uiState.update { state ->

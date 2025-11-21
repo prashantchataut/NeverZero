@@ -449,8 +449,9 @@ private fun TrendChart(trend: AverageDailyTrend) {
     val maxPercent = 100f
     val minPercent = 0f
     val gridColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.18f)
-    val oceanStart = NeverZeroTheme.gradientColors.OceanStart
-    val oceanEnd = NeverZeroTheme.gradientColors.OceanEnd
+    val gradientColors = NeverZeroTheme.gradientColors
+    val oceanStart = gradientColors.OceanStart
+    val oceanEnd = gradientColors.OceanEnd
     val surfaceColor = MaterialTheme.colorScheme.surface
 
     Canvas(
@@ -635,8 +636,9 @@ private fun HeatMapGrid(heatMap: CalendarHeatMap) {
     val weeks = heatMap.weeks
     if (weeks.isEmpty()) return
 
-    val sunriseStart = NeverZeroTheme.gradientColors.SunriseStart
-    val sunriseEnd = NeverZeroTheme.gradientColors.SunriseEnd
+    val gradientColors = NeverZeroTheme.gradientColors
+    val sunriseStart = gradientColors.SunriseStart
+    val sunriseEnd = gradientColors.SunriseEnd
     val onSurface = MaterialTheme.colorScheme.onSurface
 
     Canvas(

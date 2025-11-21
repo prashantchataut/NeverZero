@@ -247,7 +247,7 @@ private fun VocabularyEmptyState(onAddWord: () -> Unit) {
     }
 }
 
-private fun extractPartOfSpeech(definition: String): String? {
+fun extractPartOfSpeech(definition: String): String? {
     val regex = Regex("\\(([^)]+)\\)")
     val match = regex.find(definition)
     return match?.groupValues?.getOrNull(1)?.lowercase()?.let { "($it)" }
