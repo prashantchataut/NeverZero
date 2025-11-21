@@ -280,6 +280,7 @@ class AppViewModel(
         loadSettingsPreferences()
         bootstrapStaticState()
         observeStreaks()
+        observeTopStreakLeaderboard()
         observeAssets()
         observeTimeCapsules()
         refreshQuote()
@@ -521,6 +522,30 @@ class AppViewModel(
                 }
             } catch (e: Exception) {
                 Log.e("AppViewModel", "Error observing time capsules", e)
+            }
+        }
+    }
+
+    private fun observeTopStreakLeaderboard(limit: Int = 5) {
+        viewModelScope.launch {
+            try {
+                streakRepository.observeTopStreaks(limit).collectLatest { topStreaks ->
+                    _uiState.update { state ->
+                        state.copy(
+                            statsState = state.statsState.copy(
+                                leaderboard = topStreaks.mapIndexed { index, streak ->
+                                    LeaderboardEntry(
+                                        position = index + 1,
+                                        name = streak.name,
+                                        streakDays = streak.currentCount
+                                    )
+                                }
+                            )
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "Error observing top streaks", e)
             }
         }
     }
@@ -1203,23 +1228,27 @@ class AppViewModel(
 
         simulateTaskCompletion("vocabulary", 1)
     }
-        viewModelScope.launch {
-            streakRepository.observeTopStreaks(5).collectLatest { topStreaks ->
-                _uiState.update { state ->
-                    state.copy(
-                        statsState = state.statsState.copy(
-                            leaderboard = topStreaks.mapIndexed { index, streak ->
-                                LeaderboardEntry(
-                                    position = index + 1,
-                                    name = streak.name,
-                                    streakDays = streak.currentCount
-                                )
-                            }
-                        )
+
+    private fun observeLeaderboard() {
+        streakRepository.observeTopStreaks(5).collectLatest { topStreaks ->
+            _uiState.update { state ->
+                state.copy(
+                    statsState = state.statsState.copy(
+                        leaderboard = topStreaks.mapIndexed { index, streak ->
+                            LeaderboardEntry(
+                                position = index + 1,
+                                name = streak.name,
+                                streakDays = streak.currentCount
+                            )
+                        }
                     )
-                }
+                )
             }
         }
+    }
+
+    init {
+        observeLeaderboard()
     }
 
     private fun bootstrapStaticState() {
