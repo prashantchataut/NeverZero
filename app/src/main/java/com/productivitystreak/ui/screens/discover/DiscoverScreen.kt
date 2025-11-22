@@ -71,6 +71,20 @@ fun DiscoverScreen(
             )
         }
 
+        if (state.communityStories.isEmpty() && 
+            state.featuredContent.title.isBlank() && 
+            state.categories.isEmpty() && 
+            state.assets.isEmpty() && 
+            state.articles.isEmpty()) {
+            item {
+                com.productivitystreak.ui.components.EmptyState(
+                    icon = com.productivitystreak.ui.icons.AppIcons.Search,
+                    message = "Nothing to discover yet. Check back later for new content!",
+                    modifier = Modifier.padding(vertical = 32.dp)
+                )
+            }
+        }
+
         if (state.communityStories.isNotEmpty()) {
             item {
                 Column(

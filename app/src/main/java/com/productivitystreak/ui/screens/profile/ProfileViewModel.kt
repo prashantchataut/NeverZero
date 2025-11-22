@@ -314,4 +314,7 @@ class ProfileViewModel(
         )
     }
 
+    fun clearUiMessage() {
+        _uiState.update { it.copy(uiMessage = null) }
+    }
 }

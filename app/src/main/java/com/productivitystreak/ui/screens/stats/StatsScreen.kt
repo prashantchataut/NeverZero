@@ -78,16 +78,24 @@ fun StatsScreen(
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        SummaryRow(statsState = statsState)
+        if (statsState.currentLongestStreak == 0 && statsState.streakConsistency.isEmpty()) {
+            com.productivitystreak.ui.components.EmptyState(
+                icon = com.productivitystreak.ui.icons.AppIcons.BarChart,
+                message = "No stats yet. Complete some habits to see your progress!",
+                modifier = Modifier.padding(vertical = 32.dp)
+            )
+        } else {
+            SummaryRow(statsState = statsState)
 
-        // Consistency Score Card - use top consistency streak if available
-        val topConsistency = statsState.streakConsistency.maxByOrNull { it.score }
-        if (topConsistency != null) {
-            ConsistencyScoreCard(score = topConsistency)
-        }
+            // Consistency Score Card - use top consistency streak if available
+            val topConsistency = statsState.streakConsistency.maxByOrNull { it.score }
+            if (topConsistency != null) {
+                ConsistencyScoreCard(score = topConsistency)
+            }
 
-        statsState.averageDailyTrend?.let {
-            StreakTrendCard(trend = it)
+            statsState.averageDailyTrend?.let {
+                StreakTrendCard(trend = it)
+            }
         }
 
         // Skill Paths Entry

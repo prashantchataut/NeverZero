@@ -51,6 +51,14 @@ class AppViewModel(
                 _uiState.update { it.copy(totalPoints = points) }
             }
         }
+
+        // Observe streaks for Skill Paths
+        viewModelScope.launch {
+            streakRepository.observeStreaks().collect { streaks ->
+                val skillPathsState = com.productivitystreak.ui.utils.SkillPathsHelper.computeSkillPathsState(streaks)
+                _uiState.update { it.copy(skillPathsState = skillPathsState) }
+            }
+        }
     }
 
     fun refreshQuote() {

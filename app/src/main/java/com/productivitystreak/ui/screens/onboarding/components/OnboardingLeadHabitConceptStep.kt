@@ -1,0 +1,82 @@
+package com.productivitystreak.ui.screens.onboarding.components
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.unit.dp
+import com.productivitystreak.ui.theme.NeverZeroTheme
+
+@Composable
+fun OnboardingLeadHabitConceptStep() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .clip(RoundedCornerShape(32.dp))
+                .background(MaterialTheme.colorScheme.surface),
+            contentAlignment = Alignment.Center
+        ) {
+            val surfaceColor = MaterialTheme.colorScheme.surface
+            val successColor = NeverZeroTheme.semanticColors.Success
+            val oceanStart = NeverZeroTheme.gradientColors.OceanStart
+            val oceanEnd = NeverZeroTheme.gradientColors.OceanEnd
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val start = Offset(size.width * 0.15f, size.height * 0.65f)
+                val end = Offset(size.width * 0.85f, size.height * 0.35f)
+                drawLine(
+                    brush = Brush.horizontalGradient(
+                        listOf(
+                            oceanStart,
+                            oceanEnd
+                        )
+                    ),
+                    start = start,
+                    end = end,
+                    strokeWidth = 8.dp.toPx(),
+                    cap = StrokeCap.Round
+                )
+
+                val dotPositions = listOf(0.15f, 0.35f, 0.55f, 0.75f, 0.9f)
+                dotPositions.forEachIndexed { index, fraction ->
+                    val t = fraction
+                    val x = size.width * t
+                    val y = size.height * (0.65f - 0.3f * t)
+                    drawCircle(
+                        color = if (index == 0)
+                            surfaceColor
+                        else successColor,
+                        radius = if (index == 0) 9.dp.toPx() else 6.dp.toPx(),
+                        center = Offset(x, y)
+                    )
+                }
+            }
+        }
+
+        Text(
+            text = "We’ll start with one small habit — your lead habit.",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Text(
+            text = "Nail this first habit and everything else becomes easier. No overwhelm, just daily momentum.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+        )
+    }
+}

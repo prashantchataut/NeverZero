@@ -294,19 +294,31 @@ fun NeverZeroApp(
                     shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
                 ) {
                     when (addUi.activeForm) {
-                        null -> AddEntryMenuSheet(onEntrySelected = onAddEntrySelected)
-                        AddEntryType.HABIT -> HabitFormSheet(
-                            isSubmitting = addUi.isSubmitting,
-                            onSubmit = onSubmitHabit
-                        )
-                        AddEntryType.WORD -> VocabularyFormSheet(
-                            isSubmitting = addUi.isSubmitting,
-                            onSubmit = onSubmitWord
-                        )
-                        AddEntryType.JOURNAL -> JournalFormSheet(
-                            isSubmitting = addUi.isSubmitting,
-                            onSubmit = onSubmitJournal
-                        )
+                        null -> AddEntryMenuSheet(onEntrySelected = appViewModel::onAddEntrySelected)
+                        AddEntryType.HABIT -> {
+                            HabitFormSheet(
+                                isSubmitting = addUi.isSubmitting,
+                                onSubmit = { name, goal, unit, category, color, icon ->
+                                    streakViewModel.createStreak(name, goal, unit, category, color, icon)
+                                }
+                            )
+                        }
+                        AddEntryType.WORD -> {
+                            VocabularyFormSheet(
+                                isSubmitting = addUi.isSubmitting,
+                                onSubmit = { word, definition, example ->
+                                    vocabularyViewModel.onSubmitVocabularyEntry(word, definition, example)
+                                }
+                            )
+                        }
+                        AddEntryType.JOURNAL -> {
+                            JournalFormSheet(
+                                isSubmitting = addUi.isSubmitting,
+                                onSubmit = { mood, notes, highlights, gratitude, tomorrowGoals ->
+                                    journalViewModel.onSubmitJournalEntry(mood, notes, highlights, gratitude, tomorrowGoals)
+                                }
+                            )
+                        }
                         AddEntryType.TEMPLATE -> {
                             // Close sheet and navigate to templates
                             LaunchedEffect(Unit) {
