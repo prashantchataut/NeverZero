@@ -2,12 +2,14 @@ package com.productivitystreak.ui.icons
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoGraph
+import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Celebration
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material.icons.outlined.MonitorHeart
 import androidx.compose.material.icons.outlined.Savings
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.SelfImprovement
 import androidx.compose.material.icons.outlined.Vibration
@@ -35,6 +37,9 @@ object AppIcons {
     val Career: ImageVector = Icons.Outlined.Work
     val Finance: ImageVector = Icons.Outlined.Savings
     val Productivity: ImageVector = Icons.Outlined.AutoGraph
+    val Analytics: ImageVector = Icons.Outlined.BarChart
+    val BarChart: ImageVector = Icons.Outlined.BarChart
+    val Search: ImageVector = Icons.Outlined.Search
     // Softer, continuous care vibe for wellness
     val Wellness: ImageVector = Icons.Outlined.MonitorHeart
     val Celebration: ImageVector = Icons.Outlined.Celebration

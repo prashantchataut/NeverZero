@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.roundToInt
 
 data class StreakUiState(
     val streaks: List<Streak> = emptyList(),
@@ -101,21 +102,55 @@ class StreakViewModel(
     }
 
     private fun computeAverageDailyTrend(streaks: List<Streak>): com.productivitystreak.ui.state.stats.AverageDailyTrend {
-        // Placeholder implementation
+        val windowSize = 7
+        val groupedByDate = streaks
+            .flatMap { streak -> streak.history.takeLast(windowSize) }
+            .groupBy { it.date }
+            .toSortedMap()
+
+        val points = groupedByDate.map { (date, records) ->
+            val percent = if (records.isEmpty()) 0 else {
+                val average = records.sumOf { it.completionFraction.toDouble() } / records.size
+                (average * 100).roundToInt()
+            }
+            com.productivitystreak.ui.state.stats.TrendPoint(date = date, percent = percent)
+        }.takeLast(windowSize)
+
         return com.productivitystreak.ui.state.stats.AverageDailyTrend(
-            points = emptyList(),
-            trendDirection = "stable",
-            changePercent = 0
+            windowSize = windowSize,
+            points = points
         )
     }
 
-    private fun computeStreakConsistency(streaks: List<Streak>): com.productivitystreak.ui.state.stats.ConsistencyScore {
-        // Placeholder implementation
-        return com.productivitystreak.ui.state.stats.ConsistencyScore(
-            score = 85,
-            level = com.productivitystreak.ui.state.stats.ConsistencyLevel.GOOD,
-            description = "You are doing great!"
-        )
+    private fun computeStreakConsistency(streaks: List<Streak>): List<com.productivitystreak.ui.state.stats.ConsistencyScore> {
+        if (streaks.isEmpty()) return emptyList()
+
+        return streaks.map { streak ->
+            val recentFractions = streak.history.takeLast(14).map { it.completionFraction }
+            val average = if (recentFractions.isEmpty()) 0f else recentFractions.average().toFloat()
+            val score = (average * 100).roundToInt()
+            val variance = if (recentFractions.size <= 1) 0f else {
+                val diffSum = recentFractions.fold(0f) { acc, value ->
+                    val diff = value - average
+                    acc + diff * diff
+                }
+                diffSum / (recentFractions.size - 1)
+            }
+            val level = when {
+                score >= 80 -> com.productivitystreak.ui.state.stats.ConsistencyLevel.High
+                score >= 50 -> com.productivitystreak.ui.state.stats.ConsistencyLevel.Medium
+                else -> com.productivitystreak.ui.state.stats.ConsistencyLevel.NeedsAttention
+            }
+
+            com.productivitystreak.ui.state.stats.ConsistencyScore(
+                streakId = streak.id,
+                streakName = streak.name,
+                score = score,
+                completionRate = score,
+                variance = variance,
+                level = level
+            )
+        }
     }
 
     private fun computeCalendarHeatMap(

@@ -63,7 +63,8 @@ fun HomeScreen(
     onOpenVocabulary: () -> Unit = {},
     onRescueQuickAction: (streakId: String, value: Int) -> Unit = { _, _ -> }
 ) {
-    val dailyContent by viewModel.dailyContent.collectAsStateWithLifecycle()
+    val dailyContentState = viewModel.dailyContent.collectAsStateWithLifecycle()
+    val dailyContent = dailyContentState.value
     val greeting = remember { getGreeting() }
     val streakDays = uiState.vocabularyState.currentStreakDays
 
@@ -151,7 +152,7 @@ fun HomeScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        val buddhaState by viewModel.buddhaInsightState.collectAsStateWithLifecycle()
+        val buddhaState = viewModel.buddhaInsightState.collectAsStateWithLifecycle().value
         
         LaunchedEffect(uiState.streaks) {
             if (uiState.streaks.isNotEmpty()) {
@@ -165,8 +166,8 @@ fun HomeScreen(
             modifier = Modifier.fillMaxWidth()
         )
         
-        val sidequest by viewModel.sidequest.collectAsStateWithLifecycle()
-        sidequest?.let { quest ->
+        val sidequestState = viewModel.sidequest.collectAsStateWithLifecycle()
+        sidequestState.value?.let { quest ->
             com.productivitystreak.ui.components.SidequestCard(
                 quest = quest,
                 onAccept = { /* TODO: Handle quest acceptance */ },

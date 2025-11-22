@@ -1,7 +1,11 @@
 package com.productivitystreak.ui.state.home
 
 enum class ContentType {
-    MENTAL_MODEL, PSYCHOLOGY_TRICK, VOCABULARY, BOOK_EXCERPT
+    MENTAL_MODEL,
+    PSYCHOLOGY_TRICK,
+    VOCABULARY,
+    BOOK_EXCERPT,
+    PHILOSOPHY
 }
 
 data class DailyContent(

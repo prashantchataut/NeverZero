@@ -111,9 +111,9 @@ fun NeverZeroApp(
     val haptics = LocalHapticFeedback.current
 
     // FTUE: Immersive onboarding flow
-    val showOnboarding by androidx.lifecycle.compose.collectAsStateWithLifecycle(onboardingViewModel.showOnboarding)
+    val showOnboarding by collectAsStateWithLifecycle(onboardingViewModel.showOnboarding)
     if (showOnboarding) {
-        val onboardingState by androidx.lifecycle.compose.collectAsStateWithLifecycle(onboardingViewModel.uiState)
+        val onboardingState by collectAsStateWithLifecycle(onboardingViewModel.uiState)
         OnboardingFlow(
             uiState = onboardingState,
             onToggleOnboardingCategory = onboardingViewModel::onToggleOnboardingCategory,
@@ -228,10 +228,10 @@ fun NeverZeroApp(
             ) { destination ->
                 when (destination) {
                     MainDestination.HOME -> {
-                        val streakState by androidx.lifecycle.compose.collectAsStateWithLifecycle(streakViewModel.uiState)
+                        val streakState by collectAsStateWithLifecycle(streakViewModel.uiState)
                         DashboardScreen(
                             streakUiState = streakState,
-                            appUiState = uiState,
+                            uiState = uiState,
                             onToggleTask = streakViewModel::onToggleTask,
                             onRefreshQuote = appViewModel::refreshQuote,
                             onAddHabitClick = appViewModel::onAddButtonTapped,
@@ -242,21 +242,21 @@ fun NeverZeroApp(
                         )
                     }
                     MainDestination.STATS -> {
-                        val streakState by androidx.lifecycle.compose.collectAsStateWithLifecycle(streakViewModel.uiState)
+                        val streakState by collectAsStateWithLifecycle(streakViewModel.uiState)
                         StatsScreen(
                             statsState = streakState.statsState,
                             onNavigateToSkillPaths = { showSkillPaths = true }
                         )
                     }
                     MainDestination.DISCOVER -> {
-                        val discoverState by androidx.lifecycle.compose.collectAsStateWithLifecycle(discoverViewModel.uiState)
+                        val discoverState by collectAsStateWithLifecycle(discoverViewModel.uiState)
                         DiscoverScreen(
                             state = discoverState,
                             onAssetSelected = { assetId -> selectedAssetId = assetId }
                         )
                     }
                     MainDestination.PROFILE -> {
-                        val profileState by androidx.lifecycle.compose.collectAsStateWithLifecycle(profileViewModel.uiState)
+                        val profileState by collectAsStateWithLifecycle(profileViewModel.uiState)
                         ProfileScreen(
                             userName = uiState.userName,
                             profileState = profileState.profileState,
@@ -288,7 +288,7 @@ fun NeverZeroApp(
 
             // Skill Paths Overlay
             if (showSkillPaths) {
-                val streakState by androidx.lifecycle.compose.collectAsStateWithLifecycle(streakViewModel.uiState)
+                val streakState by collectAsStateWithLifecycle(streakViewModel.uiState)
                 com.productivitystreak.ui.screens.skills.SkillPathsScreen(
                     onBack = { showSkillPaths = false },
                     onPathSelected = { /* TODO: show skill-path detail */ },

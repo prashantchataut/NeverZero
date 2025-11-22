@@ -1,13 +1,10 @@
 package com.productivitystreak.ui.screens.dashboard.components
 
 import android.graphics.Color.parseColor
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -111,12 +108,7 @@ fun DashboardTaskRow(
                 )
             }
 
-            AnimatedVisibility(
-                visible = showConfetti,
-                enter = fadeIn(),
-                exit = fadeOut(),
-                modifier = Modifier.matchParentSize()
-            ) {
+            if (showConfetti) {
                 ConfettiOverlay(color = accent)
             }
         }

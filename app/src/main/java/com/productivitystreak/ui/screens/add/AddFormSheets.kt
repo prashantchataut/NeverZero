@@ -36,6 +36,7 @@ import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.outlined.List as ListIcon
 import androidx.compose.material.icons.outlined.SelfImprovement
 import androidx.compose.material.icons.outlined.SentimentDissatisfied
 import androidx.compose.material.icons.outlined.SentimentNeutral
@@ -135,7 +136,7 @@ fun AddEntryMenuSheet(
                     modifier = Modifier.weight(1f)
                 )
                 CommandCenterCard(
-                    icon = androidx.compose.material.icons.Icons.Outlined.List,
+                    icon = ListIcon,
                     title = "Templates",
                     subtitle = "Browse library",
                     onClick = { onEntrySelected(AddEntryType.TEMPLATE) },
