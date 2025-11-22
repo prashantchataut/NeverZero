@@ -21,7 +21,9 @@ import java.time.LocalTime
 class AppViewModel(
     application: Application,
     private val quoteRepository: QuoteRepository,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val streakRepository: com.productivitystreak.data.repository.StreakRepository,
+    private val templateRepository: com.productivitystreak.data.repository.TemplateRepository
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(AppUiState())
@@ -91,21 +93,6 @@ class AppViewModel(
         }
     }
 
-    fun onDismissUiMessage() {
-        _uiState.update { it.copy(uiMessage = null) }
-    }
-
-    // Add Menu Management
-    fun onAddButtonTapped() {
-        updateAddState { it.copy(isMenuOpen = true, activeForm = null) }
-    }
-
-    fun onDismissAddMenu() {
-        updateAddState { it.copy(isMenuOpen = false) }
-    }
-
-    fun onAddEntrySelected(type: AddEntryType) {
-        updateAddState { it.copy(activeForm = type, isMenuOpen = false) }
     }
 
     fun onDismissAddForm() {
@@ -146,6 +133,26 @@ class AppViewModel(
     fun onDismissAlarmPermissionDialog() {
         _uiState.update { state ->
             state.copy(permissionState = state.permissionState.copy(showAlarmDialog = false))
+        }
+    }
+
+    // Template Library
+    fun getTemplates() = templateRepository.getCuratedTemplates()
+
+    fun getTemplatesByCategory(category: String) = templateRepository.getTemplatesByCategory(category)
+
+    fun importTemplate(template: com.productivitystreak.data.model.StreakTemplate) {
+        viewModelScope.launch {
+            val result = streakRepository.createStreakFromTemplate(template)
+            if (result is com.productivitystreak.data.repository.RepositoryResult.Success) {
+                _uiState.update { 
+                    it.copy(uiMessage = UiMessage(text = "Habit imported: ${template.name}", type = UiMessageType.SUCCESS)) 
+                }
+            } else {
+                _uiState.update { 
+                    it.copy(uiMessage = UiMessage(text = "Failed to import habit.", type = UiMessageType.ERROR)) 
+                }
+            }
         }
     }
 }

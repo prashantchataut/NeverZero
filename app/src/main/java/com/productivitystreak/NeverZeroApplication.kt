@@ -26,7 +26,12 @@ class NeverZeroApplication : Application() {
     val achievementRepository by lazy { AchievementRepository(database.achievementDao()) }
     val assetRepository by lazy { AssetRepository() }
     val timeCapsuleRepository by lazy { TimeCapsuleRepository(database.timeCapsuleDao()) }
+    val timeCapsuleRepository by lazy { TimeCapsuleRepository(database.timeCapsuleDao()) }
     val templateRepository by lazy { TemplateRepository() }
+    
+    // AI
+    val geminiClient by lazy { com.productivitystreak.data.gemini.GeminiClient.getInstance() }
+    val quoteRepository by lazy { QuoteRepository(com.productivitystreak.data.PersonalizedQuoteEngine(geminiClient)) }
 
     // Utilities
     val backupManager by lazy { BackupManager(this, database) }

@@ -310,7 +310,4 @@ class ProfileViewModel(
         )
     }
 
-    fun onSettingsDismissMessage() {
-        clearUiMessage()
-    }
-
+}

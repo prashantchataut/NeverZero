@@ -30,8 +30,10 @@ class AppViewModelFactory(private val application: Application) : ViewModelProvi
             modelClass.isAssignableFrom(AppViewModel::class.java) -> {
                 AppViewModel(
                     application = application,
-                    quoteRepository = QuoteRepository(),
-                    preferencesManager = app.preferencesManager
+                    quoteRepository = app.quoteRepository,
+                    preferencesManager = app.preferencesManager,
+                    streakRepository = app.streakRepository,
+                    templateRepository = app.templateRepository
                 ) as T
             }
             modelClass.isAssignableFrom(StreakViewModel::class.java) -> {
@@ -63,7 +65,8 @@ class AppViewModelFactory(private val application: Application) : ViewModelProvi
                 OnboardingViewModel(
                     preferencesManager = app.preferencesManager,
                     streakRepository = app.streakRepository,
-                    reminderScheduler = StreakReminderScheduler(application)
+                    reminderScheduler = StreakReminderScheduler(application),
+                    geminiClient = app.geminiClient
                 ) as T
             }
             modelClass.isAssignableFrom(DiscoverViewModel::class.java) -> {

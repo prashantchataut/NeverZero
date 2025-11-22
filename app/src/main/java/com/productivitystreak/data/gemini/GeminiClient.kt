@@ -21,6 +21,21 @@ class GeminiClient private constructor() {
         response.text?.trim().takeUnless { it.isNullOrEmpty() } ?: "Keep going! You're doing great."
     }
 
+    suspend fun generateHabitSuggestions(interests: String): List<String> = withContext(Dispatchers.IO) {
+        val generativeModel = model ?: return@withContext emptyList()
+        val prompt = "Suggest 5 simple, daily habits for someone interested in: $interests. Format as a simple list, one per line, no numbering or bullets."
+        try {
+            val response = generativeModel.generateContent(content { text(prompt) })
+            response.text?.lines()
+                ?.map { it.trim().removePrefix("- ").removePrefix("* ").trim() }
+                ?.filter { it.isNotBlank() }
+                ?.take(5)
+                ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
     companion object {
         private const val MODEL_NAME = "models/gemini-2.5-flash"
 

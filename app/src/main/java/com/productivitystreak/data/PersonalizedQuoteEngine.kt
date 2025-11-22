@@ -7,7 +7,12 @@ import com.productivitystreak.data.model.QuoteTemplate
 import com.productivitystreak.data.model.UserContext
 import kotlin.math.abs
 
-class PersonalizedQuoteEngine {
+import com.productivitystreak.data.gemini.GeminiClient
+import kotlinx.coroutines.runBlocking
+
+class PersonalizedQuoteEngine(
+    private val geminiClient: GeminiClient
+) {
 
     private val templates = listOf(
         // MOMENTUM_BUILDER - Active streaks, good performance
@@ -156,6 +161,26 @@ class PersonalizedQuoteEngine {
     )
 
     fun generateQuote(userContext: UserContext): Quote {
+        // Try to use Gemini for a dynamic quote occasionally (e.g., 30% of the time) or if context is special
+        // For now, we'll do a simple check. In a real app, we'd be more sophisticated.
+        // Since this is synchronous, we use runBlocking for the suspend call.
+        // Ideally, this should be fully async, but for now we wrap it.
+        
+        val shouldUseGemini = (System.currentTimeMillis() % 10) < 3 // 30% chance
+        
+        if (shouldUseGemini) {
+            try {
+                val prompt = buildPrompt(userContext)
+                val aiQuoteText = runBlocking { geminiClient.generateMotivationPrompt(prompt) }
+                return Quote(
+                    text = aiQuoteText,
+                    author = "Never Zero AI"
+                )
+            } catch (e: Exception) {
+                // Fallback to templates on error
+            }
+        }
+
         val matchingTemplates = templates.filter { template ->
             matchesContext(template.context, userContext)
         }
@@ -173,6 +198,19 @@ class PersonalizedQuoteEngine {
             text = injectUserData(selectedTemplate.template, userContext),
             author = "Never Zero"
         )
+    }
+
+    private fun buildPrompt(context: UserContext): String {
+        return """
+            Generate a short, punchy motivational quote for a user named ${context.userName}.
+            Context:
+            - Current streak: ${context.currentStreakDays} days
+            - Time of day: ${formatTime(context.timeOfDay.hour)}
+            - Total points: ${context.totalPoints}
+            - Completion rate today: ${context.completionRate}%
+            
+            The quote should be direct, encouraging, and under 20 words. Do not use quotes around the text.
+        """.trimIndent()
     }
 
     private fun matchesContext(templateContext: QuoteContext, userContext: UserContext): Boolean {

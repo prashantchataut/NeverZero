@@ -11,7 +11,9 @@ data class OnboardingState(
     val reminderTime: String = "08:30 PM",
     val allowNotifications: Boolean = false,
     val showNotificationPrompt: Boolean = false,
-    val hasCompleted: Boolean = false
+    val hasCompleted: Boolean = false,
+    val habitSuggestions: List<String> = emptyList(),
+    val isGeneratingSuggestions: Boolean = false
 )
 
 data class OnboardingCategory(

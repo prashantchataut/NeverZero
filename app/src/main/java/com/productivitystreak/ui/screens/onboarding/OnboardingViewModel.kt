@@ -15,10 +15,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+import com.productivitystreak.data.gemini.GeminiClient
+
 class OnboardingViewModel(
     private val preferencesManager: PreferencesManager,
     private val streakRepository: StreakRepository,
-    private val reminderScheduler: StreakReminderScheduler
+    private val reminderScheduler: StreakReminderScheduler,
+    private val geminiClient: GeminiClient
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OnboardingState())
@@ -69,6 +72,20 @@ class OnboardingViewModel(
                 current + category
             }
             state.copy(selectedCategories = updated)
+        }
+        
+        // Debounce or just trigger suggestion generation
+        generateHabitSuggestions()
+    }
+
+    private fun generateHabitSuggestions() {
+        val categories = _uiState.value.selectedCategories.joinToString(", ")
+        if (categories.isBlank()) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isGeneratingSuggestions = true) }
+            val suggestions = geminiClient.generateHabitSuggestions(categories)
+            _uiState.update { it.copy(isGeneratingSuggestions = false, habitSuggestions = suggestions) }
         }
     }
 

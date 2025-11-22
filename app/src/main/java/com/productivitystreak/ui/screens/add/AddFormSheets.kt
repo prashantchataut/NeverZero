@@ -135,7 +135,7 @@ fun AddEntryMenuSheet(
                     modifier = Modifier.weight(1f)
                 )
                 CommandCenterCard(
-                    icon = Icons.Outlined.AutoGraph, // Using a generic icon for now, should be Template icon
+                    icon = androidx.compose.material.icons.Icons.Outlined.List,
                     title = "Templates",
                     subtitle = "Browse library",
                     onClick = { onEntrySelected(AddEntryType.TEMPLATE) },
