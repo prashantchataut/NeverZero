@@ -108,7 +108,7 @@ val LocalDesignColors = staticCompositionLocalOf { NeverZeroDesignPalettes.Dark 
 @Composable
 fun AppTheme(
     darkTheme: Boolean,
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false, // Disabled by default to enforce brand identity
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
@@ -139,7 +139,7 @@ fun AppTheme(
 @Composable
 fun ProductivityStreakTheme(
     themeMode: com.productivitystreak.ui.state.profile.ProfileTheme = com.productivitystreak.ui.state.profile.ProfileTheme.Auto,
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false, // Disabled by default to enforce brand identity
     content: @Composable () -> Unit
 ) {
     val darkTheme = when (themeMode) {

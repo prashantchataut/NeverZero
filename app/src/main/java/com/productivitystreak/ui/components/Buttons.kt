@@ -104,7 +104,8 @@ fun PrimaryButton(
     enabled: Boolean = true,
     icon: ImageVector? = null,
     hapticEnabled: Boolean = true,
-    shape: Shape = NeverZeroButtonDefaults.DefaultShape
+    shape: Shape = NeverZeroButtonDefaults.DefaultShape,
+    fullWidth: Boolean = false // Added to support PillButton behavior
 ) {
     val haptics = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
@@ -137,6 +138,8 @@ fun PrimaryButton(
             onClick()
         },
         modifier = modifier
+            .then(if (fullWidth) Modifier.fillMaxWidth() else Modifier)
+            .height(TouchTarget.minimum) // Enforce 48dp minimum height
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
@@ -217,6 +220,7 @@ fun SecondaryButton(
             onClick()
         },
         modifier = modifier
+            .height(TouchTarget.minimum) // Enforce 48dp minimum height
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
@@ -492,57 +496,14 @@ fun PillButton(
     containerColor: Color = NeverZeroTheme.designColors.primary,
     contentColor: Color = NeverZeroTheme.designColors.onPrimary
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val designColors = NeverZeroTheme.designColors
-    
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.98f else 1f,
-        animationSpec = MotionSpec.quickScale(),
-        label = "pill-scale"
-    )
-    val gradient = remember(containerColor, designColors) {
-        Brush.horizontalGradient(
-            listOf(containerColor, designColors.secondary.copy(alpha = 0.9f))
-        )
-    }
-    
-    Button(
+    // Redirect to PrimaryButton with fullWidth = true and LargeShape (Pill-ish)
+    PrimaryButton(
+        text = text,
         onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(TouchTarget.recommended)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .neverZeroButtonBackground(
-                brush = gradient,
-                borderColor = designColors.border,
-                shape = NeverZeroButtonDefaults.LargeShape
-            ),
+        modifier = modifier,
         enabled = enabled,
-        shape = NeverZeroButtonDefaults.LargeShape,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent,
-            contentColor = contentColor,
-            disabledContainerColor = Color.Transparent,
-            disabledContentColor = designColors.disabled
-        ),
-        elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp),
-        interactionSource = interactionSource
-    ) {
-        if (icon != null) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(IconSize.medium)
-            )
-            Spacer(modifier = Modifier.width(Spacing.sm))
-        }
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge
-        )
-    }
+        icon = icon,
+        shape = NeverZeroButtonDefaults.LargeShape, // Use large shape for pill look
+        fullWidth = true
+    )
 }

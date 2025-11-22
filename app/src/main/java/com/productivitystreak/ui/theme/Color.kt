@@ -86,45 +86,42 @@ val DarkOutlineVariant = BorderGraphite.copy(alpha = 0.5f)
 // Vibrant, modern colors for different streak categories
 
 object StreakColors {
-    // Reading - Warm coral/salmon
-    val Reading = Color(0xFFFF6B6B)
-    val ReadingContainer = Color(0xFFFFE5E5)
-    val OnReadingContainer = Color(0xFF5C0000)
+    // Focus Domain (Reading, Learning) -> Ion (Cyan)
+    val Reading = Ion
+    val ReadingContainer = Ion.copy(alpha = 0.15f)
+    val OnReadingContainer = Ion.copy(alpha = 0.9f) // Darker for contrast if needed, or keep Ion for glow
 
-    // Vocabulary - Vibrant purple
-    val Vocabulary = Color(0xFF6C5CE7)
-    val VocabularyContainer = Color(0xFFEAE6FF)
-    val OnVocabularyContainer = Color(0xFF1A0052)
+    val Learning = Ion
+    val LearningContainer = Ion.copy(alpha = 0.15f)
+    val OnLearningContainer = Ion.copy(alpha = 0.9f)
 
-    // Wellness - Fresh green
-    val Wellness = Color(0xFF00D9A5)
-    val WellnessContainer = Color(0xFFD6FFF3)
-    val OnWellnessContainer = Color(0xFF003829)
+    // Create Domain (Creative, Vocabulary) -> Plasma (Purple)
+    val Vocabulary = Plasma
+    val VocabularyContainer = Plasma.copy(alpha = 0.15f)
+    val OnVocabularyContainer = Plasma.copy(alpha = 0.9f)
 
-    // Productivity - Energetic orange
-    val Productivity = Color(0xFFFF9F43)
-    val ProductivityContainer = Color(0xFFFFEFDD)
-    val OnProductivityContainer = Color(0xFF4D2800)
+    val Creative = Plasma
+    val CreativeContainer = Plasma.copy(alpha = 0.15f)
+    val OnCreativeContainer = Plasma.copy(alpha = 0.9f)
 
-    // Learning - Bright blue
-    val Learning = Color(0xFF0095FF)
-    val LearningContainer = Color(0xFFD4EBFF)
-    val OnLearningContainer = Color(0xFF001D33)
+    // Move Domain (Exercise, Wellness) -> Ember (Red)
+    val Exercise = Ember
+    val ExerciseContainer = Ember.copy(alpha = 0.15f)
+    val OnExerciseContainer = Ember.copy(alpha = 0.9f)
 
-    // Exercise - Dynamic magenta
-    val Exercise = Color(0xFFE84393)
-    val ExerciseContainer = Color(0xFFFFDDF0)
-    val OnExerciseContainer = Color(0xFF470025)
+    val Wellness = Ember
+    val WellnessContainer = Ember.copy(alpha = 0.15f)
+    val OnWellnessContainer = Ember.copy(alpha = 0.9f)
 
-    // Meditation - Calm indigo
-    val Meditation = Color(0xFF5F27CD)
-    val MeditationContainer = Color(0xFFE8DDFF)
-    val OnMeditationContainer = Color(0xFF1F003D)
+    // Reflect Domain (Meditation, Journal) -> Laser (Green)
+    val Meditation = Laser
+    val MeditationContainer = Laser.copy(alpha = 0.15f)
+    val OnMeditationContainer = Laser.copy(alpha = 0.9f)
 
-    // Creative - Sunny yellow
-    val Creative = Color(0xFFFFC043)
-    val CreativeContainer = Color(0xFFFFF4D6)
-    val OnCreativeContainer = Color(0xFF3D2800)
+    // Productivity -> Mapped to Focus (Ion) or Create (Plasma)? Let's go with Focus (Ion)
+    val Productivity = Ion
+    val ProductivityContainer = Ion.copy(alpha = 0.15f)
+    val OnProductivityContainer = Ion.copy(alpha = 0.9f)
 }
 
 // ==================== GRADIENT COLORS ====================

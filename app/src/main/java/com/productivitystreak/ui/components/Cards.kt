@@ -28,12 +28,21 @@ import com.productivitystreak.ui.theme.*
  * Elevated Card - Subtle elevation with background tint
  * Best for content that needs slight emphasis
  */
+/**
+ * Standard padding for all cards
+ */
+private val CardPadding = PaddingValues(Spacing.lg)
+
+/**
+ * Elevated Card - Subtle elevation with background tint
+ * Best for content that needs slight emphasis
+ */
 @Composable
 fun ElevatedCard(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = Shapes.medium,
+    shape: Shape = Shapes.large, // Standardized to Large (20dp)
     elevation: Dp = Elevation.level2,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -67,7 +76,7 @@ fun FilledCard(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = Shapes.medium,
+    shape: Shape = Shapes.large, // Standardized to Large (20dp)
     content: @Composable ColumnScope.() -> Unit
 ) {
     if (onClick != null) {
@@ -100,7 +109,7 @@ fun OutlinedCard(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = Shapes.medium,
+    shape: Shape = Shapes.large, // Standardized to Large (20dp)
     borderColor: Color = MaterialTheme.colorScheme.outline,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -136,7 +145,7 @@ fun InteractiveCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = Shapes.medium,
+    shape: Shape = Shapes.large, // Standardized to Large (20dp)
     elevation: Dp = Elevation.level2,
     pressScale: Float = 0.97f,
     content: @Composable ColumnScope.() -> Unit
@@ -178,7 +187,7 @@ fun GradientCard(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = Shapes.large,
+    shape: Shape = Shapes.extraLarge, // Hero cards use Extra Large (28dp)
     elevation: Dp = Elevation.level3,
     content: @Composable BoxScope.() -> Unit
 ) {
@@ -258,7 +267,7 @@ private fun ColumnScope.StatCardContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(Spacing.md),
+            .padding(CardPadding), // Use standardized padding
         verticalArrangement = Arrangement.spacedBy(Spacing.xs)
     ) {
         Row(
