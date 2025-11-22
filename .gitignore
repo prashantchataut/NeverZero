@@ -27,6 +27,15 @@ index.js
 /filelist.txt
 /tracked_files.txt
 
-# Local backup overrides
-/backup_strings_override/
 /app/libs/biometric-fixed/
+
+# Build artifacts
+/app/build/
+/build/
+.gradle/
+
+# Temporary logs
+build_log*
+git_status*
+compile_log.txt
+
