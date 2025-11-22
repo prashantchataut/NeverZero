@@ -38,4 +38,5 @@ index.js
 build_log*
 git_status*
 compile_log.txt
+keystore_base64.txt
 
