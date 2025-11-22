@@ -23,6 +23,7 @@ data class StreakUiState(
     val streaks: List<Streak> = emptyList(),
     val selectedStreakId: String? = null,
     val todayTasks: List<DashboardTask> = emptyList(),
+    val oneOffTasks: List<com.productivitystreak.data.model.Task> = emptyList(),
     val statsState: StatsState = StatsState(),
     val skillPathsState: SkillPathsState = SkillPathsState(),
     val isSubmitting: Boolean = false,

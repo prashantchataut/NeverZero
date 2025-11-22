@@ -278,10 +278,11 @@ fun NeverZeroApp(
 
             // Skill Paths Overlay
             if (showSkillPaths) {
+                val streakState by androidx.lifecycle.compose.collectAsStateWithLifecycle(streakViewModel.uiState)
                 com.productivitystreak.ui.screens.skills.SkillPathsScreen(
                     onBack = { showSkillPaths = false },
                     onPathSelected = { /* TODO: show skill-path detail */ },
-                    paths = uiState.skillPathsState.pathsProgress
+                    paths = streakState.skillPathsState.pathsProgress
                 )
             }
 
