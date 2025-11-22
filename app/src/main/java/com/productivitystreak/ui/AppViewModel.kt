@@ -8,6 +8,7 @@ import com.productivitystreak.data.local.PreferencesManager
 import com.productivitystreak.data.model.UserContext
 import com.productivitystreak.ui.state.AppUiState
 import com.productivitystreak.ui.state.UiMessage
+import com.productivitystreak.ui.state.UiMessageType
 import com.productivitystreak.ui.state.AddUiState
 import com.productivitystreak.ui.state.AddEntryType
 import kotlinx.coroutines.Job
@@ -91,8 +92,6 @@ class AppViewModel(
                 }
             }
         }
-    }
-
     }
 
     fun onDismissAddForm() {
