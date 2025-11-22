@@ -75,9 +75,7 @@ import com.productivitystreak.ui.state.AddEntryType
 import com.productivitystreak.ui.state.AppUiState
 import com.productivitystreak.ui.state.UiMessageType
 import com.productivitystreak.ui.theme.NeverZeroTheme
-import kotlinx.coroutines.launch
-
-enum class MainDestination { HOME, STATS, DISCOVER, PROFILE }
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,6 +84,15 @@ fun NeverZeroApp(
     viewModelFactory: androidx.lifecycle.ViewModelProvider.Factory
 ) {
     val uiState by androidx.lifecycle.compose.collectAsStateWithLifecycle(appViewModel.uiState)
+    
+    // Event handlers
+    val onDismissUiMessage = appViewModel::onDismissUiMessage
+    val onAssetConsumed = discoverViewModel::onAssetConsumed
+    val onAssetTestPassed = discoverViewModel::onAssetTestPassed
+    val onAddEntrySelected = appViewModel::onAddEntrySelected
+    val onDismissAddMenu = appViewModel::onDismissAddMenu
+    val onDismissAddForm = appViewModel::onDismissAddForm
+    val onAddButtonTapped = appViewModel::onAddButtonTapped
     
     // Feature ViewModels
     val streakViewModel: com.productivitystreak.ui.screens.stats.StreakViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = viewModelFactory)
@@ -97,6 +104,15 @@ fun NeverZeroApp(
     val vocabularyViewModel: com.productivitystreak.ui.screens.vocabulary.VocabularyViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = viewModelFactory)
     val journalViewModel: com.productivitystreak.ui.screens.journal.JournalViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = viewModelFactory)
     val readingViewModel: com.productivitystreak.ui.screens.reading.ReadingViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = viewModelFactory)
+
+    // Event handlers
+    val onDismissUiMessage = appViewModel::onDismissUiMessage
+    val onAssetConsumed = discoverViewModel::onAssetConsumed
+    val onAssetTestPassed = discoverViewModel::onAssetTestPassed
+    val onAddEntrySelected = appViewModel::onAddEntrySelected
+    val onDismissAddMenu = appViewModel::onDismissAddMenu
+    val onDismissAddForm = appViewModel::onDismissAddForm
+    val onAddButtonTapped = appViewModel::onAddButtonTapped
 
     val haptics = LocalHapticFeedback.current
 

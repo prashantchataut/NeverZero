@@ -8,7 +8,8 @@ import com.productivitystreak.data.ai.BuddhaRepository
 import com.productivitystreak.data.ai.WisdomType
 import com.productivitystreak.data.model.Streak
 import com.productivitystreak.ui.state.home.ContentType
-import com.productivitystreak.ui.state.home.DailyContent
+import com.productivitystreak.data.ai.WisdomType
+import com.productivitystreak.ui.state.home.ContentType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

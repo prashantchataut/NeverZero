@@ -30,7 +30,7 @@ import java.time.LocalTime
 @Composable
 fun DashboardScreen(
     streakUiState: com.productivitystreak.ui.screens.stats.StreakUiState,
-    appUiState: AppUiState,
+    uiState: AppUiState,
     onToggleTask: (String) -> Unit,
     onRefreshQuote: () -> Unit,
     onAddHabitClick: () -> Unit,
@@ -92,7 +92,7 @@ fun DashboardScreen(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     AnimatedContent(
-                        targetState = appUiState.userName,
+                        targetState = uiState.userName,
                         label = "dashboard-greeting"
                     ) { name ->
                         Text(
@@ -126,8 +126,8 @@ fun DashboardScreen(
         // 2. Morning Brief
         item {
             MorningBriefCard(
-                quote = appUiState.quote,
-                isQuoteLoading = appUiState.isQuoteLoading,
+                quote = uiState.quote,
+                isQuoteLoading = uiState.isQuoteLoading,
                 todayTasks = streakUiState.todayTasks,
                 onRefreshQuote = onRefreshQuote,
                 modifier = Modifier.fillMaxWidth()
@@ -186,7 +186,7 @@ fun DashboardScreen(
                     task = task,
                     onToggle = {
                         if (!task.isCompleted) {
-                            if (appUiState.profileState.hapticsEnabled) { // Using appUiState.profileState assuming it's available
+                            if (uiState.profileState.hapticsEnabled) { // Using uiState.profileState assuming it's available
                                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                             }
                             confettiState[task.id] = true
