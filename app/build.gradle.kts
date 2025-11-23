@@ -22,7 +22,14 @@ val localProperties = Properties().apply {
     }
 }
 
-fun credential(key: String): String? = localProperties.getProperty(key) ?: System.getenv(key)
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+
+fun credential(key: String): String? = keystoreProperties.getProperty(key) ?: localProperties.getProperty(key) ?: System.getenv(key)
 
 val releaseSigningCredentialKeys = listOf(
     "RELEASE_STORE_PASSWORD",
@@ -31,7 +38,7 @@ val releaseSigningCredentialKeys = listOf(
 )
 
 val releaseSigningCredentials = releaseSigningCredentialKeys.associateWith { credential(it) }
-val releaseKeystoreFile = rootProject.file("keystore/release.keystore")
+val releaseKeystoreFile = rootProject.file("keystore/release_new.keystore")
 val releaseSigningConfigured = releaseSigningCredentials.values.all { !it.isNullOrBlank() }
 val releaseSigningReady = if (releaseSigningConfigured && releaseKeystoreFile.exists()) {
     val storePassword = releaseSigningCredentials["RELEASE_STORE_PASSWORD"]!!.toCharArray()
@@ -49,7 +56,7 @@ val releaseSigningReady = if (releaseSigningConfigured && releaseKeystoreFile.ex
     }
 } else {
     if (!releaseKeystoreFile.exists()) {
-        println("[NeverZero] Release signing disabled: keystore/release.keystore missing.")
+        println("[NeverZero] Release signing disabled: keystore/release_new.keystore missing.")
     }
     false
 }
