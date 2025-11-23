@@ -86,14 +86,12 @@ android {
 
     signingConfigs {
         create("release") {
-            if (releaseSigningReady) {
-                storeFile = releaseKeystoreFile
-                storePassword = releaseSigningCredentials["RELEASE_STORE_PASSWORD"]
-                keyAlias = releaseSigningCredentials["RELEASE_KEY_ALIAS"]
-                keyPassword = releaseSigningCredentials["RELEASE_KEY_PASSWORD"]
-            } else {
-                println("[NeverZero] Release signing credentials not configured or invalid. Define valid RELEASE_* values in local.properties or environment variables to enable signed builds.")
-            }
+            storeFile = releaseKeystoreFile
+            storePassword = releaseSigningCredentials["RELEASE_STORE_PASSWORD"]
+            keyAlias = releaseSigningCredentials["RELEASE_KEY_ALIAS"]
+            keyPassword = releaseSigningCredentials["RELEASE_KEY_PASSWORD"]
+            enableV1Signing = true
+            enableV2Signing = true
         }
     }
 
@@ -107,9 +105,7 @@ android {
         getByName("release") {
             isMinifyEnabled = true
             isShrinkResources = true
-            if (releaseSigningReady) {
-                signingConfig = signingConfigs.getByName("release")
-            }
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
