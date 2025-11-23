@@ -1,3 +1,4 @@
+import java.security.KeyStore
 import java.util.Properties
 
 plugins {
@@ -30,7 +31,29 @@ val releaseSigningCredentialKeys = listOf(
 )
 
 val releaseSigningCredentials = releaseSigningCredentialKeys.associateWith { credential(it) }
+val releaseKeystoreFile = rootProject.file("keystore/release.keystore")
 val releaseSigningConfigured = releaseSigningCredentials.values.all { !it.isNullOrBlank() }
+val releaseSigningReady = if (releaseSigningConfigured && releaseKeystoreFile.exists()) {
+    val storePassword = releaseSigningCredentials["RELEASE_STORE_PASSWORD"]!!.toCharArray()
+    val keyAlias = releaseSigningCredentials["RELEASE_KEY_ALIAS"]!!
+    val keyPassword = releaseSigningCredentials["RELEASE_KEY_PASSWORD"]!!.toCharArray()
+    runCatching {
+        val keyStore = KeyStore.getInstance(KeyStore.getDefaultType())
+        releaseKeystoreFile.inputStream().use { keyStore.load(it, storePassword) }
+        require(keyStore.containsAlias(keyAlias)) { "Alias '$keyAlias' not found in release keystore." }
+        keyStore.getKey(keyAlias, keyPassword)
+        true
+    }.getOrElse {
+        println("[NeverZero] Release signing disabled: ${it.message}")
+        false
+    }
+} else {
+    if (!releaseKeystoreFile.exists()) {
+        println("[NeverZero] Release signing disabled: keystore/release.keystore missing.")
+    }
+    false
+}
+
 val geminiApiKey = credential("GEMINI_API_KEY") ?: ""
 
 android {
@@ -56,13 +79,13 @@ android {
 
     signingConfigs {
         create("release") {
-            if (releaseSigningConfigured) {
-                storeFile = rootProject.file("keystore/release.keystore")
+            if (releaseSigningReady) {
+                storeFile = releaseKeystoreFile
                 storePassword = releaseSigningCredentials["RELEASE_STORE_PASSWORD"]
                 keyAlias = releaseSigningCredentials["RELEASE_KEY_ALIAS"]
                 keyPassword = releaseSigningCredentials["RELEASE_KEY_PASSWORD"]
             } else {
-                println("[NeverZero] Release signing credentials not configured. Define RELEASE_* values in local.properties or environment variables to enable signed builds.")
+                println("[NeverZero] Release signing credentials not configured or invalid. Define valid RELEASE_* values in local.properties or environment variables to enable signed builds.")
             }
         }
     }
@@ -70,14 +93,14 @@ android {
     buildTypes {
         getByName("debug") {
             // Use the release signing config for debug builds when credentials are available.
-            if (releaseSigningConfigured) {
+            if (releaseSigningReady) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
         getByName("release") {
             isMinifyEnabled = true
             isShrinkResources = true
-            if (releaseSigningConfigured) {
+            if (releaseSigningReady) {
                 signingConfig = signingConfigs.getByName("release")
             }
             proguardFiles(
