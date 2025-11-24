@@ -16,7 +16,8 @@ class GhostNotificationWorker(
 
     override suspend fun doWork(): Result {
         return try {
-            val app = applicationContext as NeverZeroApplication
+            val app = applicationContext as? NeverZeroApplication 
+                ?: return Result.failure()
             val preferences = PreferencesManager(applicationContext)
 
             val notificationsEnabled = preferences.notificationsEnabled.first()

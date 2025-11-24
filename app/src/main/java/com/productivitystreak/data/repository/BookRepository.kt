@@ -1,5 +1,6 @@
 package com.productivitystreak.data.repository
 
+import android.database.sqlite.SQLiteException
 import com.productivitystreak.data.local.dao.BookDao
 import com.productivitystreak.data.local.dao.ReadingSessionDao
 import com.productivitystreak.data.local.entity.BookEntity
@@ -28,21 +29,35 @@ class BookRepository(
         genre: String? = null,
         isbn: String? = null,
         coverImageUrl: String? = null
-    ): Long {
-        val book = BookEntity(
-            title = title,
-            author = author,
-            totalPages = totalPages,
-            genre = genre,
-            isbn = isbn,
-            coverImageUrl = coverImageUrl,
-            startedAt = System.currentTimeMillis()
-        )
-        return bookDao.insertBook(book)
+    ): RepositoryResult<Long> {
+        return try {
+            val book = BookEntity(
+                title = title,
+                author = author,
+                totalPages = totalPages,
+                genre = genre,
+                isbn = isbn,
+                coverImageUrl = coverImageUrl,
+                startedAt = System.currentTimeMillis()
+            )
+            val id = bookDao.insertBook(book)
+            RepositoryResult.Success(id)
+        } catch (e: SQLiteException) {
+            RepositoryResult.DbError(e)
+        } catch (e: Exception) {
+            RepositoryResult.UnknownError(e)
+        }
     }
 
-    suspend fun updateBook(book: BookEntity) {
-        bookDao.updateBook(book)
+    suspend fun updateBook(book: BookEntity): RepositoryResult<Unit> {
+        return try {
+            bookDao.updateBook(book)
+            RepositoryResult.Success(Unit)
+        } catch (e: SQLiteException) {
+            RepositoryResult.DbError(e)
+        } catch (e: Exception) {
+            RepositoryResult.UnknownError(e)
+        }
     }
 
     suspend fun logReadingSession(
@@ -50,30 +65,37 @@ class BookRepository(
         pagesRead: Int,
         startPage: Int,
         notes: String? = null
-    ): Boolean {
-        val book = bookDao.getBookById(bookId) ?: return false
+    ): RepositoryResult<Unit> {
+        return try {
+            val book = bookDao.getBookById(bookId) 
+                ?: return RepositoryResult.DbError(IllegalStateException("Book not found"))
 
-        val endPage = startPage + pagesRead
-        val session = ReadingSessionEntity(
-            bookId = bookId,
-            pagesRead = pagesRead,
-            startPage = startPage,
-            endPage = endPage,
-            notes = notes
-        )
-        readingSessionDao.insertSession(session)
+            val endPage = startPage + pagesRead
+            val session = ReadingSessionEntity(
+                bookId = bookId,
+                pagesRead = pagesRead,
+                startPage = startPage,
+                endPage = endPage,
+                notes = notes
+            )
+            readingSessionDao.insertSession(session)
 
-        // Update book progress
-        val updatedBook = book.copy(currentPage = endPage)
-        bookDao.updateBook(updatedBook)
+            // Update book progress
+            val updatedBook = book.copy(currentPage = endPage)
+            bookDao.updateBook(updatedBook)
 
-        // Mark as finished if completed
-        if (endPage >= book.totalPages && book.finishedAt == null) {
-            val finishedBook = updatedBook.copy(finishedAt = System.currentTimeMillis())
-            bookDao.updateBook(finishedBook)
+            // Mark as finished if completed
+            if (endPage >= book.totalPages && book.finishedAt == null) {
+                val finishedBook = updatedBook.copy(finishedAt = System.currentTimeMillis())
+                bookDao.updateBook(finishedBook)
+            }
+
+            RepositoryResult.Success(Unit)
+        } catch (e: SQLiteException) {
+            RepositoryResult.DbError(e)
+        } catch (e: Exception) {
+            RepositoryResult.UnknownError(e)
         }
-
-        return true
     }
 
     fun observeReadingSessions(bookId: Long): Flow<List<ReadingSessionEntity>> =
@@ -82,12 +104,26 @@ class BookRepository(
     suspend fun getTotalPagesRead(bookId: Long): Int =
         readingSessionDao.getTotalPagesReadForBook(bookId) ?: 0
 
-    suspend fun deleteBook(book: BookEntity) {
-        bookDao.deleteBook(book)
+    suspend fun deleteBook(book: BookEntity): RepositoryResult<Unit> {
+        return try {
+            bookDao.deleteBook(book)
+            RepositoryResult.Success(Unit)
+        } catch (e: SQLiteException) {
+            RepositoryResult.DbError(e)
+        } catch (e: Exception) {
+            RepositoryResult.UnknownError(e)
+        }
     }
 
-    suspend fun archiveBook(bookId: Long) {
-        bookDao.archiveBook(bookId)
+    suspend fun archiveBook(bookId: Long): RepositoryResult<Unit> {
+        return try {
+            bookDao.archiveBook(bookId)
+            RepositoryResult.Success(Unit)
+        } catch (e: SQLiteException) {
+            RepositoryResult.DbError(e)
+        } catch (e: Exception) {
+            RepositoryResult.UnknownError(e)
+        }
     }
 
     suspend fun getBookCount(): Int = bookDao.getBookCount()

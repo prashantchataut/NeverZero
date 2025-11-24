@@ -43,25 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
-    // Animation Logic
-    LaunchedEffect(isSaving) {
-        if (isSaving) {
-            // Wait for text to dissolve (faster)
-            delay(1200)
-            showBuddhaResponse = true
-            
-            // Wait for response to be read (shorter, but allow manual exit)
-            delay(2500)
-            
-            // We don't auto-reset immediately, we let the user linger or exit.
-            // But if they want to write again:
-            delay(2000)
-            showBuddhaResponse = false
-            text = ""
-            isSaving = false
-        }
-    }
-}
+
 
 @Composable
 fun VoidScreen(
@@ -89,6 +71,25 @@ fun VoidScreen(
                 targetValue = 0f,
                 animationSpec = tween(500)
             )
+        }
+    }
+
+    // Animation Logic
+    LaunchedEffect(isSaving) {
+        if (isSaving) {
+            // Wait for text to dissolve (faster)
+            delay(1200)
+            showBuddhaResponse = true
+            
+            // Wait for response to be read (shorter, but allow manual exit)
+            delay(2500)
+            
+            // We don't auto-reset immediately, we let the user linger or exit.
+            // But if they want to write again:
+            delay(2000)
+            showBuddhaResponse = false
+            text = ""
+            isSaving = false
         }
     }
     

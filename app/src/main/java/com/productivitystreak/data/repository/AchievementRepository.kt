@@ -1,5 +1,6 @@
 package com.productivitystreak.data.repository
 
+import android.database.sqlite.SQLiteException
 import com.productivitystreak.data.local.dao.AchievementDao
 import com.productivitystreak.data.local.entity.AchievementEntity
 import kotlinx.coroutines.flow.Flow
@@ -18,34 +19,53 @@ class AchievementRepository(private val achievementDao: AchievementDao) {
     suspend fun getAchievementById(id: String): AchievementEntity? =
         achievementDao.getAchievementById(id)
 
-    suspend fun updateProgress(achievementId: String, progress: Int): Boolean {
-        val achievement = achievementDao.getAchievementById(achievementId) ?: return false
+    suspend fun updateProgress(achievementId: String, progress: Int): RepositoryResult<Boolean> {
+        return try {
+            val achievement = achievementDao.getAchievementById(achievementId) 
+                ?: return RepositoryResult.DbError(IllegalStateException("Achievement not found"))
 
-        val newProgress = minOf(progress, achievement.requirement)
-        achievementDao.updateProgress(achievementId, newProgress)
+            val newProgress = minOf(progress, achievement.requirement)
+            achievementDao.updateProgress(achievementId, newProgress)
 
-        // Unlock if requirement met
-        if (newProgress >= achievement.requirement && !achievement.isUnlocked) {
-            achievementDao.unlockAchievement(achievementId, System.currentTimeMillis())
-            return true // Achievement just unlocked
+            // Unlock if requirement met
+            if (newProgress >= achievement.requirement && !achievement.isUnlocked) {
+                achievementDao.unlockAchievement(achievementId, System.currentTimeMillis())
+                RepositoryResult.Success(true) // Achievement just unlocked
+            } else {
+                RepositoryResult.Success(false)
+            }
+        } catch (e: SQLiteException) {
+            RepositoryResult.DbError(e)
+        } catch (e: Exception) {
+            RepositoryResult.UnknownError(e)
         }
-
-        return false
     }
 
-    suspend fun incrementProgress(achievementId: String, amount: Int = 1): Boolean {
-        val achievement = achievementDao.getAchievementById(achievementId) ?: return false
-        return updateProgress(achievementId, achievement.progress + amount)
+    suspend fun incrementProgress(achievementId: String, amount: Int = 1): RepositoryResult<Boolean> {
+        return try {
+            val achievement = achievementDao.getAchievementById(achievementId) 
+                ?: return RepositoryResult.DbError(IllegalStateException("Achievement not found"))
+            updateProgress(achievementId, achievement.progress + amount)
+        } catch (e: Exception) {
+            RepositoryResult.UnknownError(e)
+        }
     }
 
     suspend fun getUnlockedCount(): Int = achievementDao.getUnlockedCount()
 
     suspend fun getTotalPoints(): Int = achievementDao.getTotalPoints() ?: 0
 
-    suspend fun initializeAchievements() {
-        val existing = achievementDao.getUnlockedCount()
-        if (existing == 0) {
-            achievementDao.insertAchievements(defaultAchievements())
+    suspend fun initializeAchievements(): RepositoryResult<Unit> {
+        return try {
+            val existing = achievementDao.getUnlockedCount()
+            if (existing == 0) {
+                achievementDao.insertAchievements(defaultAchievements())
+            }
+            RepositoryResult.Success(Unit)
+        } catch (e: SQLiteException) {
+            RepositoryResult.DbError(e)
+        } catch (e: Exception) {
+            RepositoryResult.UnknownError(e)
         }
     }
 

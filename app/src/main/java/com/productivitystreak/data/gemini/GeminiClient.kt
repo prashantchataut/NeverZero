@@ -1,19 +1,40 @@
 package com.productivitystreak.data.gemini
 
+import android.util.Log
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.productivitystreak.BuildConfig
+import com.squareup.moshi.JsonClass
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
+@JsonClass(generateAdapter = true)
+data class WordOfTheDayResponse(
+    val word: String,
+    val definition: String,
+    val example: String,
+    val type: String? = null,
+    val pronunciation: String? = null
+)
 
 class GeminiClient private constructor() {
 
     private val model: GenerativeModel? = BuildConfig.GEMINI_API_KEY.takeIf { it.isNotBlank() }?.let { key ->
+        Log.d(TAG, "Gemini API initialized successfully")
         GenerativeModel(
             modelName = MODEL_NAME,
             apiKey = key
         )
+    } ?: run {
+        Log.w(TAG, "Gemini API key not configured - AI features will use fallback responses")
+        null
     }
+
+    private val moshi = Moshi.Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build()
 
     suspend fun generateMotivationPrompt(prompt: String): String = withContext(Dispatchers.IO) {
         val generativeModel = model ?: return@withContext "Keep going! You're doing great."
@@ -53,31 +74,25 @@ class GeminiClient private constructor() {
 
         try {
             val response = generativeModel.generateContent(content { text(prompt) })
-            val json = response.text?.trim()?.removePrefix("```json")?.removePrefix("```")?.removeSuffix("```")?.trim() ?: return@withContext null
+            val json = response.text?.trim()
+                ?.removePrefix("```json")
+                ?.removePrefix("```")
+                ?.removeSuffix("```")
+                ?.trim() 
+                ?: return@withContext null
             
-            // Simple manual parsing to avoid adding Gson/Moshi dependency inside this class if possible, 
-            // or better, use a regex or simple string manipulation if the structure is guaranteed.
-            // But since we have Moshi in the app, let's just return the raw values or a map.
-            // For safety/speed, let's do a quick regex parse.
+            // Use Moshi for proper JSON parsing
+            val adapter = moshi.adapter(WordOfTheDayResponse::class.java)
+            val wordResponse = adapter.fromJson(json) ?: return@withContext null
             
-            val word = extractJsonField(json, "word")
-            val definition = extractJsonField(json, "definition")
-            val example = extractJsonField(json, "example")
-            val type = extractJsonField(json, "type") // We might not use this yet in the entity but good to have
-            // We'll map it to VocabularyWord. Note: VocabularyWord might not have 'type' or 'pronunciation' fields yet.
-            // We should check VocabularyWord definition. For now, we fit it into existing fields.
-            
-            if (word.isNotBlank() && definition.isNotBlank()) {
-                com.productivitystreak.ui.state.vocabulary.VocabularyWord(
-                    word = word,
-                    definition = definition,
-                    example = example,
-                    addedToday = false // It's a suggestion, not added yet
-                )
-            } else {
-                null
-            }
+            com.productivitystreak.ui.state.vocabulary.VocabularyWord(
+                word = wordResponse.word,
+                definition = wordResponse.definition,
+                example = wordResponse.example,
+                addedToday = false
+            )
         } catch (e: Exception) {
+            Log.e(TAG, "Failed to generate word of the day", e)
             null
         }
     }
@@ -89,16 +104,13 @@ class GeminiClient private constructor() {
             val response = generativeModel.generateContent(content { text(prompt) })
             response.text?.trim() ?: "The obstacle is the way."
         } catch (e: Exception) {
+            Log.e(TAG, "Failed to generate Buddha insight", e)
             "The obstacle is the way."
         }
     }
 
-    private fun extractJsonField(json: String, field: String): String {
-        val pattern = "\"$field\"\\s*:\\s*\"(.*?)\"".toRegex()
-        return pattern.find(json)?.groupValues?.get(1) ?: ""
-    }
-
     companion object {
+        private const val TAG = "GeminiClient"
         private const val MODEL_NAME = "models/gemini-2.5-flash"
 
         @Volatile

@@ -23,6 +23,29 @@ import com.productivitystreak.ui.components.SecondaryButton
 import com.productivitystreak.ui.screens.dashboard.components.*
 import com.productivitystreak.ui.state.AppUiState
 import com.productivitystreak.ui.theme.NeverZeroTheme
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.productivitystreak.ui.theme.Spacing
+@Composable
+fun DashboardScreen(
+    streakUiState: com.productivitystreak.ui.screens.stats.StreakUiState,
+    uiState: AppUiState,
+    onToggleTask: (String) -> Unit,
+    onRefreshQuote: () -> Unit,
+    onAddHabitClick: () -> Unit,
+    onSelectStreak: (String) -> Unit,
+    onAddOneOffTask: (String) -> Unit,
+    onToggleOneOffTask: (String) -> Unit,
+    onDeleteOneOffTask: (String) -> Unit,
+    vocabularyViewModel: com.productivitystreak.ui.screens.vocabulary.VocabularyViewModel, // Added missing param
+    modifier: Modifier = Modifier
+) {
+    val haptics = LocalHapticFeedback.current
+    val vocabularyState by vocabularyViewModel.uiState.collectAsStateWithLifecycle() // Collect state
+
+    val greetingPrefix = remember {
+        val hour = java.time.LocalTime.now().hour
+        when {
+            hour in 5..11 -> "Good Morning"
             hour in 12..16 -> "Good Afternoon"
             hour in 17..21 -> "Good Evening"
             else -> "Hello"
@@ -136,6 +159,7 @@ import com.productivitystreak.ui.theme.NeverZeroTheme
         // 3.6 AI Word of the Day
         item {
             WordOfTheDayCard(
+                wordOfTheDay = vocabularyState.wordOfTheDay,
                 modifier = Modifier.padding(vertical = Spacing.xs)
             )
         }

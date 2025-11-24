@@ -180,10 +180,17 @@ class StreakRepository(private val streakDao: StreakDao) {
 
     suspend fun getActiveStreakCount(): Int = streakDao.getActiveStreakCount()
 
-    suspend fun initializeSampleData() {
-        val count = streakDao.getActiveStreakCount()
-        if (count == 0) {
-            streakDao.insertStreaks(sampleStreaks())
+    suspend fun initializeSampleData(): RepositoryResult<Unit> {
+        return try {
+            val count = streakDao.getActiveStreakCount()
+            if (count == 0) {
+                streakDao.insertStreaks(sampleStreaks())
+            }
+            RepositoryResult.Success(Unit)
+        } catch (e: SQLiteException) {
+            RepositoryResult.DbError(e)
+        } catch (e: Exception) {
+            RepositoryResult.UnknownError(e)
         }
     }
 

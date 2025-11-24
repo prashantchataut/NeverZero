@@ -40,7 +40,11 @@ class Converters {
 
     @TypeConverter
     fun toStreakFrequency(name: String): StreakFrequency {
-        return StreakFrequency.valueOf(name)
+        return try {
+            StreakFrequency.valueOf(name)
+        } catch (e: IllegalArgumentException) {
+            StreakFrequency.DAILY // Default fallback
+        }
     }
 
     @TypeConverter
@@ -50,6 +54,10 @@ class Converters {
 
     @TypeConverter
     fun toStreakDifficulty(name: String): StreakDifficulty {
-        return StreakDifficulty.valueOf(name)
+        return try {
+            StreakDifficulty.valueOf(name)
+        } catch (e: IllegalArgumentException) {
+            StreakDifficulty.BALANCED // Default fallback
+        }
     }
 }

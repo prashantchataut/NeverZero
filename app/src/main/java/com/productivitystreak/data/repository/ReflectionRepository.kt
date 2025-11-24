@@ -1,5 +1,6 @@
 package com.productivitystreak.data.repository
 
+import android.database.sqlite.SQLiteException
 import com.productivitystreak.data.local.dao.DailyReflectionDao
 import com.productivitystreak.data.local.entity.DailyReflectionEntity
 import kotlinx.coroutines.flow.Flow
@@ -31,27 +32,48 @@ class ReflectionRepository(private val reflectionDao: DailyReflectionDao) {
         challenges: String? = null,
         gratitude: String? = null,
         tomorrowGoals: String? = null
-    ) {
-        val reflection = DailyReflectionEntity(
-            date = date,
-            mood = mood,
-            notes = notes,
-            highlights = highlights,
-            challenges = challenges,
-            gratitude = gratitude,
-            tomorrowGoals = tomorrowGoals,
-            lastUpdated = System.currentTimeMillis()
-        )
-        reflectionDao.insertReflection(reflection)
+    ): RepositoryResult<Unit> {
+        return try {
+            val reflection = DailyReflectionEntity(
+                date = date,
+                mood = mood,
+                notes = notes,
+                highlights = highlights,
+                challenges = challenges,
+                gratitude = gratitude,
+                tomorrowGoals = tomorrowGoals,
+                lastUpdated = System.currentTimeMillis()
+            )
+            reflectionDao.insertReflection(reflection)
+            RepositoryResult.Success(Unit)
+        } catch (e: SQLiteException) {
+            RepositoryResult.DbError(e)
+        } catch (e: Exception) {
+            RepositoryResult.UnknownError(e)
+        }
     }
 
-    suspend fun updateReflection(reflection: DailyReflectionEntity) {
-        val updated = reflection.copy(lastUpdated = System.currentTimeMillis())
-        reflectionDao.updateReflection(updated)
+    suspend fun updateReflection(reflection: DailyReflectionEntity): RepositoryResult<Unit> {
+        return try {
+            val updated = reflection.copy(lastUpdated = System.currentTimeMillis())
+            reflectionDao.updateReflection(updated)
+            RepositoryResult.Success(Unit)
+        } catch (e: SQLiteException) {
+            RepositoryResult.DbError(e)
+        } catch (e: Exception) {
+            RepositoryResult.UnknownError(e)
+        }
     }
 
-    suspend fun deleteReflection(reflection: DailyReflectionEntity) {
-        reflectionDao.deleteReflection(reflection)
+    suspend fun deleteReflection(reflection: DailyReflectionEntity): RepositoryResult<Unit> {
+        return try {
+            reflectionDao.deleteReflection(reflection)
+            RepositoryResult.Success(Unit)
+        } catch (e: SQLiteException) {
+            RepositoryResult.DbError(e)
+        } catch (e: Exception) {
+            RepositoryResult.UnknownError(e)
+        }
     }
 
     suspend fun getReflectionCount(): Int = reflectionDao.getReflectionCount()

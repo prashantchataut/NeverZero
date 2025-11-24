@@ -238,7 +238,8 @@ fun NeverZeroApp(
                             onSelectStreak = streakViewModel::onSelectStreak,
                             onAddOneOffTask = streakViewModel::addOneOffTask,
                             onToggleOneOffTask = streakViewModel::toggleOneOffTask,
-                            onDeleteOneOffTask = streakViewModel::deleteOneOffTask
+                            onDeleteOneOffTask = streakViewModel::deleteOneOffTask,
+                            vocabularyViewModel = vocabularyViewModel
                         )
                     }
                     MainDestination.STATS -> {
@@ -353,6 +354,28 @@ fun NeverZeroApp(
                 )
             }
 
+            // Asset Detail Overlay
+            selectedAssetId?.let { assetId ->
+                val discoverState by discoverViewModel.uiState.collectAsStateWithLifecycle()
+                val asset = discoverState.assets.find { it.id == assetId }
+                asset?.let {
+                    AssetDetailScreen(
+                        asset = it,
+                        onBack = { selectedAssetId = null },
+                        onAssetConsumed = { 
+                            onAssetConsumed(assetId)
+                            selectedAssetId = null
+                        },
+                        onAssetTestPassed = { 
+                            onAssetTestPassed(assetId)
+                            selectedAssetId = null
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 private fun NeverZeroBottomBar(
@@ -469,8 +492,4 @@ private fun NavItem(
     }
 }
 
-@Composable
-private fun DiscoverPlaceholder() { /* no-op: replaced by DiscoverScreen */ }
 
-@Composable
-private fun ProfilePlaceholder(userName: String) { /* no-op: replaced by ProfileScreen */ }

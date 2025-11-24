@@ -12,6 +12,9 @@ import com.productivitystreak.notifications.GhostNotificationScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class NeverZeroApplication : Application() {
@@ -19,6 +22,9 @@ class NeverZeroApplication : Application() {
 
     val database by lazy { AppDatabase.getDatabase(this) }
     val preferencesManager by lazy { PreferencesManager(this) }
+    
+    private val _isInitialized = MutableStateFlow(false)
+    val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
 
     // Repositories
     val streakRepository by lazy { StreakRepository(database.streakDao()) }
@@ -44,8 +50,15 @@ class NeverZeroApplication : Application() {
 
         // Initialize sample data if needed
         applicationScope.launch {
-            streakRepository.initializeSampleData()
-            achievementRepository.initializeAchievements()
+            try {
+                streakRepository.initializeSampleData()
+                achievementRepository.initializeAchievements()
+                _isInitialized.value = true
+            } catch (e: Exception) {
+                android.util.Log.e("NeverZeroApp", "Initialization failed", e)
+                // Still mark as initialized to prevent blocking the app
+                _isInitialized.value = true
+            }
         }
 
         // Schedule ghost notifications
