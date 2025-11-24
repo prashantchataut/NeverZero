@@ -361,12 +361,12 @@ fun NeverZeroApp(
                 asset?.let {
                     AssetDetailScreen(
                         asset = it,
-                        onBack = { selectedAssetId = null },
-                        onAssetConsumed = { 
+                        onDismiss = { selectedAssetId = null },
+                        onComplete = { 
                             onAssetConsumed(assetId)
                             selectedAssetId = null
                         },
-                        onAssetTestPassed = { 
+                        onTestPassed = { 
                             onAssetTestPassed(assetId)
                             selectedAssetId = null
                         }

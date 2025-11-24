@@ -172,13 +172,20 @@ class ProfileViewModel(
             try {
                 val now = System.currentTimeMillis()
                 val deliveryMillis = now + TimeUnit.DAYS.toMillis(safeDays.toLong())
-                val id = timeCapsuleRepository.createTimeCapsule(
+                when (val result = timeCapsuleRepository.createTimeCapsule(
                     message = trimmedMessage,
                     deliveryDateMillis = deliveryMillis,
                     goalDescription = trimmedGoal
-                )
-                scheduleTimeCapsuleDelivery(id, deliveryMillis)
-                _uiState.update { it.copy(uiMessage = "Time capsule scheduled") }
+                )) {
+                    is RepositoryResult.Success -> {
+                        scheduleTimeCapsuleDelivery(result.data, deliveryMillis)
+                        _uiState.update { it.copy(uiMessage = "Time capsule scheduled") }
+                    }
+                    else -> {
+                        Log.e("ProfileViewModel", "Error creating time capsule")
+                        _uiState.update { it.copy(uiMessage = "Unable to schedule time capsule. Try again.") }
+                    }
+                }
             } catch (e: Exception) {
                 Log.e("ProfileViewModel", "Error creating time capsule", e)
                 _uiState.update { it.copy(uiMessage = "Unable to schedule time capsule. Try again.") }
