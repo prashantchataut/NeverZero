@@ -342,17 +342,7 @@ class StreakViewModel(
         }
     }
 
-    fun addOneOffTask(title: String) {
-        // TODO: Implement one-off tasks in repository
-    }
 
-    fun toggleOneOffTask(taskId: String) {
-        // TODO: Implement one-off tasks
-    }
-
-    fun deleteOneOffTask(taskId: String) {
-        // TODO: Implement one-off tasks
-    }
 
     fun simulateTaskCompletion(streakId: String, count: Int) {
          viewModelScope.launch {

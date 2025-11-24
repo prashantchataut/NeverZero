@@ -258,6 +258,7 @@ fun VoidScreen(
             }
         }
     }
+}
 
 private fun mockBuddhaAnalysis(input: String): String {
     val length = input.length
