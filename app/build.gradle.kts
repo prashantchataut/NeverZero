@@ -10,11 +10,6 @@ plugins {
     id("org.owasp.dependencycheck")
 }
 
-configurations.all {
-    exclude(group = "androidx.compose.ui", module = "ui-release")
-    exclude(group = "androidx.compose.ui", module = "ui-android")
-}
-
 val localProperties = Properties().apply {
     val file = rootProject.file("local.properties")
     if (file.exists()) {
@@ -81,7 +76,7 @@ android {
             "String",
             "GEMINI_API_KEY",
             "\"$geminiApiKey\""
-        ) // Set GEMINI_API_KEY in local.properties or environment variables to expose it at runtime.
+        )
     }
 
     signingConfigs {
@@ -97,14 +92,13 @@ android {
 
     buildTypes {
         getByName("debug") {
-            // Use the release signing config for debug builds when credentials are available.
             if (releaseSigningReady) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
         getByName("release") {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -181,12 +175,10 @@ dependencies {
 
     implementation("androidx.work:work-runtime-ktx:2.9.1")
 
-    // Room for local database
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
-    // Biometric authentication
     implementation("androidx.biometric:biometric:1.2.0-alpha05")
 
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.7")
@@ -201,17 +193,14 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     
-    // For instrumentation tests
     androidTestImplementation("androidx.test:runner:1.6.2")
     androidTestImplementation("androidx.test:rules:1.6.1")
     androidTestImplementation("androidx.test.espresso:espresso-contrib:3.6.1")
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
-    implementation(files("libs/ui-release-fixed/ui-release.aar"))
 }
 
-// Configure Kover for code coverage
 kover {
     useJacoco()
 }
