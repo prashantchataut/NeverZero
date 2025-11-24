@@ -239,20 +239,6 @@ fun NeverZeroApp(
                             onAddOneOffTask = streakViewModel::addOneOffTask,
                             onToggleOneOffTask = streakViewModel::toggleOneOffTask,
                             onDeleteOneOffTask = streakViewModel::deleteOneOffTask,
-                            vocabularyViewModel = vocabularyViewModel
-                        )
-                    }
-                    MainDestination.STATS -> {
-                        val streakState by streakViewModel.uiState.collectAsStateWithLifecycle()
-                        StatsScreen(
-                            statsState = streakState.statsState,
-                            onNavigateToSkillPaths = { showSkillPaths = true }
-                        )
-                    }
-                    MainDestination.DISCOVER -> {
-                        val discoverState by discoverViewModel.uiState.collectAsStateWithLifecycle()
-                        DiscoverScreen(
-                            state = discoverState,
                             onAssetSelected = { assetId -> selectedAssetId = assetId }
                         )
                     }

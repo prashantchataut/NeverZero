@@ -56,6 +56,9 @@ import com.productivitystreak.ui.state.stats.HabitBreakdown
 import com.productivitystreak.ui.state.stats.LeaderboardEntry
 import com.productivitystreak.ui.state.stats.StatsState
 import com.productivitystreak.ui.theme.NeverZeroTheme
+import com.productivitystreak.ui.state.stats.LeaderboardType
+import androidx.compose.ui.res.stringResource
+import com.productivitystreak.R
 import kotlin.math.absoluteValue
 
 @Composable
@@ -63,6 +66,7 @@ fun StatsScreen(
     statsState: StatsState,
     modifier: Modifier = Modifier,
     onLeaderboardEntrySelected: (LeaderboardEntry) -> Unit = {},
+    onLeaderboardTypeSelected: (LeaderboardType) -> Unit = {},
     onNavigateToSkillPaths: () -> Unit = {}
 ) {
     Column(
@@ -105,36 +109,11 @@ fun StatsScreen(
             BreakdownRow(breakdown = statsState.habitBreakdown)
         }
 
-        if (statsState.leaderboard.isNotEmpty()) {
-            LeaderboardSection(
-                entries = statsState.leaderboard,
-                onEntrySelected = onLeaderboardEntrySelected
-            )
-        } else {
-            // Empty Leaderboard State
-            com.productivitystreak.ui.components.ElevatedCard(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = {}
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(com.productivitystreak.ui.theme.Spacing.md),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Leaderboard",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "Start a streak to join the ranks.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
+        LeaderboardSection(
+            statsState = statsState,
+            onEntrySelected = onLeaderboardEntrySelected,
+            onTypeSelected = onLeaderboardTypeSelected
+        )
 
         statsState.calendarHeatMap?.let {
             HeatMapCard(heatMap = it)
@@ -144,10 +123,42 @@ fun StatsScreen(
 
 @Composable
 private fun LeaderboardSection(
-    entries: List<LeaderboardEntry>,
-    onEntrySelected: (LeaderboardEntry) -> Unit
+    statsState: StatsState,
+    onEntrySelected: (LeaderboardEntry) -> Unit,
+    onTypeSelected: (LeaderboardType) -> Unit
 ) {
-    if (entries.isEmpty()) return
+    val entries = if (statsState.leaderboardType == LeaderboardType.Personal) {
+        statsState.leaderboard
+    } else {
+        statsState.globalLeaderboard
+    }
+
+    if (entries.isEmpty() && statsState.leaderboardType == LeaderboardType.Personal) {
+         // Empty Leaderboard State
+        com.productivitystreak.ui.components.ElevatedCard(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {}
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(com.productivitystreak.ui.theme.Spacing.md),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Leaderboard",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = "Start a streak to join the ranks.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        return
+    }
 
     var selectedPosition by remember { mutableStateOf<Int?>(null) }
 
@@ -168,32 +179,42 @@ private fun LeaderboardSection(
             ) {
                 Column {
                     Text(
-                        text = "Momentum Leaderboard",
+                        text = if (statsState.leaderboardType == LeaderboardType.Personal) 
+                            stringResource(R.string.leaderboard_personal_title) 
+                        else 
+                            stringResource(R.string.leaderboard_global_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Ranked by consistency & performance",
+                        text = if (statsState.leaderboardType == LeaderboardType.Personal) 
+                            stringResource(R.string.leaderboard_personal_subtitle) 
+                        else 
+                            stringResource(R.string.leaderboard_global_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 
-                // Top 3 podium indicator
+                // Toggle
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .padding(2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    Icon(
-                        imageVector = AppIcons.Celebration,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
+                    LeaderboardToggleOption(
+                        text = stringResource(R.string.leaderboard_tab_personal),
+                        isSelected = statsState.leaderboardType == LeaderboardType.Personal,
+                        onClick = { onTypeSelected(LeaderboardType.Personal) }
                     )
-                    Text(
-                        text = "Top ${entries.take(5).size}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
+                    LeaderboardToggleOption(
+                        text = stringResource(R.string.leaderboard_tab_global),
+                        isSelected = statsState.leaderboardType == LeaderboardType.Global,
+                        onClick = { onTypeSelected(LeaderboardType.Global) }
                     )
                 }
             }
@@ -203,13 +224,15 @@ private fun LeaderboardSection(
             ) {
                 entries
                     .sortedBy { it.position }
-                    .take(5)
+                    .take(10)
                     .forEach { entry ->
                         val isSelected = selectedPosition == entry.position
+                        val isCurrentUser = entry.name == "You"
                         EnhancedLeaderboardRow(
                             entry = entry,
-                            highlight = entry.position == 1,
+                            highlight = entry.position == 1 || isCurrentUser,
                             selected = isSelected,
+                            isCurrentUser = isCurrentUser,
                             onClick = {
                                 selectedPosition = entry.position
                                 onEntrySelected(entry)
@@ -222,15 +245,40 @@ private fun LeaderboardSection(
 }
 
 @Composable
+private fun LeaderboardToggleOption(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(if (isSelected) MaterialTheme.colorScheme.background else Color.Transparent)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+        )
+    }
+}
+
+@Composable
 private fun EnhancedLeaderboardRow(
     entry: LeaderboardEntry,
     highlight: Boolean,
     selected: Boolean,
+    isCurrentUser: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val backgroundColor = when {
         selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+        isCurrentUser -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)
         entry.position == 1 -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
         else -> Color.Transparent
     }

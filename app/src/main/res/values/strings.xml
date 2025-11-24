@@ -19,6 +19,12 @@
     <string name="discover_section_community">Community</string>
     <string name="stats_section_title">Your stats</string>
     <string name="stats_section_leaderboard">Leaderboard</string>
+    <string name="leaderboard_personal_title">Your Top Streaks</string>
+    <string name="leaderboard_personal_subtitle">Ranked by consistency</string>
+    <string name="leaderboard_global_title">Global Leaderboard</string>
+    <string name="leaderboard_global_subtitle">Community rankings</string>
+    <string name="leaderboard_tab_personal">Personal</string>
+    <string name="leaderboard_tab_global">Global</string>
     <string name="profile_section_preferences">Preferences</string>
     <string name="profile_action_logout">Logout</string>
 

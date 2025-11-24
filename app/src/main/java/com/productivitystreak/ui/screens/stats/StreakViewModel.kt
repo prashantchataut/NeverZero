@@ -37,7 +37,8 @@ class StreakViewModel(
     private val streakRepository: StreakRepository,
     private val preferencesManager: com.productivitystreak.data.local.PreferencesManager,
     private val moshi: com.squareup.moshi.Moshi,
-    private val geminiClient: com.productivitystreak.data.gemini.GeminiClient
+    private val geminiClient: com.productivitystreak.data.gemini.GeminiClient,
+    private val socialRepository: com.productivitystreak.data.repository.SocialRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StreakUiState())
@@ -50,6 +51,7 @@ class StreakViewModel(
     init {
         observeStreaks()
         observeTopStreakLeaderboard()
+        observeGlobalLeaderboard()
         observeOneOffTasks()
         fetchBuddhaInsight()
     }
@@ -304,6 +306,32 @@ class StreakViewModel(
             } catch (e: Exception) {
                 // Handle error
             }
+        }
+    }
+
+    private fun observeGlobalLeaderboard() {
+        viewModelScope.launch {
+            try {
+                socialRepository.getGlobalLeaderboard().collectLatest { globalEntries ->
+                    _uiState.update { state ->
+                        state.copy(
+                            statsState = state.statsState.copy(
+                                globalLeaderboard = globalEntries
+                            )
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
+
+    fun toggleLeaderboardType(type: com.productivitystreak.ui.state.stats.LeaderboardType) {
+        _uiState.update { state ->
+            state.copy(
+                statsState = state.statsState.copy(leaderboardType = type)
+            )
         }
     }
 

@@ -8,8 +8,14 @@ data class StatsState(
     val streakConsistency: List<ConsistencyScore> = emptyList(),
     val habitBreakdown: List<HabitBreakdown> = emptyList(),
     val leaderboard: List<LeaderboardEntry> = emptyList(),
+    val globalLeaderboard: List<LeaderboardEntry> = emptyList(),
+    val leaderboardType: LeaderboardType = LeaderboardType.Personal,
     val calendarHeatMap: CalendarHeatMap? = null
 )
+
+enum class LeaderboardType {
+    Personal, Global
+}
 
 data class HabitBreakdown(
     val name: String,

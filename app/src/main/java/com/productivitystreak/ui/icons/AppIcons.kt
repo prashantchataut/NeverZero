@@ -16,6 +16,7 @@ import androidx.compose.material.icons.outlined.Vibration
 import androidx.compose.material.icons.outlined.Work
 import androidx.compose.material.icons.outlined.AddTask
 import androidx.compose.material.icons.outlined.MenuBook
+import androidx.compose.material.icons.outlined.QuestionAnswer
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.LocalFireDepartment
@@ -59,6 +60,7 @@ object AppIcons {
     val AddHabit: ImageVector = Icons.Outlined.AddTask // Add new habit
     val AddWord: ImageVector = Icons.AutoMirrored.Outlined.MenuBook // Log vocabulary word
     val AddJournal: ImageVector = Icons.Outlined.EditNote // Journal entry
+    val TeachWord: ImageVector = Icons.Outlined.QuestionAnswer // Teach/coach with AI
 
     private val categoryMap: Map<String, ImageVector> = mapOf(
         "health" to Health,
