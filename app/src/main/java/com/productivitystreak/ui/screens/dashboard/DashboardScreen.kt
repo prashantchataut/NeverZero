@@ -25,6 +25,7 @@ import com.productivitystreak.ui.state.AppUiState
 import com.productivitystreak.ui.theme.NeverZeroTheme
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.productivitystreak.ui.theme.Spacing
+import kotlinx.coroutines.delay
 @Composable
 fun DashboardScreen(
     streakUiState: com.productivitystreak.ui.screens.stats.StreakUiState,
