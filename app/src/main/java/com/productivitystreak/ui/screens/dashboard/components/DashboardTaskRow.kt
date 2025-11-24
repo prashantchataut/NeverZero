@@ -40,6 +40,7 @@ fun DashboardTaskRow(
     onToggle: () -> Unit,
     showConfetti: Boolean
 ) {
+    val soundManager = com.productivitystreak.ui.utils.rememberSoundManager()
     val primaryColor = MaterialTheme.colorScheme.primary
     val accent = hexToColor(task.accentHex, primaryColor)
 
@@ -48,7 +49,10 @@ fun DashboardTaskRow(
             .fillMaxWidth()
             .animateContentSize()
             .clip(RoundedCornerShape(24.dp))
-            .clickable(enabled = !task.isCompleted, onClick = onToggle),
+            .clickable(enabled = !task.isCompleted) {
+                soundManager.playClick()
+                onToggle()
+            },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface
@@ -109,14 +113,14 @@ fun DashboardTaskRow(
             }
 
             if (showConfetti) {
-                ConfettiOverlay(color = accent)
+                EnergySurgeAnimation(color = accent)
             }
         }
     }
 }
 
 @Composable
-private fun ConfettiOverlay(color: Color) {
+private fun EnergySurgeAnimation(color: Color) {
     val designColors = NeverZeroTheme.designColors
     val progress = remember { Animatable(0f) }
 

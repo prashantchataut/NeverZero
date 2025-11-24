@@ -11,6 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.productivitystreak.ui.components.GlassCard
+import com.productivitystreak.ui.components.InteractiveGlassCard
 import com.productivitystreak.ui.theme.NeverZeroTheme
 
 @Composable
@@ -26,14 +27,12 @@ fun WordOfTheDayCard(
     val definition = wordOfTheDay.definition
     val example = wordOfTheDay.example ?: "Use this word in a sentence today."
 
-    GlassCard(
+    InteractiveGlassCard(
         modifier = modifier.fillMaxWidth(),
-        containerColor = NeverZeroTheme.designColors.surface.copy(alpha = 0.5f)
+        onClick = {} // Optional: Show full details
     ) {
         Column(
-            modifier = Modifier
-                .padding(20.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
@@ -50,7 +49,7 @@ fun WordOfTheDayCard(
                 Text(
                     text = "AI Curated",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = NeverZeroTheme.designColors.textSecondary.copy(alpha = 0.7f)
                 )
             }
             
@@ -60,12 +59,12 @@ fun WordOfTheDayCard(
                 Text(
                     text = word,
                     style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = NeverZeroTheme.designColors.textPrimary
                 )
                 Text(
                     text = pronunciation,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = NeverZeroTheme.designColors.textSecondary,
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
             }
@@ -74,13 +73,13 @@ fun WordOfTheDayCard(
                 text = type,
                 style = MaterialTheme.typography.labelMedium,
                 fontStyle = FontStyle.Italic,
-                color = MaterialTheme.colorScheme.secondary
+                color = NeverZeroTheme.designColors.secondary
             )
             
             Text(
                 text = definition,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = NeverZeroTheme.designColors.textPrimary
             )
             
             Spacer(modifier = Modifier.height(4.dp))
@@ -88,7 +87,7 @@ fun WordOfTheDayCard(
             Text(
                 text = "\"$example\"",
                 style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = NeverZeroTheme.designColors.textSecondary
             )
         }
     }

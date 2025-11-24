@@ -11,6 +11,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.productivitystreak.ui.components.GlassCard
+import com.productivitystreak.ui.components.PremiumGlassCard
 import com.productivitystreak.ui.theme.NeverZeroTheme
 
 @Composable
@@ -18,21 +19,19 @@ fun BuddhaInsightCard(
     insight: String,
     modifier: Modifier = Modifier
 ) {
-    GlassCard(
+    PremiumGlassCard(
         modifier = modifier.fillMaxWidth(),
-        containerColor = NeverZeroTheme.designColors.surface.copy(alpha = 0.6f)
+        onClick = {} // Optional: Expand or share
     ) {
         Column(
-            modifier = Modifier
-                .padding(24.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
                 text = "DAILY INSIGHT",
                 style = MaterialTheme.typography.labelSmall,
-                color = NeverZeroTheme.designColors.primary,
+                color = NeverZeroTheme.designColors.textSecondary,
                 letterSpacing = 2.sp
             )
             
@@ -41,12 +40,10 @@ fun BuddhaInsightCard(
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontStyle = FontStyle.Italic
                 ),
-                color = MaterialTheme.colorScheme.onSurface,
+                color = NeverZeroTheme.designColors.textPrimary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
-            
-            // Decorative divider or icon could go here
         }
     }
 }

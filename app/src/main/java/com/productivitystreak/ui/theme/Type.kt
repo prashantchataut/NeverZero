@@ -22,27 +22,28 @@ val InterFontFamily = FontFamily(
     Font(googleFont = interFont, fontProvider = googleFontProvider, weight = FontWeight.Normal),
     Font(googleFont = interFont, fontProvider = googleFontProvider, weight = FontWeight.Medium),
     Font(googleFont = interFont, fontProvider = googleFontProvider, weight = FontWeight.SemiBold),
-    Font(googleFont = interFont, fontProvider = googleFontProvider, weight = FontWeight.Bold)
+    Font(googleFont = interFont, fontProvider = googleFontProvider, weight = FontWeight.Bold),
+    Font(googleFont = interFont, fontProvider = googleFontProvider, weight = FontWeight.ExtraBold)
 )
 
 val NeverZeroTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = InterFontFamily,
-        fontWeight = FontWeight.Light,
+        fontWeight = FontWeight.Bold, // Was Light
         fontSize = 48.sp,
         lineHeight = 56.sp,
         letterSpacing = (-1).sp
     ),
     displayMedium = TextStyle(
         fontFamily = InterFontFamily,
-        fontWeight = FontWeight.Light,
+        fontWeight = FontWeight.Bold, // Was Light
         fontSize = 40.sp,
         lineHeight = 48.sp,
         letterSpacing = (-0.8).sp
     ),
     displaySmall = TextStyle(
         fontFamily = InterFontFamily,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.SemiBold, // Was Normal
         fontSize = 34.sp,
         lineHeight = 42.sp,
         letterSpacing = (-0.4).sp
@@ -50,21 +51,21 @@ val NeverZeroTypography = Typography(
 
     headlineLarge = TextStyle(
         fontFamily = InterFontFamily,
-        fontWeight = FontWeight.Light,
+        fontWeight = FontWeight.ExtraBold, // Was Light
         fontSize = 32.sp,
         lineHeight = 40.sp,
         letterSpacing = (-0.4).sp
     ),
     headlineMedium = TextStyle(
         fontFamily = InterFontFamily,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.Bold, // Was Medium
         fontSize = 28.sp,
         lineHeight = 34.sp,
         letterSpacing = (-0.15).sp
     ),
     headlineSmall = TextStyle(
         fontFamily = InterFontFamily,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Bold, // Was SemiBold
         fontSize = 24.sp,
         lineHeight = 32.sp,
         letterSpacing = (-0.1).sp
@@ -72,7 +73,7 @@ val NeverZeroTypography = Typography(
 
     titleLarge = TextStyle(
         fontFamily = InterFontFamily,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.SemiBold, // Was Medium
         fontSize = 20.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp
@@ -116,7 +117,7 @@ val NeverZeroTypography = Typography(
 
     labelLarge = TextStyle(
         fontFamily = InterFontFamily,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Bold, // Was SemiBold
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.2.sp
