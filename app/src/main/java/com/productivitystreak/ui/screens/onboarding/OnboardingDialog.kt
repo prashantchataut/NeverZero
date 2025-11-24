@@ -24,6 +24,8 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
 fun OnboardingFlow(
     onboardingState: OnboardingState,
     onToggleOnboardingCategory: (String) -> Unit,
@@ -33,6 +35,9 @@ fun OnboardingFlow(
     onPreviousStep: () -> Unit,
     onToggleNotificationsAllowed: (Boolean) -> Unit,
     onSetReminderTime: (String) -> Unit,
+    onUserNameChange: (String) -> Unit,
+    onHabitNameChange: (String) -> Unit,
+    onIconSelected: (String) -> Unit,
     onCompleteOnboarding: () -> Unit,
     onDismissOnboarding: () -> Unit,
     onRequestNotificationPermission: () -> Unit,
@@ -79,53 +84,59 @@ fun OnboardingFlow(
                             onToggleCategory = onToggleOnboardingCategory
                         )
                         2 -> OnboardingLeadHabitConceptStep()
-                        3 -> OnboardingPermissionStep(
-                            allowNotifications = onboarding.allowNotifications,
-                            onToggleNotificationsAllowed = onToggleNotificationsAllowed,
-                            onRequestNotificationPermission = onRequestNotificationPermission,
-                            onRequestExactAlarmPermission = onRequestExactAlarmPermission,
-                            reminderTime = onboarding.reminderTime,
-                            onSetReminderTime = onSetReminderTime
+                        3 -> OnboardingNotificationStep(
+                            onEnableNotifications = {
+                                onToggleNotificationsAllowed(true)
+                                onRequestNotificationPermission()
+                                onNextStep()
+                            },
+                            onSkip = {
+                                onToggleNotificationsAllowed(false)
+                                onNextStep()
+                            }
                         )
-                        else -> OnboardingFirstHabitStep(
-                            goal = onboarding.goalHabit,
-                            commitmentMinutes = onboarding.commitmentDurationMinutes,
-                            frequencyPerWeek = onboarding.commitmentFrequencyPerWeek,
-                            onSetGoal = onSetOnboardingGoal,
-                            onSetCommitment = onSetOnboardingCommitment
+                        else -> OnboardingPersonalizationStep(
+                            userName = onboarding.userName,
+                            onUserNameChange = onUserNameChange,
+                            habitName = onboarding.goalHabit,
+                            onHabitNameChange = onHabitNameChange,
+                            selectedIcon = onboarding.selectedIcon,
+                            onIconSelected = onIconSelected,
+                            dailyReminderEnabled = onboarding.allowNotifications,
+                            onDailyReminderToggle = onToggleNotificationsAllowed,
+                            onComplete = {
+                                if (!showFinishRipple) {
+                                    coroutineScope.launch {
+                                        showFinishRipple = true
+                                        finishRipple.snapTo(0f)
+                                        finishRipple.animateTo(
+                                            1f,
+                                            animationSpec = tween(durationMillis = 650, easing = FastOutSlowInEasing)
+                                        )
+                                        showFinishRipple = false
+                                        onCompleteOnboarding()
+                                    }
+                                }
+                            }
                         )
                     }
                 }
             }
 
-            val isFinalStep = onboarding.currentStep == onboarding.totalSteps - 1
-            OnboardingFooter(
-                currentStep = onboarding.currentStep,
-                totalSteps = onboarding.totalSteps,
-                canGoBack = onboarding.currentStep > 0,
-                isFinalStep = isFinalStep,
-                onBack = {
-                    if (onboarding.currentStep == 0) onDismissOnboarding() else onPreviousStep()
-                },
-                onPrimaryClick = {
-                    if (isFinalStep) {
-                        if (!showFinishRipple) {
-                            coroutineScope.launch {
-                                showFinishRipple = true
-                                finishRipple.snapTo(0f)
-                                finishRipple.animateTo(
-                                    1f,
-                                    animationSpec = tween(durationMillis = 650, easing = FastOutSlowInEasing)
-                                )
-                                showFinishRipple = false
-                                onCompleteOnboarding()
-                            }
-                        }
-                    } else {
-                        onNextStep()
-                    }
-                }
-            )
+            // Only show default footer for first 3 steps (0, 1, 2)
+            // Steps 3 and 4 have their own action buttons
+            if (onboarding.currentStep < 3) {
+                OnboardingFooter(
+                    currentStep = onboarding.currentStep,
+                    totalSteps = onboarding.totalSteps,
+                    canGoBack = onboarding.currentStep > 0,
+                    isFinalStep = false,
+                    onBack = {
+                        if (onboarding.currentStep == 0) onDismissOnboarding() else onPreviousStep()
+                    },
+                    onPrimaryClick = onNextStep
+                )
+            }
         }
 
         if (showFinishRipple) {

@@ -13,7 +13,10 @@ data class OnboardingState(
     val showNotificationPrompt: Boolean = false,
     val hasCompleted: Boolean = false,
     val habitSuggestions: List<String> = emptyList(),
-    val isGeneratingSuggestions: Boolean = false
+    val isGeneratingSuggestions: Boolean = false,
+    val userName: String = "",
+    val selectedIcon: String = "flag",
+    val profilePhotoUri: String? = null
 )
 
 data class OnboardingCategory(

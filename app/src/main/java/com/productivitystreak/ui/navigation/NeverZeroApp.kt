@@ -65,6 +65,7 @@ import com.productivitystreak.ui.screens.add.AddEntryMenuSheet
 import com.productivitystreak.ui.screens.add.HabitFormSheet
 import com.productivitystreak.ui.screens.add.JournalFormSheet
 import com.productivitystreak.ui.screens.add.VocabularyFormSheet
+import com.productivitystreak.ui.screens.add.TeachWordSheet
 import com.productivitystreak.ui.screens.dashboard.DashboardScreen
 import com.productivitystreak.ui.screens.discover.AssetDetailScreen
 import com.productivitystreak.ui.screens.discover.DiscoverScreen
@@ -323,6 +324,21 @@ fun NeverZeroApp(
                                 onDismissAddMenu()
                                 showTemplates = true
                             }
+                        }
+                        AddEntryType.TEACH -> {
+                            val teachState by vocabularyViewModel.teachUiState.collectAsStateWithLifecycle()
+                            TeachWordSheet(
+                                uiState = teachState,
+                                onWordChange = vocabularyViewModel::onTeachWordChanged,
+                                onContextChange = vocabularyViewModel::onTeachContextChanged,
+                                onGenerateLesson = vocabularyViewModel::onGenerateTeachingLesson,
+                                onLogLesson = { lesson ->
+                                    vocabularyViewModel.logLessonWord(lesson)
+                                    appViewModel.setAddSubmitting(true)
+                                    appViewModel.completeAddFlow()
+                                },
+                                onDismissLesson = vocabularyViewModel::resetTeachUiState
+                            )
                         }
                     }
                 }

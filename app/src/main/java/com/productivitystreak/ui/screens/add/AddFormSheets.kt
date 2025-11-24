@@ -1,10 +1,12 @@
 package com.productivitystreak.ui.screens.add
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,22 +17,26 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoGraph
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -58,13 +64,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.productivitystreak.data.gemini.TeachingLesson
 import com.productivitystreak.ui.state.AddEntryType
+import com.productivitystreak.ui.state.vocabulary.TeachWordUiState
 
 @Composable
 fun AddEntryMenuSheet(
@@ -96,12 +105,220 @@ fun AddEntryMenuSheet(
             )
         }
 
+@Composable
+fun TeachWordSheet(
+    uiState: TeachWordUiState,
+    onWordChange: (String) -> Unit,
+    onContextChange: (String) -> Unit,
+    onGenerateLesson: () -> Unit,
+    onLogLesson: (TeachingLesson) -> Unit,
+    onDismissLesson: () -> Unit
+) {
+    val focusManager = LocalFocusManager.current
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                text = "Teach a word",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = "Generate a micro-lesson and keep vocabulary mature—no childish gamification.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        com.productivitystreak.ui.components.StyledTextField(
+            value = uiState.wordInput,
+            onValueChange = onWordChange,
+            label = "Word to teach",
+            singleLine = true,
+            placeholder = { Text("e.g., incisive") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        com.productivitystreak.ui.components.MultilineTextField(
+            value = uiState.learnerContext,
+            onValueChange = onContextChange,
+            label = "Context (audience, scenario, goal)",
+            placeholder = { Text("Explaining to a senior stakeholder in a weekly review…") },
+            minLines = 2,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        AssistChip(
+            onClick = {
+                val preset = "Explaining to a busy operator who wants actionable language"
+                onContextChange(preset)
+                focusManager.clearFocus()
+            },
+            label = { Text("Use business preset") }
+        )
+
+        TeachLessonCTA(
+            isGenerating = uiState.isGenerating,
+            lesson = uiState.lesson,
+            error = uiState.errorMessage,
+            onGenerateLesson = {
+                focusManager.clearFocus()
+                onGenerateLesson()
+            },
+            onDismissLesson = onDismissLesson,
+            onLogLesson = onLogLesson
+        )
+    }
+}
+
+@Composable
+private fun TeachLessonCTA(
+    isGenerating: Boolean,
+    lesson: TeachingLesson?,
+    error: String?,
+    onGenerateLesson: () -> Unit,
+    onDismissLesson: () -> Unit,
+    onLogLesson: (TeachingLesson) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Button(
+            onClick = onGenerateLesson,
+            enabled = !isGenerating,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (isGenerating) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(16.dp)
+                        .padding(end = 8.dp),
+                    strokeWidth = 2.dp
+                )
+            }
+            Text(if (isGenerating) "Generating lesson…" else "Generate lesson")
+        }
+
+        error?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        AnimatedVisibility(visible = lesson != null) {
+            lesson?.let {
+                TeachingLessonCard(
+                    lesson = it,
+                    onDismiss = onDismissLesson,
+                    onLog = onLogLesson
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TeachingLessonCard(
+    lesson: TeachingLesson,
+    onDismiss: () -> Unit,
+    onLog: (TeachingLesson) -> Unit
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Refresh,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(lesson.word, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = lesson.definition,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                OutlinedButton(onClick = onDismiss) {
+                    Text("Clear")
+                }
+            }
+
+            LessonSection("Analogy", lesson.analogy)
+            LessonSection("Mnemonic", lesson.mnemonic)
+            LessonSection("Example", lesson.example)
+
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = "Micro practice",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                lesson.practicePrompts.forEach { prompt ->
+                    LessonPromptChip(prompt)
+                }
+            }
+
+            Button(
+                onClick = { onLog(lesson) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Log to vocabulary")
+            }
+        }
+    }
+}
+
+@Composable
+private fun LessonSection(title: String, value: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = title.uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Composable
+private fun LessonPromptChip(prompt: String) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Text(
+            text = prompt,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+        )
+    }
+}
+
         // 2-Column Grid of Actions
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Row 1: New Habit + Log Word
+            // Row 1: Habits + Teach
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -114,26 +331,40 @@ fun AddEntryMenuSheet(
                     modifier = Modifier.weight(1f)
                 )
                 CommandCenterCard(
-                    icon = com.productivitystreak.ui.icons.AppIcons.AddWord,
-                    title = "Learn Word",
-                    subtitle = "Build vocab",
-                    onClick = { onEntrySelected(AddEntryType.WORD) },
+                    icon = com.productivitystreak.ui.icons.AppIcons.TeachWord,
+                    title = "Teach word",
+                    subtitle = "AI coach",
+                    onClick = { onEntrySelected(AddEntryType.TEACH) },
                     modifier = Modifier.weight(1f)
                 )
             }
-            
-            // Row 2: Journal + Template
+
+            // Row 2: Vocabulary + Journal
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 CommandCenterCard(
+                    icon = com.productivitystreak.ui.icons.AppIcons.AddWord,
+                    title = "Log word",
+                    subtitle = "Capture context",
+                    onClick = { onEntrySelected(AddEntryType.WORD) },
+                    modifier = Modifier.weight(1f)
+                )
+                CommandCenterCard(
                     icon = com.productivitystreak.ui.icons.AppIcons.AddJournal,
-                    title = "Daily Journal",
+                    title = "Daily journal",
                     subtitle = "Reflect & reset",
                     onClick = { onEntrySelected(AddEntryType.JOURNAL) },
                     modifier = Modifier.weight(1f)
                 )
+            }
+
+            // Row 3: Templates + spacer (future actions)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 CommandCenterCard(
                     icon = com.productivitystreak.ui.icons.AppIcons.Search,
                     title = "Templates",
@@ -141,6 +372,7 @@ fun AddEntryMenuSheet(
                     onClick = { onEntrySelected(AddEntryType.TEMPLATE) },
                     modifier = Modifier.weight(1f)
                 )
+                Spacer(modifier = Modifier.weight(1f))
             }
         }
     }

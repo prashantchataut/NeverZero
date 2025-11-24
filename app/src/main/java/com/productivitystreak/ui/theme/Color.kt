@@ -16,6 +16,7 @@ val NeonCyan = Color(0xFF00D2D3)
 val HotPink = Color(0xFFFF00FF) // More vibrant pink
 val NeonPurple = Color(0xFFBC13FE) // Cyberpunk purple
 val NeonLime = Color(0xFFC4F000) // Acid green/lime for high contrast
+val NeonGreen = Color(0xFF00E676) // Vibrant Green from design
 
 // Text
 val White = Color(0xFFFFFFFF)
@@ -149,6 +150,10 @@ data class NeverZeroDesignColors(
     val error: Color
 )
 
+val NeonGreen = Color(0xFF00E676) // Vibrant Green from design
+
+// ... (existing code)
+
 object NeverZeroDesignPalettes {
     val DeepSpace = NeverZeroDesignColors(
         isDark = true,
@@ -157,8 +162,8 @@ object NeverZeroDesignPalettes {
         surface = SurfaceDark,
         surfaceElevated = Glass,
         border = Color(0xFF333333),
-        glow = ElectricBlue.copy(alpha = 0.5f),
-        primary = ElectricBlue,
+        glow = NeonGreen.copy(alpha = 0.5f),
+        primary = NeonGreen,
         onPrimary = White,
         primaryMuted = ElectricBlue.copy(alpha = 0.5f),
         secondary = NeonPurple,

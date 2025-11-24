@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.productivitystreak.data.local.PreferencesManager
+import com.productivitystreak.data.gemini.TeachingLesson
+import com.productivitystreak.ui.state.vocabulary.TeachWordUiState
 import com.productivitystreak.ui.state.vocabulary.VocabularyState
 import com.productivitystreak.ui.state.vocabulary.VocabularyWord
 import com.squareup.moshi.Moshi
@@ -25,7 +27,6 @@ class VocabularyViewModel(
     private val _uiState = MutableStateFlow(VocabularyState())
     val uiState: StateFlow<VocabularyState> = _uiState.asStateFlow()
 
-    // ... (rest of the properties)
     private val _isSubmitting = MutableStateFlow(false)
     val isSubmitting: StateFlow<Boolean> = _isSubmitting.asStateFlow()
     
@@ -34,6 +35,9 @@ class VocabularyViewModel(
 
     private val _successMessage = MutableStateFlow<String?>(null)
     val successMessage: StateFlow<String?> = _successMessage.asStateFlow()
+
+    private val _teachUiState = MutableStateFlow(TeachWordUiState())
+    val teachUiState: StateFlow<TeachWordUiState> = _teachUiState.asStateFlow()
 
     init {
         loadVocabularyData()
@@ -201,5 +205,50 @@ class VocabularyViewModel(
     fun clearMessages() {
         _errorMessage.value = null
         _successMessage.value = null
+    }
+
+    fun onTeachWordChanged(value: String) {
+        _teachUiState.update { it.copy(wordInput = value, errorMessage = null) }
+    }
+
+    fun onTeachContextChanged(value: String) {
+        _teachUiState.update { it.copy(learnerContext = value) }
+    }
+
+    fun onGenerateTeachingLesson() {
+        val word = _teachUiState.value.wordInput.trim()
+        if (word.isBlank()) {
+            _teachUiState.update { it.copy(errorMessage = "Enter a word to teach.") }
+            return
+        }
+
+        val context = _teachUiState.value.learnerContext.trim().takeIf { it.isNotBlank() }
+
+        viewModelScope.launch {
+            _teachUiState.update { it.copy(isGenerating = true, errorMessage = null) }
+            val result = runCatching { geminiClient.generateTeachingLesson(word, context) }
+            _teachUiState.update { state ->
+                result.fold(
+                    onSuccess = { lesson ->
+                        state.copy(isGenerating = false, lesson = lesson, errorMessage = null)
+                    },
+                    onFailure = { error ->
+                        state.copy(
+                            isGenerating = false,
+                            errorMessage = error.message ?: "Couldn't generate a lesson."
+                        )
+                    }
+                )
+            }
+        }
+    }
+
+    fun resetTeachUiState() {
+        _teachUiState.value = TeachWordUiState()
+    }
+
+    fun logLessonWord(lesson: TeachingLesson) {
+        val example = lesson.example.trim().ifBlank { null }
+        onSubmitVocabularyEntry(lesson.word, lesson.definition, example)
     }
 }

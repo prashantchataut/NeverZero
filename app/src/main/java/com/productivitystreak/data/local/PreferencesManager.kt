@@ -40,6 +40,7 @@ class PreferencesManager(context: Context) {
         val DEFAULT_VIEW = stringPreferencesKey("default_view")
         val STATS_PERIOD = stringPreferencesKey("stats_period")
         val USER_NAME = stringPreferencesKey("user_name")
+        val PROFILE_PHOTO_URI = stringPreferencesKey("profile_photo_uri")
         val TOTAL_POINTS = intPreferencesKey("total_points")
 
         // Reading Tracker
@@ -437,6 +438,29 @@ class PreferencesManager(context: Context) {
     suspend fun setUserName(name: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.USER_NAME] = name
+        }
+    }
+
+    // Profile Photo
+    val profilePhotoUri: Flow<String?> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.PROFILE_PHOTO_URI]
+        }
+
+    suspend fun setProfilePhotoUri(uri: String?) {
+        dataStore.edit { preferences ->
+            if (uri == null) {
+                preferences.remove(PreferencesKeys.PROFILE_PHOTO_URI)
+            } else {
+                preferences[PreferencesKeys.PROFILE_PHOTO_URI] = uri
+            }
         }
     }
 

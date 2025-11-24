@@ -111,13 +111,27 @@ class OnboardingViewModel(
         _uiState.update { it.copy(reminderTime = time) }
     }
 
-    fun onCompleteOnboarding(userName: String) {
+    fun onUserNameChange(name: String) {
+        _uiState.update { it.copy(userName = name) }
+    }
+
+    fun onHabitNameChange(name: String) {
+        _uiState.update { it.copy(goalHabit = name) }
+    }
+
+    fun onIconSelected(icon: String) {
+        _uiState.update { it.copy(selectedIcon = icon) }
+    }
+
+    fun onCompleteOnboarding() {
         val snapshot = _uiState.value
         _uiState.update { it.copy(hasCompleted = true) }
         _showOnboarding.value = false
 
         viewModelScope.launch {
             preferencesManager.setOnboardingCompleted(true)
+            preferencesManager.setUserName(snapshot.userName)
+            // Save profile photo URI if we had one
         }
 
         seedInitialHabitFromOnboarding(snapshot)
@@ -126,7 +140,7 @@ class OnboardingViewModel(
             reminderScheduler.scheduleReminder(
                 frequency = deriveReminderFrequency(snapshot.commitmentFrequencyPerWeek),
                 categories = snapshot.selectedCategories,
-                userName = userName
+                userName = snapshot.userName
             )
         }
     }
@@ -142,7 +156,8 @@ class OnboardingViewModel(
                 name = goal,
                 goalPerDay = minutes,
                 unit = "minutes",
-                category = category
+                category = category,
+                icon = stateSnapshot.selectedIcon
             )
             // Handle result if needed
         }
