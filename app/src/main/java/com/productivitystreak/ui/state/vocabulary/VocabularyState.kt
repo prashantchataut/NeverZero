@@ -3,7 +3,8 @@ package com.productivitystreak.ui.state.vocabulary
 data class VocabularyState(
     val currentStreakDays: Int = 0,
     val wordsAddedToday: Int = 0,
-    val words: List<VocabularyWord> = emptyList()
+    val words: List<VocabularyWord> = emptyList(),
+    val wordOfTheDay: VocabularyWord? = null
 )
 
 data class VocabularyWord(
