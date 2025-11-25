@@ -30,13 +30,12 @@ fun DashboardScreen(
     onAddOneOffTask: (String) -> Unit,
     onToggleOneOffTask: (String) -> Unit,
     onDeleteOneOffTask: (String) -> Unit,
-    vocabularyViewModel: com.productivitystreak.ui.screens.vocabulary.VocabularyViewModel,
+    onAssetSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val vocabularyState by vocabularyViewModel.uiState.collectAsStateWithLifecycle()
     
     // Calculate total streak (sum of all current streaks or max streak - simplified to max for now)
-    val maxStreak = streakUiState.streaks.maxOfOrNull { it.currentStreak } ?: 0
+    val maxStreak = streakUiState.streaks.maxOfOrNull { it.currentCount } ?: 0
 
     var showAddTaskDialog by remember { mutableStateOf(false) }
     val showConfetti by remember { mutableStateOf(false) }
@@ -89,16 +88,7 @@ fun DashboardScreen(
                 }
             }
 
-            // 4. Word of the Day & Insight (Side by Side)
-            item {
-                StaggeredEntryAnimation(index = 3) {
-                    WordOfTheDayCard(
-                        wordOfTheDay = vocabularyState.wordOfTheDay,
-                        modifier = Modifier.fillMaxWidth() // Grid cell width
-                    )
-                }
-            }
-
+            // 4. Buddha Insight
             item {
                 streakUiState.buddhaInsight?.let { insight ->
                     StaggeredEntryAnimation(index = 4) {

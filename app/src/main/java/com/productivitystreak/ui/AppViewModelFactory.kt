@@ -33,8 +33,7 @@ class AppViewModelFactory(private val application: Application) : ViewModelProvi
                     quoteRepository = app.quoteRepository,
                     preferencesManager = app.preferencesManager,
                     streakRepository = app.streakRepository,
-                    templateRepository = app.templateRepository,
-                    socialRepository = app.socialRepository
+                    templateRepository = app.templateRepository
                 ) as T
             }
             modelClass.isAssignableFrom(StreakViewModel::class.java) -> {
@@ -42,7 +41,8 @@ class AppViewModelFactory(private val application: Application) : ViewModelProvi
                     streakRepository = app.streakRepository,
                     preferencesManager = app.preferencesManager,
                     moshi = moshi,
-                    geminiClient = app.geminiClient
+                    geminiClient = app.geminiClient,
+                    socialRepository = app.socialRepository
                 ) as T
             }
             modelClass.isAssignableFrom(ProfileViewModel::class.java) -> {

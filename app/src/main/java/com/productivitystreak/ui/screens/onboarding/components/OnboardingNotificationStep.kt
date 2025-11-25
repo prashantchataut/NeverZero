@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.productivitystreak.R
-import com.productivitystreak.ui.components.GradientPrimaryButton
+import com.productivitystreak.ui.components.GradientButton
 import com.productivitystreak.ui.theme.NeverZeroTheme
 import com.productivitystreak.ui.theme.Spacing
 
@@ -96,7 +96,7 @@ fun OnboardingNotificationStep(
 
             Spacer(modifier = Modifier.height(Spacing.lg))
 
-            GradientPrimaryButton(
+            GradientButton(
                 text = "Enable Notifications",
                 onClick = onEnableNotifications,
                 modifier = Modifier.fillMaxWidth()

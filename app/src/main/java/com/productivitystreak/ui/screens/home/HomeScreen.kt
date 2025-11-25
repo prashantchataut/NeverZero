@@ -304,7 +304,7 @@ fun DailyUpgradeTile(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            com.productivitystreak.ui.components.GradientPrimaryButton(
+            com.productivitystreak.ui.components.GradientButton(
                 text = content.actionLabel,
                 onClick = onAction,
                 modifier = Modifier.fillMaxWidth()

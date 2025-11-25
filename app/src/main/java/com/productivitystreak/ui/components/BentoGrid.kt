@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridScope
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
@@ -24,7 +24,7 @@ fun BentoGrid(
     contentPadding: PaddingValues = PaddingValues(Spacing.md),
     horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(Spacing.md),
     verticalItemSpacing: Dp = Spacing.md,
-    content: StaggeredGridScope.() -> Unit
+    content: LazyStaggeredGridScope.() -> Unit
 ) {
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Fixed(columns),
@@ -39,7 +39,7 @@ fun BentoGrid(
 /**
  * Helper to span full width in the grid
  */
-fun StaggeredGridScope.fullWidthItem(
+fun LazyStaggeredGridScope.fullWidthItem(
     key: Any? = null,
     contentType: Any? = null,
     content: @Composable () -> Unit

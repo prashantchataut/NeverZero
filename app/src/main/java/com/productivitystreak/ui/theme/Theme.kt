@@ -12,7 +12,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 /**
  * Deep Space Color Scheme
@@ -104,17 +103,9 @@ fun AppTheme(
     dynamicColor: Boolean = false, // Disable dynamic color
     content: @Composable () -> Unit
 ) {
-    val systemUiController = rememberSystemUiController()
     val colorScheme = if (darkTheme) DeepSpaceColorScheme else LightColorScheme
     val designColors = if (darkTheme) NeverZeroDesignPalettes.DeepSpace else NeverZeroDesignPalettes.Light
     
-    SideEffect {
-        systemUiController.setSystemBarsColor(
-            color = if (darkTheme) Void else Color(0xFFF7F8FA),
-            darkIcons = !darkTheme
-        )
-    }
-
     CompositionLocalProvider(
         LocalStreakColors provides StreakColors,
         LocalGradientColors provides GradientColors,
@@ -132,14 +123,14 @@ fun AppTheme(
 
 @Composable
 fun ProductivityStreakTheme(
-    themeMode: com.productivitystreak.ui.state.profile.ProfileTheme = com.productivitystreak.ui.state.profile.ProfileTheme.System,
+    themeMode: com.productivitystreak.ui.state.profile.ProfileTheme = com.productivitystreak.ui.state.profile.ProfileTheme.Auto,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val darkTheme = when (themeMode) {
         com.productivitystreak.ui.state.profile.ProfileTheme.Light -> false
         com.productivitystreak.ui.state.profile.ProfileTheme.Dark -> true
-        com.productivitystreak.ui.state.profile.ProfileTheme.System -> isSystemInDarkTheme()
+        com.productivitystreak.ui.state.profile.ProfileTheme.Auto -> isSystemInDarkTheme()
     }
 
     AppTheme(

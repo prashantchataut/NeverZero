@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
-import com.productivitystreak.ui.components.GradientPrimaryButton
+import com.productivitystreak.ui.components.GradientButton
 import com.productivitystreak.ui.theme.NeverZeroTheme
 import com.productivitystreak.ui.theme.Spacing
 
