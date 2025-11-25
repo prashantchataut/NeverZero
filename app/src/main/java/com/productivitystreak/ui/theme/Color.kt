@@ -109,6 +109,12 @@ object GradientColors {
 
     val VoidStart = Color(0xFF000000)
     val VoidEnd = Color(0xFF121212)
+
+    val OceanStart = Color(0xFF2E86DE)
+    val OceanEnd = Color(0xFF00D2D3)
+
+    val SunriseStart = Color(0xFFFF9F43)
+    val SunriseEnd = Color(0xFFFF4757)
 }
 
 // ==================== SEMANTIC COLORS ====================
@@ -150,7 +156,7 @@ data class NeverZeroDesignColors(
     val error: Color
 )
 
-val NeonGreen = Color(0xFF00E676) // Vibrant Green from design
+// NeonGreen is already defined in Primary Accents section
 
 // ... (existing code)
 

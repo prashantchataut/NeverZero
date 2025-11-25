@@ -105,213 +105,7 @@ fun AddEntryMenuSheet(
             )
         }
 
-@Composable
-fun TeachWordSheet(
-    uiState: TeachWordUiState,
-    onWordChange: (String) -> Unit,
-    onContextChange: (String) -> Unit,
-    onGenerateLesson: () -> Unit,
-    onLogLesson: (TeachingLesson) -> Unit,
-    onDismissLesson: () -> Unit
-) {
-    val focusManager = LocalFocusManager.current
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(
-                text = "Teach a word",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = "Generate a micro-lesson and keep vocabulary mature—no childish gamification.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
 
-        com.productivitystreak.ui.components.StyledTextField(
-            value = uiState.wordInput,
-            onValueChange = onWordChange,
-            label = "Word to teach",
-            singleLine = true,
-            placeholder = { Text("e.g., incisive") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        com.productivitystreak.ui.components.MultilineTextField(
-            value = uiState.learnerContext,
-            onValueChange = onContextChange,
-            label = "Context (audience, scenario, goal)",
-            placeholder = { Text("Explaining to a senior stakeholder in a weekly review…") },
-            minLines = 2,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        AssistChip(
-            onClick = {
-                val preset = "Explaining to a busy operator who wants actionable language"
-                onContextChange(preset)
-                focusManager.clearFocus()
-            },
-            label = { Text("Use business preset") }
-        )
-
-        TeachLessonCTA(
-            isGenerating = uiState.isGenerating,
-            lesson = uiState.lesson,
-            error = uiState.errorMessage,
-            onGenerateLesson = {
-                focusManager.clearFocus()
-                onGenerateLesson()
-            },
-            onDismissLesson = onDismissLesson,
-            onLogLesson = onLogLesson
-        )
-    }
-}
-
-@Composable
-private fun TeachLessonCTA(
-    isGenerating: Boolean,
-    lesson: TeachingLesson?,
-    error: String?,
-    onGenerateLesson: () -> Unit,
-    onDismissLesson: () -> Unit,
-    onLogLesson: (TeachingLesson) -> Unit
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Button(
-            onClick = onGenerateLesson,
-            enabled = !isGenerating,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            if (isGenerating) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(16.dp)
-                        .padding(end = 8.dp),
-                    strokeWidth = 2.dp
-                )
-            }
-            Text(if (isGenerating) "Generating lesson…" else "Generate lesson")
-        }
-
-        error?.let {
-            Text(
-                text = it,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.error
-            )
-        }
-
-        AnimatedVisibility(visible = lesson != null) {
-            lesson?.let {
-                TeachingLessonCard(
-                    lesson = it,
-                    onDismiss = onDismissLesson,
-                    onLog = onLogLesson
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun TeachingLessonCard(
-    lesson: TeachingLesson,
-    onDismiss: () -> Unit,
-    onLog: (TeachingLesson) -> Unit
-) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Refresh,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(lesson.word, style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        text = lesson.definition,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                OutlinedButton(onClick = onDismiss) {
-                    Text("Clear")
-                }
-            }
-
-            LessonSection("Analogy", lesson.analogy)
-            LessonSection("Mnemonic", lesson.mnemonic)
-            LessonSection("Example", lesson.example)
-
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
-                    text = "Micro practice",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                lesson.practicePrompts.forEach { prompt ->
-                    LessonPromptChip(prompt)
-                }
-            }
-
-            Button(
-                onClick = { onLog(lesson) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Log to vocabulary")
-            }
-        }
-    }
-}
-
-@Composable
-private fun LessonSection(title: String, value: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(
-            text = title.uppercase(),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium
-        )
-    }
-}
-
-@Composable
-private fun LessonPromptChip(prompt: String) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Text(
-            text = prompt,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-        )
-    }
-}
 
         // 2-Column Grid of Actions
         Column(
@@ -828,3 +622,211 @@ private val frequencyOptions = listOf("Daily", "5x/week", "3x/week")
 private data class HabitIconOption(val icon: ImageVector, val iconName: String, val accent: Color)
 
 private fun Color.toHex(): String = "#%06X".format(this.toArgb() and 0xFFFFFF)
+
+@Composable
+fun TeachWordSheet(
+    uiState: TeachWordUiState,
+    onWordChange: (String) -> Unit,
+    onContextChange: (String) -> Unit,
+    onGenerateLesson: () -> Unit,
+    onLogLesson: (TeachingLesson) -> Unit,
+    onDismissLesson: () -> Unit
+) {
+    val focusManager = LocalFocusManager.current
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                text = "Teach a word",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = "Generate a micro-lesson and keep vocabulary mature—no childish gamification.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        com.productivitystreak.ui.components.StyledTextField(
+            value = uiState.wordInput,
+            onValueChange = onWordChange,
+            label = "Word to teach",
+            singleLine = true,
+            placeholder = { Text("e.g., incisive") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        com.productivitystreak.ui.components.MultilineTextField(
+            value = uiState.learnerContext,
+            onValueChange = onContextChange,
+            label = "Context (audience, scenario, goal)",
+            placeholder = { Text("Explaining to a senior stakeholder in a weekly review…") },
+            minLines = 2,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        AssistChip(
+            onClick = {
+                val preset = "Explaining to a busy operator who wants actionable language"
+                onContextChange(preset)
+                focusManager.clearFocus()
+            },
+            label = { Text("Use business preset") }
+        )
+
+        TeachLessonCTA(
+            isGenerating = uiState.isGenerating,
+            lesson = uiState.lesson,
+            error = uiState.errorMessage,
+            onGenerateLesson = {
+                focusManager.clearFocus()
+                onGenerateLesson()
+            },
+            onDismissLesson = onDismissLesson,
+            onLogLesson = onLogLesson
+        )
+    }
+}
+
+@Composable
+private fun TeachLessonCTA(
+    isGenerating: Boolean,
+    lesson: TeachingLesson?,
+    error: String?,
+    onGenerateLesson: () -> Unit,
+    onDismissLesson: () -> Unit,
+    onLogLesson: (TeachingLesson) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Button(
+            onClick = onGenerateLesson,
+            enabled = !isGenerating,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (isGenerating) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(16.dp)
+                        .padding(end = 8.dp),
+                    strokeWidth = 2.dp
+                )
+            }
+            Text(if (isGenerating) "Generating lesson…" else "Generate lesson")
+        }
+
+        error?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        AnimatedVisibility(visible = lesson != null) {
+            lesson?.let {
+                TeachingLessonCard(
+                    lesson = it,
+                    onDismiss = onDismissLesson,
+                    onLog = onLogLesson
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TeachingLessonCard(
+    lesson: TeachingLesson,
+    onDismiss: () -> Unit,
+    onLog: (TeachingLesson) -> Unit
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Refresh,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(lesson.word, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = lesson.definition,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                OutlinedButton(onClick = onDismiss) {
+                    Text("Clear")
+                }
+            }
+
+            LessonSection("Analogy", lesson.analogy)
+            LessonSection("Mnemonic", lesson.mnemonic)
+            LessonSection("Example", lesson.example)
+
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = "Micro practice",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                lesson.practicePrompts.forEach { prompt ->
+                    LessonPromptChip(prompt)
+                }
+            }
+
+            Button(
+                onClick = { onLog(lesson) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Log to vocabulary")
+            }
+        }
+    }
+}
+
+@Composable
+private fun LessonSection(title: String, value: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = title.uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Composable
+private fun LessonPromptChip(prompt: String) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Text(
+            text = prompt,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+        )
+    }
+}

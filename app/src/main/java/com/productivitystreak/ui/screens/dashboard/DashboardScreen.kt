@@ -10,7 +10,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import com.productivitystreak.ui.components.BentoGrid
+import com.productivitystreak.ui.components.StaggeredEntryAnimation
 import com.productivitystreak.ui.components.fullWidthItem
 import com.productivitystreak.ui.screens.dashboard.components.*
 import com.productivitystreak.ui.state.AppUiState
@@ -37,6 +39,7 @@ fun DashboardScreen(
     val maxStreak = streakUiState.streaks.maxOfOrNull { it.currentStreak } ?: 0
 
     var showAddTaskDialog by remember { mutableStateOf(false) }
+    val showConfetti by remember { mutableStateOf(false) }
 
     if (showAddTaskDialog) {
         AddTaskDialog(

@@ -4,11 +4,7 @@ import com.productivitystreak.ui.state.stats.LeaderboardEntry
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import javax.inject.Inject
-import javax.inject.Singleton
-
-@Singleton
-class SocialRepository @Inject constructor() {
+class SocialRepository {
 
     fun getGlobalLeaderboard(): Flow<List<LeaderboardEntry>> = flow {
         // Simulate network delay

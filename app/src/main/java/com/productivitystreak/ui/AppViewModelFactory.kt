@@ -33,7 +33,8 @@ class AppViewModelFactory(private val application: Application) : ViewModelProvi
                     quoteRepository = app.quoteRepository,
                     preferencesManager = app.preferencesManager,
                     streakRepository = app.streakRepository,
-                    templateRepository = app.templateRepository
+                    templateRepository = app.templateRepository,
+                    socialRepository = app.socialRepository
                 ) as T
             }
             modelClass.isAssignableFrom(StreakViewModel::class.java) -> {

@@ -24,8 +24,6 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-@OptIn(ExperimentalAnimationApi::class)
-@Composable
 fun OnboardingFlow(
     onboardingState: OnboardingState,
     onToggleOnboardingCategory: (String) -> Unit,

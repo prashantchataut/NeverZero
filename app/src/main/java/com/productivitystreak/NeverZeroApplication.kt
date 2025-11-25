@@ -35,6 +35,7 @@ class NeverZeroApplication : Application() {
     val assetRepository by lazy { AssetRepository() }
     val timeCapsuleRepository by lazy { TimeCapsuleRepository(database.timeCapsuleDao()) }
     val templateRepository by lazy { TemplateRepository() }
+    val socialRepository by lazy { SocialRepository() }
     
     // AI
     val geminiClient by lazy { com.productivitystreak.data.gemini.GeminiClient.getInstance() }

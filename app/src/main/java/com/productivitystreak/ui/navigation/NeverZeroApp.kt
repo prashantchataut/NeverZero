@@ -124,7 +124,10 @@ fun NeverZeroApp(
             onPreviousStep = onboardingViewModel::onPreviousOnboardingStep,
             onToggleNotificationsAllowed = onboardingViewModel::onToggleOnboardingNotifications,
             onSetReminderTime = onboardingViewModel::onSetOnboardingReminderTime,
-            onCompleteOnboarding = { onboardingViewModel.onCompleteOnboarding(uiState.userName) },
+            onUserNameChange = onboardingViewModel::onUserNameChange,
+            onHabitNameChange = onboardingViewModel::onHabitNameChange,
+            onIconSelected = onboardingViewModel::onIconSelected,
+            onCompleteOnboarding = { onboardingViewModel.onCompleteOnboarding() },
             onDismissOnboarding = { /* handled by state */ },
             onRequestNotificationPermission = appViewModel::onShowNotificationPermissionDialog,
             onRequestExactAlarmPermission = appViewModel::onShowAlarmPermissionDialog
@@ -269,6 +272,23 @@ fun NeverZeroApp(
                             onRequestExactAlarmPermission = appViewModel::onShowAlarmPermissionDialog,
                             onCreateTimeCapsule = profileViewModel::onCreateTimeCapsule,
                             onSaveTimeCapsuleReflection = profileViewModel::onSaveTimeCapsuleReflection
+                        )
+                    }
+                    MainDestination.STATS -> {
+                        val streakState by streakViewModel.uiState.collectAsStateWithLifecycle()
+                        StatsScreen(
+                            uiState = streakState,
+                            onBack = { currentDestination = MainDestination.HOME }
+                        )
+                    }
+                    MainDestination.DISCOVER -> {
+                        val discoverState by discoverViewModel.uiState.collectAsStateWithLifecycle()
+                        DiscoverScreen(
+                            uiState = discoverState,
+                            onAssetSelected = { assetId -> selectedAssetId = assetId },
+                            onRefresh = discoverViewModel::refreshAssets,
+                            onSearch = discoverViewModel::onSearchQueryChanged,
+                            onFilterSelected = discoverViewModel::onFilterSelected
                         )
                     }
                 }
