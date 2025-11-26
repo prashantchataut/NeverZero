@@ -4,10 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Edit
@@ -17,14 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
-import com.productivitystreak.ui.components.GradientButton
-import com.productivitystreak.ui.theme.NeverZeroTheme
 import com.productivitystreak.ui.theme.Spacing
 
 @Composable
@@ -40,6 +39,7 @@ fun OnboardingPersonalizationStep(
     onComplete: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
+    val scrollState = rememberScrollState()
     
     // Available icons for selection
     val icons = listOf(
@@ -53,19 +53,19 @@ fun OnboardingPersonalizationStep(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White) // Enforce white background for this step as per design
-            .padding(horizontal = Spacing.lg),
+            .verticalScroll(scrollState)
+            .padding(horizontal = Spacing.sm), // Reduced padding to match reference which seems to have content close to edges or card-like
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(Spacing.lg))
+        Spacer(modifier = Modifier.height(Spacing.md))
 
         // Profile Photo Placeholder
         Box(
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFF5F5F5)) // Light gray background
-                .border(1.dp, Color(0xFFE0E0E0), CircleShape) // Dashed border simulation (solid for now)
+                .background(Color(0xFFF5F5F5))
+                .border(1.dp, Color(0xFFE0E0E0), CircleShape) // Dashed border simulation
                 .clickable { /* TODO: Implement photo picker */ },
             contentAlignment = Alignment.Center
         ) {
@@ -118,11 +118,11 @@ fun OnboardingPersonalizationStep(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFE0E0E0),
-                    unfocusedBorderColor = Color(0xFFF5F5F5),
-                    focusedContainerColor = Color(0xFFFAFAFA),
-                    unfocusedContainerColor = Color(0xFFFAFAFA),
-                    cursorColor = NeverZeroTheme.designColors.primary,
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedContainerColor = Color(0xFFF5F5F5),
+                    unfocusedContainerColor = Color(0xFFF5F5F5),
+                    cursorColor = Color.Black,
                     focusedTextColor = Color.Black,
                     unfocusedTextColor = Color.Black
                 ),
@@ -174,11 +174,11 @@ fun OnboardingPersonalizationStep(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFE0E0E0),
-                    unfocusedBorderColor = Color(0xFFF5F5F5),
-                    focusedContainerColor = Color(0xFFFAFAFA),
-                    unfocusedContainerColor = Color(0xFFFAFAFA),
-                    cursorColor = NeverZeroTheme.designColors.primary,
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedContainerColor = Color(0xFFF5F5F5),
+                    unfocusedContainerColor = Color(0xFFF5F5F5),
+                    cursorColor = Color.Black,
                     focusedTextColor = Color.Black,
                     unfocusedTextColor = Color.Black
                 ),
@@ -268,7 +268,7 @@ fun OnboardingPersonalizationStep(
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(Spacing.xxl))
 
         Button(
             onClick = onComplete,

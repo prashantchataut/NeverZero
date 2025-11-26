@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.productivitystreak.ui.icons.AppIcons
 import com.productivitystreak.ui.state.onboarding.OnboardingCategory
@@ -28,7 +29,7 @@ fun OnboardingIdentityStep(
         Text(
             text = "Choose a few areas you want to protect from going to zero.",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+            color = Color(0xFF757575) // Gray text
         )
 
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -42,9 +43,9 @@ fun OnboardingIdentityStep(
                         Surface(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(24.dp),
-                            tonalElevation = if (isSelected) 4.dp else 0.dp,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                            else MaterialTheme.colorScheme.surface,
+                            tonalElevation = 0.dp,
+                            color = if (isSelected) Color(0xFFE8F5E9) // Light Green
+                            else Color(0xFFF5F5F5), // Light Gray
                             onClick = { onToggleCategory(item.id) }
                         ) {
                             Row(
@@ -56,13 +57,12 @@ fun OnboardingIdentityStep(
                                 Icon(
                                     imageVector = AppIcons.forCategory(item.id),
                                     contentDescription = item.label,
-                                    tint = MaterialTheme.colorScheme.primary
+                                    tint = if (isSelected) Color(0xFF00C853) else Color(0xFF757575) // Green vs Gray
                                 )
                                 Text(
                                     text = item.label,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurface
+                                    color = if (isSelected) Color(0xFF00C853) else Color.Black // Green vs Black
                                 )
                             }
                         }

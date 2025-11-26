@@ -4,8 +4,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.productivitystreak.ui.components.PrimaryButton
+import com.productivitystreak.ui.components.GradientPrimaryButton
 import com.productivitystreak.ui.components.StyledTextButton
 import com.productivitystreak.ui.theme.Spacing
 
@@ -28,14 +29,15 @@ fun OnboardingFooter(
         if (canGoBack) {
             StyledTextButton(
                 text = "Back",
-                onClick = onBack
+                onClick = onBack,
+                color = Color(0xFF757575) // Gray text for Back button
             )
         } else {
             Spacer(modifier = Modifier.width(Spacing.xxl))
         }
 
         val primaryLabel = if (isFinalStep) "Finish" else "Continue"
-        PrimaryButton(
+        GradientPrimaryButton(
             text = primaryLabel,
             onClick = onPrimaryClick,
             modifier = Modifier.width(140.dp)

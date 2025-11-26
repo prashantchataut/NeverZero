@@ -52,7 +52,7 @@ fun OnboardingWelcomeStep() {
                     .background(
                         brush = Brush.radialGradient(
                             colors = listOf(
-                                NeverZeroTheme.gradientColors.PremiumStart.copy(alpha = 0.5f),
+                                Color(0xFF00E676).copy(alpha = 0.3f), // Green glow
                                 Color.Transparent
                             )
                         )
@@ -67,8 +67,8 @@ fun OnboardingWelcomeStep() {
                     .background(
                         brush = Brush.linearGradient(
                             colors = listOf(
-                                NeverZeroTheme.gradientColors.PremiumStart,
-                                NeverZeroTheme.gradientColors.PremiumEnd
+                                Color(0xFF00E676), // Vibrant Green
+                                Color(0xFF69F0AE)  // Lighter Green
                             )
                         )
                     ),
@@ -93,20 +93,20 @@ fun OnboardingWelcomeStep() {
                     fontWeight = FontWeight.Bold,
                     letterSpacing = (-1).sp
                 ),
-                color = MaterialTheme.colorScheme.onBackground
+                color = Color.Black // Dark text
             )
             
             Text(
                 text = "Build habits that stick.",
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = Color(0xFF00C853) // Darker Green text
             )
         }
 
         Text(
             text = "You don’t need a perfect day — just never hit zero.",
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+            color = Color(0xFF757575), // Gray text
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 24.dp)
         )

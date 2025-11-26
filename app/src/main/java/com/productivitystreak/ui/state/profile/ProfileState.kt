@@ -5,7 +5,7 @@ data class ProfileState(
     val notificationEnabled: Boolean = true,
     val reminderFrequency: ReminderFrequency = ReminderFrequency.Daily,
     val hasWeeklySummary: Boolean = true,
-    val theme: ProfileTheme = ProfileTheme.Dark,
+    val theme: ProfileTheme = ProfileTheme.Light,
     val hapticsEnabled: Boolean = true,
     val activeCategories: Set<String> = setOf("Reading", "Vocabulary"),
     val legalLinks: List<LegalItem> = listOf(

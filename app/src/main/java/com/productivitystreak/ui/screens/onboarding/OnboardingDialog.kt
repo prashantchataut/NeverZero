@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import com.productivitystreak.ui.screens.onboarding.components.*
 import com.productivitystreak.ui.state.onboarding.OnboardingState
+import com.productivitystreak.ui.theme.AppTheme
 import com.productivitystreak.ui.theme.NeverZeroTheme
 import com.productivitystreak.ui.theme.Spacing
 import kotlinx.coroutines.launch
@@ -46,124 +48,116 @@ fun OnboardingFlow(
     var showFinishRipple by remember { mutableStateOf(false) }
     val finishRipple = remember { Animatable(0f) }
 
-    val isDark = NeverZeroTheme.designColors.isDark
-    
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                if (isDark) {
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            NeverZeroTheme.gradientColors.PremiumStart.copy(alpha = 0.18f),
-                            NeverZeroTheme.gradientColors.PremiumEnd.copy(alpha = 0.08f)
-                        )
-                    )
-                } else {
-                    Brush.linearGradient(
-                        colors = listOf(
-                            NeverZeroTheme.designColors.background,
-                            NeverZeroTheme.designColors.background
-                        )
-                    )
-                }
-            )
-            .padding(horizontal = Spacing.lg, vertical = Spacing.xl)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween
+    // Enforce Light Theme for the entire onboarding flow
+    AppTheme(darkTheme = false) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(horizontal = Spacing.lg, vertical = Spacing.xl)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.lg)) {
-                StepHeader(currentStep = onboarding.currentStep, totalSteps = onboarding.totalSteps)
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.lg)) {
+                    StepHeader(
+                        currentStep = onboarding.currentStep,
+                        totalSteps = onboarding.totalSteps,
+                        onBack = {
+                            if (onboarding.currentStep == 0) onDismissOnboarding() else onPreviousStep()
+                        },
+                        showBack = true
+                    )
 
-                AnimatedContent(
-                    targetState = onboarding.currentStep,
-                    transitionSpec = {
-                        fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow)) togetherWith
-                            fadeOut(animationSpec = spring(stiffness = Spring.StiffnessLow))
-                    },
-                    label = "onboarding-steps"
-                ) { step ->
-                    when (step) {
-                        0 -> OnboardingWelcomeStep()
-                        1 -> OnboardingIdentityStep(
-                            categories = onboarding.categories,
-                            selected = onboarding.selectedCategories,
-                            onToggleCategory = onToggleOnboardingCategory
-                        )
-                        2 -> OnboardingLeadHabitConceptStep()
-                        3 -> OnboardingNotificationStep(
-                            onEnableNotifications = {
-                                onToggleNotificationsAllowed(true)
-                                onRequestNotificationPermission()
-                                onNextStep()
-                            },
-                            onSkip = {
-                                onToggleNotificationsAllowed(false)
-                                onNextStep()
-                            }
-                        )
-                        else -> OnboardingPersonalizationStep(
-                            userName = onboarding.userName,
-                            onUserNameChange = onUserNameChange,
-                            habitName = onboarding.goalHabit,
-                            onHabitNameChange = onHabitNameChange,
-                            selectedIcon = onboarding.selectedIcon,
-                            onIconSelected = onIconSelected,
-                            dailyReminderEnabled = onboarding.allowNotifications,
-                            onDailyReminderToggle = onToggleNotificationsAllowed,
-                            onComplete = {
-                                if (!showFinishRipple) {
-                                    coroutineScope.launch {
-                                        showFinishRipple = true
-                                        finishRipple.snapTo(0f)
-                                        finishRipple.animateTo(
-                                            1f,
-                                            animationSpec = tween(durationMillis = 650, easing = FastOutSlowInEasing)
-                                        )
-                                        showFinishRipple = false
-                                        onCompleteOnboarding()
+                    AnimatedContent(
+                        targetState = onboarding.currentStep,
+                        transitionSpec = {
+                            fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow)) togetherWith
+                                fadeOut(animationSpec = spring(stiffness = Spring.StiffnessLow))
+                        },
+                        label = "onboarding-steps"
+                    ) { step ->
+                        when (step) {
+                            0 -> OnboardingWelcomeStep()
+                            1 -> OnboardingIdentityStep(
+                                categories = onboarding.categories,
+                                selected = onboarding.selectedCategories,
+                                onToggleCategory = onToggleOnboardingCategory
+                            )
+                            2 -> OnboardingLeadHabitConceptStep()
+                            3 -> OnboardingNotificationStep(
+                                onEnableNotifications = {
+                                    onToggleNotificationsAllowed(true)
+                                    onRequestNotificationPermission()
+                                    onNextStep()
+                                },
+                                onSkip = {
+                                    onToggleNotificationsAllowed(false)
+                                    onNextStep()
+                                }
+                            )
+                            else -> OnboardingPersonalizationStep(
+                                userName = onboarding.userName,
+                                onUserNameChange = onUserNameChange,
+                                habitName = onboarding.goalHabit,
+                                onHabitNameChange = onHabitNameChange,
+                                selectedIcon = onboarding.selectedIcon,
+                                onIconSelected = onIconSelected,
+                                dailyReminderEnabled = onboarding.allowNotifications,
+                                onDailyReminderToggle = onToggleNotificationsAllowed,
+                                onComplete = {
+                                    if (!showFinishRipple) {
+                                        coroutineScope.launch {
+                                            showFinishRipple = true
+                                            finishRipple.snapTo(0f)
+                                            finishRipple.animateTo(
+                                                1f,
+                                                animationSpec = tween(durationMillis = 650, easing = FastOutSlowInEasing)
+                                            )
+                                            showFinishRipple = false
+                                            onCompleteOnboarding()
+                                        }
                                     }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
+                }
+
+                // Only show default footer for first 3 steps (0, 1, 2)
+                // Steps 3 and 4 have their own action buttons
+                if (onboarding.currentStep < 3) {
+                    OnboardingFooter(
+                        currentStep = onboarding.currentStep,
+                        totalSteps = onboarding.totalSteps,
+                        canGoBack = onboarding.currentStep > 0,
+                        isFinalStep = false,
+                        onBack = {
+                            if (onboarding.currentStep == 0) onDismissOnboarding() else onPreviousStep()
+                        },
+                        onPrimaryClick = onNextStep
+                    )
                 }
             }
 
-            // Only show default footer for first 3 steps (0, 1, 2)
-            // Steps 3 and 4 have their own action buttons
-            if (onboarding.currentStep < 3) {
-                OnboardingFooter(
-                    currentStep = onboarding.currentStep,
-                    totalSteps = onboarding.totalSteps,
-                    canGoBack = onboarding.currentStep > 0,
-                    isFinalStep = false,
-                    onBack = {
-                        if (onboarding.currentStep == 0) onDismissOnboarding() else onPreviousStep()
-                    },
-                    onPrimaryClick = onNextStep
-                )
-            }
-        }
-
-        if (showFinishRipple) {
-            val premiumStart = NeverZeroTheme.gradientColors.PremiumStart
-            val premiumEnd = NeverZeroTheme.gradientColors.PremiumEnd
-            Canvas(modifier = Modifier.matchParentSize()) {
-                val radius = size.maxDimension * finishRipple.value
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            premiumStart,
-                            premiumEnd
-                        )
-                    ),
-                    radius = radius,
-                    center = center,
-                    alpha = (1f - finishRipple.value).coerceAtLeast(0f)
-                )
+            if (showFinishRipple) {
+                val premiumStart = NeverZeroTheme.gradientColors.PremiumStart
+                val premiumEnd = NeverZeroTheme.gradientColors.PremiumEnd
+                Canvas(modifier = Modifier.matchParentSize()) {
+                    val radius = size.maxDimension * finishRipple.value
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                premiumStart,
+                                premiumEnd
+                            )
+                        ),
+                        radius = radius,
+                        center = center,
+                        alpha = (1f - finishRipple.value).coerceAtLeast(0f)
+                    )
+                }
             }
         }
     }

@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import com.productivitystreak.ui.theme.NeverZeroTheme
@@ -29,13 +30,14 @@ fun OnboardingLeadHabitConceptStep() {
                 .fillMaxWidth()
                 .height(180.dp)
                 .clip(RoundedCornerShape(32.dp))
-                .background(MaterialTheme.colorScheme.surface),
+                .background(Color(0xFFF5F5F5)), // Light Gray
             contentAlignment = Alignment.Center
         ) {
-            val surfaceColor = MaterialTheme.colorScheme.surface
-            val successColor = NeverZeroTheme.semanticColors.Success
-            val oceanStart = NeverZeroTheme.gradientColors.OceanStart
-            val oceanEnd = NeverZeroTheme.gradientColors.OceanEnd
+            val surfaceColor = Color(0xFFF5F5F5)
+            val successColor = Color(0xFF00E676) // Vibrant Green
+            val oceanStart = Color(0xFF00E676)
+            val oceanEnd = Color(0xFF69F0AE)
+            
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val start = Offset(size.width * 0.15f, size.height * 0.65f)
                 val end = Offset(size.width * 0.85f, size.height * 0.35f)
@@ -71,12 +73,12 @@ fun OnboardingLeadHabitConceptStep() {
         Text(
             text = "We’ll start with one small habit — your lead habit.",
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground
+            color = Color.Black
         )
         Text(
             text = "Nail this first habit and everything else becomes easier. No overwhelm, just daily momentum.",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+            color = Color(0xFF757575) // Gray text
         )
     }
 }
