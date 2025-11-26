@@ -43,125 +43,113 @@ fun BuddhaInsightCard(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    com.productivitystreak.ui.components.GlassCard(
+    com.productivitystreak.ui.components.ElevatedCard(
         modifier = modifier,
         shape = RoundedCornerShape(24.dp),
-        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+        elevation = 2.dp
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.05f)
-                        )
-                    )
-                )
-                .padding(20.dp)
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(bottom = 16.dp)
             ) {
-                // Header
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.SelfImprovement,
-                            contentDescription = "Buddha",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                    
-                    Spacer(modifier = Modifier.width(8.dp))
-                    
-                    Text(
-                        text = "buddha",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
+                    Icon(
+                        imageVector = Icons.Outlined.SelfImprovement,
+                        contentDescription = "Buddha",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(18.dp)
                     )
                 }
+                
+                Spacer(modifier = Modifier.width(8.dp))
+                
+                Text(
+                    text = "buddha",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
 
-                // Content
-                AnimatedContent(
-                    targetState = state,
-                    transitionSpec = {
-                        fadeIn(animationSpec = tween(300)) togetherWith 
-                        fadeOut(animationSpec = tween(300))
-                    },
-                    label = "buddha_content"
-                ) { targetState ->
-                    when (targetState) {
-                        is BuddhaInsightState.Loading -> {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(60.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    strokeWidth = 2.dp,
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                                )
-                            }
+            // Content
+            AnimatedContent(
+                targetState = state,
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(300)) togetherWith 
+                    fadeOut(animationSpec = tween(300))
+                },
+                label = "buddha_content"
+            ) { targetState ->
+                when (targetState) {
+                    is BuddhaInsightState.Loading -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(60.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
-                        
-                        is BuddhaInsightState.Success -> {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    text = targetState.insight.message,
-                                    style = MaterialTheme.typography.bodyLarge.copy(
-                                        fontStyle = FontStyle.Italic
-                                    ),
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
+                    }
+                    
+                    is BuddhaInsightState.Success -> {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = targetState.insight.message,
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontStyle = FontStyle.Italic
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         }
-                        
-                        is BuddhaInsightState.Error -> {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    }
+                    
+                    is BuddhaInsightState.Error -> {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "silence is also an answer.",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontStyle = FontStyle.Italic
+                                ),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+                            
+                            IconButton(
+                                onClick = onRetry,
+                                modifier = Modifier.size(32.dp)
                             ) {
-                                Text(
-                                    text = "silence is also an answer.",
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        fontStyle = FontStyle.Italic
-                                    ),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = TextAlign.Center
+                                Icon(
+                                    imageVector = Icons.Outlined.Refresh,
+                                    contentDescription = "Retry",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(16.dp)
                                 )
-                                
-                                IconButton(
-                                    onClick = onRetry,
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Refresh,
-                                        contentDescription = "Retry",
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
                             }
                         }
                     }

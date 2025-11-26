@@ -29,7 +29,7 @@ fun OnboardingIdentityStep(
         Text(
             text = "Choose a few areas you want to protect from going to zero.",
             style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF757575) // Gray text
+            color = MaterialTheme.colorScheme.onSurfaceVariant // Gray text
         )
 
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -44,8 +44,8 @@ fun OnboardingIdentityStep(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(24.dp),
                             tonalElevation = 0.dp,
-                            color = if (isSelected) Color(0xFFE8F5E9) // Light Green
-                            else Color(0xFFF5F5F5), // Light Gray
+                            color = if (isSelected) MaterialTheme.colorScheme.primaryContainer // Light Green
+                            else MaterialTheme.colorScheme.surfaceVariant, // Light Gray
                             onClick = { onToggleCategory(item.id) }
                         ) {
                             Row(
@@ -57,12 +57,12 @@ fun OnboardingIdentityStep(
                                 Icon(
                                     imageVector = AppIcons.forCategory(item.id),
                                     contentDescription = item.label,
-                                    tint = if (isSelected) Color(0xFF00C853) else Color(0xFF757575) // Green vs Gray
+                                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant // Green vs Gray
                                 )
                                 Text(
                                     text = item.label,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = if (isSelected) Color(0xFF00C853) else Color.Black // Green vs Black
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface // Green vs Black
                                 )
                             }
                         }

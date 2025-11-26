@@ -252,28 +252,29 @@ fun DailyUpgradeTile(
 ) {
     if (content == null) return
 
-    com.productivitystreak.ui.components.InteractiveGlassCard(
+    com.productivitystreak.ui.components.InteractiveCard(
         onClick = onAction,
         modifier = modifier,
         shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
-        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+        elevation = 2.dp
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Label with subtle background
             androidx.compose.foundation.layout.Box(
                 modifier = Modifier
                     .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(
                     text = "DAILY UPGRADE • ${content.type.name.replace("_", " ")}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
             }
@@ -304,7 +305,7 @@ fun DailyUpgradeTile(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            com.productivitystreak.ui.components.GradientButton(
+            com.productivitystreak.ui.components.PrimaryButton(
                 text = content.actionLabel,
                 onClick = onAction,
                 modifier = Modifier.fillMaxWidth()
@@ -336,7 +337,7 @@ private fun HabitItemRow(
         }
     }
 
-    com.productivitystreak.ui.components.InteractiveGlassCard(
+    com.productivitystreak.ui.components.InteractiveCard(
         onClick = {
             if (!tapped) {
                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -346,10 +347,12 @@ private fun HabitItemRow(
         modifier = modifier
             .fillMaxWidth()
             .scale(scale),
-        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+        elevation = 2.dp
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(

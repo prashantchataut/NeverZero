@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.productivitystreak.ui.components.GradientPrimaryButton
+import com.productivitystreak.ui.components.PrimaryButton
 import com.productivitystreak.ui.theme.Spacing
 
 @Composable
@@ -40,7 +40,7 @@ fun OnboardingNotificationStep(
                 imageVector = Icons.Default.Notifications,
                 contentDescription = null,
                 modifier = Modifier.size(120.dp),
-                tint = Color(0xFF00E676) // Vibrant Green
+                tint = MaterialTheme.colorScheme.primary // Vibrant Green
             )
         }
 
@@ -52,7 +52,7 @@ fun OnboardingNotificationStep(
             Text(
                 text = "Stay on Track with\nReminders",
                 style = MaterialTheme.typography.headlineMedium,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold
             )
@@ -60,7 +60,7 @@ fun OnboardingNotificationStep(
             Text(
                 text = "Enable notifications to build consistency and never miss a day on your journey.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF757575), // Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant, // Gray
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = Spacing.md)
             )
@@ -88,7 +88,7 @@ fun OnboardingNotificationStep(
 
             Spacer(modifier = Modifier.height(Spacing.lg))
 
-            GradientPrimaryButton(
+            PrimaryButton(
                 text = "Enable Notifications",
                 onClick = onEnableNotifications,
                 modifier = Modifier.fillMaxWidth()
@@ -97,7 +97,7 @@ fun OnboardingNotificationStep(
             TextButton(onClick = onSkip) {
                 Text(
                     text = "Maybe Later",
-                    color = Color(0xFF9E9E9E)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             
@@ -119,14 +119,14 @@ private fun NotificationBenefitItem(
     ) {
         Surface(
             shape = androidx.compose.foundation.shape.CircleShape,
-            color = Color(0xFFF5F5F5), // Light Gray
+            color = MaterialTheme.colorScheme.surfaceVariant, // Light Gray
             modifier = Modifier.size(48.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = Color(0xFF00C853), // Green
+                    tint = MaterialTheme.colorScheme.primary, // Green
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -136,13 +136,13 @@ private fun NotificationBenefitItem(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleSmall,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold
             )
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFF757575)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

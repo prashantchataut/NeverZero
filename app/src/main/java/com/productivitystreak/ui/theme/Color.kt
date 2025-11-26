@@ -184,22 +184,22 @@ object NeverZeroDesignPalettes {
 
     val Light = NeverZeroDesignColors(
         isDark = false,
-        background = Color(0xFFF7F8FA),
+        background = Color(0xFFF7F8FA), // Surface.Base
         backgroundAlt = Color(0xFFFFFFFF),
-        surface = Color(0xFFFFFFFF),
+        surface = Color(0xFFFFFFFF), // Surface.Card
         surfaceElevated = Color(0xFFFFFFFF),
-        border = Color(0xFFE2E4EA),
+        border = Color(0xFFE2E4EA), // Border.Muted
         glow = Color.Transparent,
-        primary = NeonGreen,
+        primary = Color(0xFF00C853), // Brand.Primary (Emerald)
         onPrimary = White,
-        primaryMuted = NeonGreen.copy(alpha = 0.5f),
-        secondary = Color(0xFF1B1B1F),
+        primaryMuted = Color(0xFF00C853).copy(alpha = 0.5f),
+        secondary = Color(0xFF1B1B1F), // Brand.Secondary
         onSecondary = White,
         textPrimary = Color(0xFF1B1B1F),
         textSecondary = Color(0xFF757575),
         disabled = Color(0xFFE0E0E0),
-        success = SemanticColors.Success,
-        warning = SemanticColors.Warning,
+        success = Color(0xFF00C853), // Accent.Success
+        warning = Color(0xFFFFB74D), // Accent.Warning
         error = Error
     )
 }

@@ -34,11 +34,11 @@ fun SidequestCard(
     onAccept: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    com.productivitystreak.ui.components.InteractiveGlassCard(
+    com.productivitystreak.ui.components.InteractiveCard(
         onClick = onAccept,
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
-        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+        elevation = 2.dp
     ) {
         Row(
             modifier = Modifier
@@ -51,14 +51,14 @@ fun SidequestCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f))
-                    .border(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f), RoundedCornerShape(12.dp)),
+                    .background(MaterialTheme.colorScheme.tertiaryContainer)
+                    .border(1.dp, MaterialTheme.colorScheme.tertiary, RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Outlined.SportsMartialArts,
                     contentDescription = "Quest",
-                    tint = MaterialTheme.colorScheme.tertiary,
+                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -83,13 +83,13 @@ fun SidequestCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
-                            .background(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f))
+                            .background(MaterialTheme.colorScheme.tertiaryContainer)
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = "+${quest.xpReward} XP",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.tertiary,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
                             fontSize = 10.sp
                         )
                     }

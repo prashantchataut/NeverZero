@@ -64,15 +64,15 @@ fun OnboardingPersonalizationStep(
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFF5F5F5))
-                .border(1.dp, Color(0xFFE0E0E0), CircleShape) // Dashed border simulation
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape) // Dashed border simulation
                 .clickable { /* TODO: Implement photo picker */ },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.CameraAlt,
                 contentDescription = "Add Photo",
-                tint = Color(0xFF757575),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(32.dp)
             )
         }
@@ -83,13 +83,13 @@ fun OnboardingPersonalizationStep(
             text = "Set Up Your Profile",
             style = MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onSurface
             )
         )
         Text(
             text = "Add a Photo (Optional)",
             style = MaterialTheme.typography.bodyMedium.copy(
-                color = Color(0xFF9E9E9E)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         )
 
@@ -100,7 +100,7 @@ fun OnboardingPersonalizationStep(
             Text(
                 text = "Your Name",
                 style = MaterialTheme.typography.labelLarge.copy(
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.SemiBold
                 ),
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -112,7 +112,7 @@ fun OnboardingPersonalizationStep(
                 placeholder = { 
                     Text(
                         "What should we call you?", 
-                        color = Color(0xFFBDBDBD)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     ) 
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -120,11 +120,11 @@ fun OnboardingPersonalizationStep(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
-                    focusedContainerColor = Color(0xFFF5F5F5),
-                    unfocusedContainerColor = Color(0xFFF5F5F5),
-                    cursorColor = Color.Black,
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -142,13 +142,13 @@ fun OnboardingPersonalizationStep(
                 text = "What's Your First Goal?",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             )
             Text(
                 text = "Start with something small. The goal is to never have a zero day.",
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = Color(0xFF757575)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 ),
                 modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
             )
@@ -156,7 +156,7 @@ fun OnboardingPersonalizationStep(
             Text(
                 text = "Habit Name",
                 style = MaterialTheme.typography.labelLarge.copy(
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.SemiBold
                 ),
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -168,7 +168,7 @@ fun OnboardingPersonalizationStep(
                 placeholder = { 
                     Text(
                         "e.g., Read for 10 minutes", 
-                        color = Color(0xFFBDBDBD)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     ) 
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -176,11 +176,11 @@ fun OnboardingPersonalizationStep(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
-                    focusedContainerColor = Color(0xFFF5F5F5),
-                    unfocusedContainerColor = Color(0xFFF5F5F5),
-                    cursorColor = Color.Black,
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -199,7 +199,7 @@ fun OnboardingPersonalizationStep(
             Text(
                 text = "Choose an Icon",
                 style = MaterialTheme.typography.labelLarge.copy(
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.SemiBold
                 ),
                 modifier = Modifier.padding(bottom = 12.dp)
@@ -213,7 +213,7 @@ fun OnboardingPersonalizationStep(
                     val isSelected = selectedIcon == id
                     Surface(
                         shape = CircleShape,
-                        color = if (isSelected) Color(0xFFB9F6CA) else Color(0xFFEEEEEE), // Light Green vs Light Gray
+                        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
                         modifier = Modifier
                             .size(56.dp)
                             .clickable { onIconSelected(id) }
@@ -222,7 +222,7 @@ fun OnboardingPersonalizationStep(
                             Icon(
                                 imageVector = icon,
                                 contentDescription = null,
-                                tint = if (isSelected) Color(0xFF00C853) else Color(0xFF616161), // Vibrant Green vs Dark Gray
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
@@ -236,8 +236,8 @@ fun OnboardingPersonalizationStep(
         // Daily Reminder Toggle
         Surface(
             shape = RoundedCornerShape(32.dp),
-            color = Color(0xFFFAFAFA),
-            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0)),
+            color = MaterialTheme.colorScheme.surface,
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
@@ -250,7 +250,7 @@ fun OnboardingPersonalizationStep(
                 Text(
                     text = "Set a Daily Reminder",
                     style = MaterialTheme.typography.bodyLarge.copy(
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Medium
                     )
                 )
@@ -259,9 +259,9 @@ fun OnboardingPersonalizationStep(
                     onCheckedChange = onDailyReminderToggle,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
-                        checkedTrackColor = Color(0xFF00E676), // Neon Green
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
                         uncheckedThumbColor = Color.White,
-                        uncheckedTrackColor = Color(0xFFE0E0E0),
+                        uncheckedTrackColor = MaterialTheme.colorScheme.outlineVariant,
                         uncheckedBorderColor = Color.Transparent
                     )
                 )
@@ -278,10 +278,10 @@ fun OnboardingPersonalizationStep(
                 .height(56.dp),
             shape = RoundedCornerShape(28.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF00E676), // Neon Green
-                contentColor = Color.Black,
-                disabledContainerColor = Color(0xFFE0E0E0),
-                disabledContentColor = Color(0xFF9E9E9E)
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
             ),
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 0.dp,

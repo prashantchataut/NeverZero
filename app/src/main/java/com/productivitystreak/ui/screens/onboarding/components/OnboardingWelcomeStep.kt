@@ -52,7 +52,7 @@ fun OnboardingWelcomeStep() {
                     .background(
                         brush = Brush.radialGradient(
                             colors = listOf(
-                                Color(0xFF00E676).copy(alpha = 0.3f), // Green glow
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), // Green glow
                                 Color.Transparent
                             )
                         )
@@ -67,8 +67,8 @@ fun OnboardingWelcomeStep() {
                     .background(
                         brush = Brush.linearGradient(
                             colors = listOf(
-                                Color(0xFF00E676), // Vibrant Green
-                                Color(0xFF69F0AE)  // Lighter Green
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.primaryContainer
                             )
                         )
                     ),
@@ -77,7 +77,7 @@ fun OnboardingWelcomeStep() {
                 Icon(
                     imageVector = AppIcons.FireStreak,
                     contentDescription = "NeverZero Logo",
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(56.dp)
                 )
             }
@@ -93,20 +93,20 @@ fun OnboardingWelcomeStep() {
                     fontWeight = FontWeight.Bold,
                     letterSpacing = (-1).sp
                 ),
-                color = Color.Black // Dark text
+                color = MaterialTheme.colorScheme.onSurface // Dark text
             )
             
             Text(
                 text = "Build habits that stick.",
                 style = MaterialTheme.typography.titleMedium,
-                color = Color(0xFF00C853) // Darker Green text
+                color = MaterialTheme.colorScheme.primary // Darker Green text
             )
         }
 
         Text(
             text = "You don’t need a perfect day — just never hit zero.",
             style = MaterialTheme.typography.bodyLarge,
-            color = Color(0xFF757575), // Gray text
+            color = MaterialTheme.colorScheme.onSurfaceVariant, // Gray text
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 24.dp)
         )

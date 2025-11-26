@@ -30,13 +30,13 @@ fun OnboardingLeadHabitConceptStep() {
                 .fillMaxWidth()
                 .height(180.dp)
                 .clip(RoundedCornerShape(32.dp))
-                .background(Color(0xFFF5F5F5)), // Light Gray
+                .background(MaterialTheme.colorScheme.surfaceVariant), // Light Gray
             contentAlignment = Alignment.Center
         ) {
-            val surfaceColor = Color(0xFFF5F5F5)
-            val successColor = Color(0xFF00E676) // Vibrant Green
-            val oceanStart = Color(0xFF00E676)
-            val oceanEnd = Color(0xFF69F0AE)
+            val surfaceColor = MaterialTheme.colorScheme.surfaceVariant
+            val successColor = MaterialTheme.colorScheme.primary // Vibrant Green
+            val oceanStart = MaterialTheme.colorScheme.primary
+            val oceanEnd = MaterialTheme.colorScheme.primaryContainer
             
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val start = Offset(size.width * 0.15f, size.height * 0.65f)
@@ -73,12 +73,12 @@ fun OnboardingLeadHabitConceptStep() {
         Text(
             text = "We’ll start with one small habit — your lead habit.",
             style = MaterialTheme.typography.bodyLarge,
-            color = Color.Black
+            color = MaterialTheme.colorScheme.onSurface
         )
         Text(
             text = "Nail this first habit and everything else becomes easier. No overwhelm, just daily momentum.",
             style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF757575) // Gray text
+            color = MaterialTheme.colorScheme.onSurfaceVariant // Gray text
         )
     }
 }
