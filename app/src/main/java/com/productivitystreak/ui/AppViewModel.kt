@@ -59,6 +59,17 @@ class AppViewModel(
                 _uiState.update { it.copy(skillPathsState = skillPathsState) }
             }
         }
+
+        // Observe Theme Mode
+        viewModelScope.launch {
+            preferencesManager.themeMode.collect { mode ->
+                _uiState.update { 
+                    it.copy(
+                        profileState = it.profileState.copy(theme = mode)
+                    ) 
+                }
+            }
+        }
     }
 
     fun refreshQuote() {

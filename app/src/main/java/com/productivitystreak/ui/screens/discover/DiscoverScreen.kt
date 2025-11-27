@@ -169,7 +169,7 @@ private fun AssetLibrarySection(
     onAssetClick: (Asset) -> Unit
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text(
             text = "High-value asset library",
@@ -187,29 +187,35 @@ private fun AssetLibrarySection(
                 AssetCategory.BOOK_SUMMARIES -> "Book summaries"
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "See all",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable { /* TODO: Navigate to category */ }
+                    )
+                }
 
-                val rows = categoryAssets.chunked(2)
-                rows.forEach { rowAssets ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        rowAssets.forEach { asset ->
-                            AssetCard(
-                                asset = asset,
-                                modifier = Modifier.weight(1f),
-                                onClick = { onAssetClick(asset) }
-                            )
-                        }
-                        if (rowAssets.size == 1) {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp)
+                ) {
+                    items(categoryAssets) { asset ->
+                        AssetCard(
+                            asset = asset,
+                            modifier = Modifier.width(200.dp),
+                            onClick = { onAssetClick(asset) }
+                        )
                     }
                 }
             }

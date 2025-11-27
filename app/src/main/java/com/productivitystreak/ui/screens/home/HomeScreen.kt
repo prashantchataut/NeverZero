@@ -54,6 +54,11 @@ import com.productivitystreak.ui.theme.NeverZeroTheme
 import java.time.LocalTime
 import kotlinx.coroutines.delay
 
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+
 @Composable
 fun HomeScreen(
     uiState: AppUiState,
@@ -95,151 +100,137 @@ fun HomeScreen(
         )
     }
 
-    Column(
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 20.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        if (showRescue) {
-            RescueButton(
-                onClick = { showRescueDialog = true }
-            )
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = "$greeting, ${uiState.userName}",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Text(
-                    text = "Cognitive Performance",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            val streakColor = Color(0xFFFF5722)
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                // Animated Fire Icon
-                val infiniteTransition = androidx.compose.animation.core.rememberInfiniteTransition(label = "fire-pulse")
-                val fireScale by infiniteTransition.animateFloat(
-                    initialValue = 1f,
-                    targetValue = 1.2f,
-                    animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-                        animation = androidx.compose.animation.core.tween(1000, easing = androidx.compose.animation.core.FastOutSlowInEasing),
-                        repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
-                    ),
-                    label = "fire-scale"
-                )
-                val fireAlpha by infiniteTransition.animateFloat(
-                    initialValue = 0.8f,
-                    targetValue = 1f,
-                    animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-                        animation = androidx.compose.animation.core.tween(1000, easing = androidx.compose.animation.core.LinearEasing),
-                        repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
-                    ),
-                    label = "fire-alpha"
-                )
-
-                Icon(
-                    imageVector = Icons.Outlined.LocalFireDepartment,
-                    contentDescription = "Streak",
-                    tint = streakColor.copy(alpha = fireAlpha),
-                    modifier = Modifier.scale(fireScale)
-                )
-                Text(
-                    text = streakDays.toString(),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = streakColor
-                )
-            }
-        }
-
-        DailyUpgradeTile(
-            content = dailyContent,
-            onAction = {
-                dailyContent?.let { viewModel.onContentAction(it) }
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        val buddhaState = viewModel.buddhaInsightState.collectAsStateWithLifecycle().value
-        
-        LaunchedEffect(uiState.streaks) {
-            if (uiState.streaks.isNotEmpty()) {
-                viewModel.loadBuddhaInsight(uiState.streaks)
-            }
-        }
-        
-        com.productivitystreak.ui.components.BuddhaInsightCard(
-            state = buddhaState,
-            onRetry = { viewModel.retryBuddhaInsight(uiState.streaks) },
-            modifier = Modifier.fillMaxWidth()
-        )
-        
-        val sidequestState = viewModel.sidequest.collectAsStateWithLifecycle()
-        sidequestState.value?.let { quest ->
-            com.productivitystreak.ui.components.SidequestCard(
-                quest = quest,
-                onAccept = { /* TODO: Handle quest acceptance */ },
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-
-        Text(
-            text = "Today’s habits",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        var listVisible by remember { mutableStateOf(false) }
-        LaunchedEffect(Unit) {
-            listVisible = true
-        }
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            items(
-                items = uiState.todayTasks,
-                key = { it.id }
-            ) { task ->
-                val index = uiState.todayTasks.indexOf(task)
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = listVisible,
-                    enter = androidx.compose.animation.fadeIn(
-                        animationSpec = androidx.compose.animation.core.tween(
-                            durationMillis = 300,
-                            delayMillis = index * 50
-                        )
-                    ) + androidx.compose.animation.slideInVertically(
-                        animationSpec = androidx.compose.animation.core.spring(
-                            stiffness = androidx.compose.animation.core.Spring.StiffnessLow,
-                            dampingRatio = androidx.compose.animation.core.Spring.DampingRatioMediumBouncy
-                        ),
-                        initialOffsetY = { 50 }
+        // Header Section (Full Width)
+        item(span = { GridItemSpan(2) }) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                if (showRescue) {
+                    RescueButton(
+                        onClick = { showRescueDialog = true }
                     )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    HabitItemRow(
-                        task = task,
-                        onToggle = { onHabitToggle(task.id) },
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "$greeting, ${uiState.userName}",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Text(
+                            text = "Cognitive Performance",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    val streakColor = Color(0xFFFF5722)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        // Animated Fire Icon
+                        val infiniteTransition = androidx.compose.animation.core.rememberInfiniteTransition(label = "fire-pulse")
+                        val fireScale by infiniteTransition.animateFloat(
+                            initialValue = 1f,
+                            targetValue = 1.2f,
+                            animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+                                animation = androidx.compose.animation.core.tween(1000, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                                repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+                            ),
+                            label = "fire-scale"
+                        )
+                        val fireAlpha by infiniteTransition.animateFloat(
+                            initialValue = 0.8f,
+                            targetValue = 1f,
+                            animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+                                animation = androidx.compose.animation.core.tween(1000, easing = androidx.compose.animation.core.LinearEasing),
+                                repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+                            ),
+                            label = "fire-alpha"
+                        )
+
+                        Icon(
+                            imageVector = Icons.Outlined.LocalFireDepartment,
+                            contentDescription = "Streak",
+                            tint = streakColor.copy(alpha = fireAlpha),
+                            modifier = Modifier.scale(fireScale)
+                        )
+                        Text(
+                            text = streakDays.toString(),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = streakColor
+                        )
+                    }
+                }
+
+                DailyUpgradeTile(
+                    content = dailyContent,
+                    onAction = {
+                        dailyContent?.let { viewModel.onContentAction(it) }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                val buddhaState = viewModel.buddhaInsightState.collectAsStateWithLifecycle().value
+                
+                LaunchedEffect(uiState.streaks) {
+                    // Always try to load, even if empty (handled in ViewModel now)
+                    viewModel.loadBuddhaInsight(uiState.streaks)
+                }
+                
+                com.productivitystreak.ui.components.BuddhaInsightCard(
+                    state = buddhaState,
+                    onRetry = { viewModel.retryBuddhaInsight(uiState.streaks) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                val sidequestState = viewModel.sidequest.collectAsStateWithLifecycle()
+                sidequestState.value?.let { quest ->
+                    com.productivitystreak.ui.components.SidequestCard(
+                        quest = quest,
+                        onAccept = { /* TODO: Handle quest acceptance */ },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
+
+                Text(
+                    text = "Today’s Focus",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
             }
+        }
+
+        // Habits Grid (2 Columns)
+        items(
+            items = uiState.todayTasks,
+            key = { it.id }
+        ) { task ->
+            HabitItemRow(
+                task = task,
+                onToggle = { onHabitToggle(task.id) },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        
+        // Bottom Spacer
+        item(span = { GridItemSpan(2) }) {
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }
@@ -346,26 +337,68 @@ private fun HabitItemRow(
         },
         modifier = modifier
             .fillMaxWidth()
-            .scale(scale),
+            .scale(scale)
+            .androidx.compose.foundation.layout.aspectRatio(1f), // Make it square
         elevation = 2.dp
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = task.title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = task.category,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Top: Title
+                Text(
+                    text = task.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                
+                // Bottom: Status / Action
+                if (task.isCompleted) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.CheckCircle,
+                            contentDescription = "Done",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = "Done",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                } else {
+                    Text(
+                        text = "Tap to log",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+            
+            // Decorative dot
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 12.dp)
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (task.isCompleted) MaterialTheme.colorScheme.primary 
+                        else MaterialTheme.colorScheme.surfaceVariant
+                    )
             )
         }
     }

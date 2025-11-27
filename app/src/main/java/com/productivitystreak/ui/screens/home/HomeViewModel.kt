@@ -40,7 +40,8 @@ class HomeViewModel : ViewModel() {
     }
 
     fun loadBuddhaInsight(streaks: List<Streak>) {
-        if (streaks.isEmpty()) return
+        // Allow loading even if streaks are empty (for new users)
+        // if (streaks.isEmpty()) return
 
         // Don't reload if we already have a success state to avoid unnecessary API calls
         if (_buddhaInsightState.value is BuddhaInsightState.Success) return
