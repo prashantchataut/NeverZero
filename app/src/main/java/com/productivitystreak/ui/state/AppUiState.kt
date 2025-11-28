@@ -45,7 +45,8 @@ data class DashboardTask(
     val category: String,
     val streakId: String,
     val isCompleted: Boolean,
-    val accentHex: String
+    val accentHex: String,
+    val streakCount: Int = 0
 )
 
 enum class UiMessageType { SUCCESS, ERROR, INFO }

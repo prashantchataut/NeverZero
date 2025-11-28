@@ -280,7 +280,8 @@ class StreakViewModel(
                 category = streak.category,
                 streakId = streak.id,
                 isCompleted = streak.history.lastOrNull()?.metGoal == true,
-                accentHex = streak.color
+                accentHex = streak.color,
+                streakCount = streak.currentCount
             )
         }
     }

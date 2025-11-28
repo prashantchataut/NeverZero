@@ -187,7 +187,7 @@ fun ImprovedHabitRow(
                     modifier = Modifier
                         .size(4.dp, 40.dp)
                         .clip(RoundedCornerShape(2.dp))
-                        .background(Color(android.graphics.Color.parseColor(task.color)))
+                        .background(Color(android.graphics.Color.parseColor(task.accentHex)))
                 )
                 
                 Column {
