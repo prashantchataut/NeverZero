@@ -82,7 +82,8 @@ class AppViewModelFactory(private val application: Application) : ViewModelProvi
             }
             modelClass.isAssignableFrom(JournalViewModel::class.java) -> {
                 JournalViewModel(
-                    reflectionRepository = app.reflectionRepository
+                    reflectionRepository = app.reflectionRepository,
+                    geminiClient = app.geminiClient
                 ) as T
             }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

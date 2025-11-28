@@ -73,6 +73,8 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     onOpenNotificationsSettings: () -> Unit = {},
     onOpenVocabulary: () -> Unit = {},
+    onOpenJournal: () -> Unit = {},
+    onOpenTimeCapsule: () -> Unit = {},
     onRescueQuickAction: (streakId: String, value: Int) -> Unit = { _, _ -> }
 ) {
     val dailyContentState = viewModel.dailyContent.collectAsStateWithLifecycle()
@@ -106,17 +108,15 @@ fun HomeScreen(
         )
     }
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+    LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 20.dp),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // Header Section (Full Width)
-        item(span = { GridItemSpan(2) }) {
+        // Header Section
+        item {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 if (showRescue) {
                     RescueButton(
@@ -138,7 +138,7 @@ fun HomeScreen(
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         Text(
-                            text = "Cognitive Performance",
+                            text = "Let's make today count.",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -183,14 +183,12 @@ fun HomeScreen(
                         )
                     }
                 }
+                
+                // Journal Prompt
+                JournalPromptCard(onClick = onOpenJournal)
 
-                DailyUpgradeTile(
-                    content = dailyContent,
-                    onAction = {
-                        dailyContent?.let { viewModel.onContentAction(it) }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                // Time Capsule
+                TimeCapsuleCard(onClick = onOpenTimeCapsule)
 
                 val buddhaState = viewModel.buddhaInsightState.collectAsStateWithLifecycle().value
                 
@@ -222,12 +220,12 @@ fun HomeScreen(
             }
         }
 
-        // Habits Grid (2 Columns)
+        // Habits List
         items(
             items = uiState.todayTasks,
             key = { it.id }
         ) { task ->
-            HabitItemRow(
+            ImprovedHabitRow(
                 task = task,
                 onToggle = { onHabitToggle(task.id) },
                 modifier = Modifier.fillMaxWidth()
@@ -235,180 +233,12 @@ fun HomeScreen(
         }
         
         // Bottom Spacer
-        item(span = { GridItemSpan(2) }) {
+        item {
             Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }
 
-@Composable
-fun DailyUpgradeTile(
-    content: DailyContent?,
-    onAction: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    if (content == null) return
-
-    com.productivitystreak.ui.components.InteractiveCard(
-        onClick = onAction,
-        modifier = modifier,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
-        elevation = 2.dp
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Label with subtle background
-            androidx.compose.foundation.layout.Box(
-                modifier = Modifier
-                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
-            ) {
-                Text(
-                    text = "DAILY UPGRADE • ${content.type.name.replace("_", " ")}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                )
-            }
-
-            Text(
-                text = content.title,
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            content.subtitle?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Text(
-                text = content.content,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                lineHeight = 20.sp
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            com.productivitystreak.ui.components.PrimaryButton(
-                text = content.actionLabel,
-                onClick = onAction,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-    }
-}
-
-@Composable
-private fun HabitItemRow(
-    task: DashboardTask,
-    onToggle: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var tapped by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(
-        targetValue = if (tapped) 0.94f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium),
-        label = "habit-bounce"
-    )
-    val haptics = LocalHapticFeedback.current
-
-    LaunchedEffect(tapped) {
-        if (tapped) {
-            // Brief bounce before marking the habit as done.
-            delay(110)
-            onToggle()
-            tapped = false
-        }
-    }
-
-    com.productivitystreak.ui.components.InteractiveCard(
-        onClick = {
-            if (!tapped) {
-                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                tapped = true
-            }
-        },
-        modifier = modifier
-            .fillMaxWidth()
-            .scale(scale)
-            .aspectRatio(1f), // Make it square
-        elevation = 2.dp
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Top: Title
-                Text(
-                    text = task.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
-                
-                // Bottom: Status / Action
-                if (task.isCompleted) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.CheckCircle,
-                            contentDescription = "Done",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = "Done",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                } else {
-                    Text(
-                        text = "Tap to log",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-            
-            // Decorative dot
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(start = 12.dp)
-                    .size(8.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (task.isCompleted) MaterialTheme.colorScheme.primary 
-                        else MaterialTheme.colorScheme.surfaceVariant
-                    )
-            )
-        }
-    }
-}
 /**
  * Returns a friendly greeting based on the current local time.
  */

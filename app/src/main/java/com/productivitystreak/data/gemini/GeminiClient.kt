@@ -190,6 +190,23 @@ class GeminiClient private constructor() {
         }
     }
 
+    suspend fun generateJournalFeedback(entry: String): String = withContext(Dispatchers.IO) {
+        val generativeModel = model ?: return@withContext "Reflect on this moment. It is a stepping stone."
+        val prompt = """
+            You are a wise, stoic mentor (like Marcus Aurelius or Buddha). 
+            Read this journal entry: "$entry"
+            Provide a short, 1-2 sentence personalized reflection or advice. 
+            Be encouraging but deep. No "Good job" or generic praise.
+        """.trimIndent()
+        try {
+            val response = generativeModel.generateContent(content { text(prompt) })
+            response.text?.trim() ?: "Reflect on this moment. It is a stepping stone."
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to generate journal feedback", e)
+            "Reflect on this moment. It is a stepping stone."
+        }
+    }
+
     companion object {
         private const val TAG = "GeminiClient"
         private const val MODEL_NAME = "models/gemini-2.5-flash"

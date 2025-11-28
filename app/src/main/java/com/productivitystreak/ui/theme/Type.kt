@@ -9,7 +9,7 @@ import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.sp
 import com.productivitystreak.R
 
-private val interFont = GoogleFont("Inter")
+private val interFont = GoogleFont("Poppins")
 
 private val googleFontProvider = GoogleFont.Provider(
     providerAuthority = "com.google.android.gms.fonts",

@@ -10,7 +10,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class JournalViewModel(
-    private val reflectionRepository: ReflectionRepository
+    private val reflectionRepository: ReflectionRepository,
+    private val geminiClient: com.productivitystreak.data.gemini.GeminiClient
 ) : ViewModel() {
 
     private val _isSubmitting = MutableStateFlow(false)
@@ -18,6 +19,9 @@ class JournalViewModel(
     
     private val _uiMessage = MutableStateFlow<String?>(null)
     val uiMessage: StateFlow<String?> = _uiMessage.asStateFlow()
+
+    private val _buddhaResponse = MutableStateFlow<String?>(null)
+    val buddhaResponse: StateFlow<String?> = _buddhaResponse.asStateFlow()
 
     fun onSubmitJournalEntry(
         mood: Int,
@@ -47,6 +51,11 @@ class JournalViewModel(
                     tomorrowGoals = cleanedTomorrow
                 )
                 _uiMessage.value = "Journal entry saved"
+                
+                // Generate Buddha's Response
+                val response = geminiClient.generateJournalFeedback(trimmedNotes)
+                _buddhaResponse.value = response
+                
             } catch (e: Exception) {
                 Log.e("JournalViewModel", "Error saving journal entry", e)
                 _uiMessage.value = "Couldn’t save journal entry. Please retry."
@@ -58,5 +67,9 @@ class JournalViewModel(
     
     fun clearMessage() {
         _uiMessage.value = null
+    }
+
+    fun clearBuddhaResponse() {
+        _buddhaResponse.value = null
     }
 }

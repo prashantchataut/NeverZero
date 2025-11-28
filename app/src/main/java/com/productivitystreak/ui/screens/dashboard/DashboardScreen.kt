@@ -31,14 +31,12 @@ fun DashboardScreen(
     onToggleOneOffTask: (String) -> Unit,
     onDeleteOneOffTask: (String) -> Unit,
     onAssetSelected: (String) -> Unit,
+    onOpenJournal: () -> Unit = {},
+    onOpenTimeCapsule: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    
-    // Calculate total streak (sum of all current streaks or max streak - simplified to max for now)
     val maxStreak = streakUiState.streaks.maxOfOrNull { it.currentCount } ?: 0
-
     var showAddTaskDialog by remember { mutableStateOf(false) }
-    val showConfetti by remember { mutableStateOf(false) }
 
     if (showAddTaskDialog) {
         AddTaskDialog(
@@ -50,132 +48,101 @@ fun DashboardScreen(
         )
     }
 
-    Box(
+    androidx.compose.foundation.lazy.LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .background(NeverZeroTheme.designColors.background)
+            .padding(horizontal = Spacing.md),
+        contentPadding = PaddingValues(vertical = Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.lg)
     ) {
-        BentoGrid(
-            contentPadding = PaddingValues(
-                start = Spacing.md,
-                end = Spacing.md,
-                top = Spacing.lg,
-                bottom = 100.dp // Space for bottom nav
+        // 1. Header
+        item {
+            DashboardHeader(userName = uiState.userName)
+        }
+
+        // 2. Journal & Time Capsule
+        item {
+            com.productivitystreak.ui.screens.home.JournalPromptCard(onClick = onOpenJournal)
+        }
+        item {
+            com.productivitystreak.ui.screens.home.TimeCapsuleCard(onClick = onOpenTimeCapsule)
+        }
+
+        // 3. Buddha Insight
+        item {
+            streakUiState.buddhaInsight?.let { insight ->
+                BuddhaInsightCard(
+                    insight = insight,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
+        // 4. Today's Focus
+        item {
+            Text(
+                text = "TODAY'S FOCUS",
+                style = MaterialTheme.typography.labelMedium,
+                color = NeverZeroTheme.designColors.textSecondary
             )
-        ) {
-            // 1. Greeting (Full Width)
-            fullWidthItem {
-                StaggeredEntryAnimation(index = 0) {
-                    DashboardHeader(userName = uiState.userName)
-                }
-            }
+        }
 
-            // 2. Hero Streak Widget (Full Width for impact)
-            fullWidthItem {
-                StaggeredEntryAnimation(index = 1) {
-                    HeroStreakWidget(streakCount = maxStreak)
-                }
-            }
-
-            // 3. Quick Actions (Full Width)
-            fullWidthItem {
-                StaggeredEntryAnimation(index = 2) {
-                    QuickActionsWidget(
-                        onAddHabit = onAddHabitClick,
-                        onViewStats = { /* Navigate to stats */ },
-                        onSettings = { /* Navigate to settings */ }
-                    )
-                }
-            }
-
-            // 4. Buddha Insight
+        if (streakUiState.todayTasks.isEmpty()) {
             item {
-                streakUiState.buddhaInsight?.let { insight ->
-                    StaggeredEntryAnimation(index = 4) {
-                        BuddhaInsightCard(
-                            insight = insight,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
+                DashboardEmptyState(onAddHabitClick = onAddHabitClick)
             }
+        } else {
+            items(streakUiState.todayTasks.size) { index ->
+                val task = streakUiState.todayTasks[index]
+                com.productivitystreak.ui.screens.home.ImprovedHabitRow(
+                    task = task,
+                    onToggle = { onToggleTask(task.id) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(Spacing.sm))
+            }
+        }
 
-            // 5. Today's Habits Header (Full Width)
-            fullWidthItem {
-                StaggeredEntryAnimation(index = 5) {
-                    Text(
-                        text = "TODAY'S FOCUS",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = NeverZeroTheme.designColors.textSecondary,
-                        modifier = Modifier.padding(top = Spacing.md, bottom = Spacing.sm)
+        // 5. Quick Tasks
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "QUICK TASKS",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = NeverZeroTheme.designColors.textSecondary
+                )
+                IconButton(
+                    onClick = { showAddTaskDialog = true },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Add Task",
+                        tint = NeverZeroTheme.designColors.primary
                     )
                 }
             }
+        }
 
-            // 6. Habits List (Full Width items for now, could be grid)
-            if (streakUiState.todayTasks.isEmpty()) {
-                fullWidthItem {
-                    StaggeredEntryAnimation(index = 6) {
-                        DashboardEmptyState(onAddHabitClick = onAddHabitClick)
-                    }
-                }
-            } else {
-                items(streakUiState.todayTasks.size) { index ->
-                    val task = streakUiState.todayTasks[index]
-                    StaggeredEntryAnimation(index = 6 + index) {
-                        DashboardTaskRow(
-                            task = task,
-                            onToggle = { onToggleTask(task.id) },
-                            showConfetti = showConfetti
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(Spacing.sm))
-                }
+        if (streakUiState.oneOffTasks.isNotEmpty()) {
+            items(streakUiState.oneOffTasks.size) { index ->
+                val task = streakUiState.oneOffTasks[index]
+                OneOffTaskRow(
+                    task = task,
+                    onToggle = { onToggleOneOffTask(task.id) },
+                    onDelete = { onDeleteOneOffTask(task.id) }
+                )
+                Spacer(modifier = Modifier.height(Spacing.sm))
             }
-            
-            // 7. Quick Tasks Header
-             fullWidthItem {
-                 StaggeredEntryAnimation(index = 10) { // Arbitrary index offset
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = Spacing.lg, bottom = Spacing.sm),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "QUICK TASKS",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = NeverZeroTheme.designColors.textSecondary
-                        )
-                        IconButton(
-                            onClick = { showAddTaskDialog = true },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Add,
-                                contentDescription = "Add Task",
-                                tint = NeverZeroTheme.designColors.primary
-                            )
-                        }
-                    }
-                }
-            }
-
-            // 8. Quick Tasks List
-             if (streakUiState.oneOffTasks.isNotEmpty()) {
-                items(streakUiState.oneOffTasks.size) { index ->
-                    val task = streakUiState.oneOffTasks[index]
-                    StaggeredEntryAnimation(index = 11 + index) {
-                        OneOffTaskRow(
-                            task = task,
-                            onToggle = { onToggleOneOffTask(task.id) },
-                            onDelete = { onDeleteOneOffTask(task.id) }
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(Spacing.sm))
-                }
-            }
+        }
+        
+        item {
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }

@@ -30,6 +30,9 @@ class OnboardingViewModel(
     private val _showOnboarding = MutableStateFlow(true)
     val showOnboarding: StateFlow<Boolean> = _showOnboarding.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     init {
         loadOnboardingState()
     }
@@ -38,6 +41,7 @@ class OnboardingViewModel(
         viewModelScope.launch {
             preferencesManager.onboardingCompleted.collect { completed ->
                 _showOnboarding.value = !completed
+                _isLoading.value = false
             }
         }
         // Load other onboarding prefs if needed

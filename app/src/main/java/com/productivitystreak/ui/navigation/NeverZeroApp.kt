@@ -113,6 +113,14 @@ fun NeverZeroApp(
 
     // FTUE: Immersive onboarding flow
     val showOnboarding by onboardingViewModel.showOnboarding.collectAsStateWithLifecycle()
+    val isAuthLoading by onboardingViewModel.isLoading.collectAsStateWithLifecycle()
+
+    if (isAuthLoading) {
+        // Show a blank screen or a splash logo while loading preference
+        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
+        return
+    }
+
     if (showOnboarding) {
         val onboardingState by onboardingViewModel.uiState.collectAsStateWithLifecycle()
         OnboardingFlow(
@@ -356,6 +364,16 @@ fun NeverZeroApp(
                                 onDismissLesson = vocabularyViewModel::resetTeachUiState
                             )
                         }
+                        AddEntryType.TIME_CAPSULE -> {
+                            com.productivitystreak.ui.screens.add.TimeCapsuleFormSheet(
+                                isSubmitting = addUi.isSubmitting,
+                                onSubmit = { message, goal, days ->
+                                    profileViewModel.onCreateTimeCapsule(message, goal, days)
+                                    appViewModel.setAddSubmitting(true)
+                                    appViewModel.completeAddFlow()
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -389,6 +407,57 @@ fun NeverZeroApp(
                             selectedAssetId = null
                         }
                     )
+                }
+            }
+
+            // Buddha Response Dialog
+            val buddhaResponse by journalViewModel.buddhaResponse.collectAsStateWithLifecycle()
+            buddhaResponse?.let { response ->
+                androidx.compose.ui.window.Dialog(
+                    onDismissRequest = {
+                        journalViewModel.clearBuddhaResponse()
+                        appViewModel.completeAddFlow()
+                    }
+                ) {
+                    Card(
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Spa,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Text(
+                                text = "A Moment of Reflection",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                text = response,
+                                style = MaterialTheme.typography.bodyLarge,
+                                textAlign = TextAlign.Center,
+                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            com.productivitystreak.ui.components.PrimaryButton(
+                                text = "Continue",
+                                onClick = {
+                                    journalViewModel.clearBuddhaResponse()
+                                    appViewModel.completeAddFlow()
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -489,9 +558,9 @@ private fun NavItem(
         verticalArrangement = Arrangement.spacedBy(2.dp),
         modifier = Modifier
             .scale(scale)
-            .clip(RoundedCornerShape(999.dp))
+            .clip(RoundedCornerShape(12.dp)) // Less aggressive rounding
             .clickable(onClick = onClick)
-            .padding(horizontal = 4.dp, vertical = 2.dp)
+            .padding(horizontal = 8.dp, vertical = 4.dp) // More padding
     ) {
         Icon(
             imageVector = icon,
@@ -503,8 +572,8 @@ private fun NavItem(
             style = MaterialTheme.typography.labelSmall,
             color = color,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            fontSize = 11.sp,
+            softWrap = false,
+            fontSize = 10.sp, // Slightly smaller to fit
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
         )
     }
