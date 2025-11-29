@@ -4,6 +4,7 @@ import com.productivitystreak.data.model.Quote
 import com.productivitystreak.data.model.UserContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.firstOrNull
 import kotlin.random.Random
 
 class QuoteRepository(
