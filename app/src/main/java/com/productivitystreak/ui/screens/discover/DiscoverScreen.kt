@@ -179,12 +179,13 @@ private fun AssetLibrarySection(
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                    val context = androidx.compose.ui.platform.LocalContext.current
                     Text(
                         text = "See all",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.clickable { 
-                            android.widget.Toast.makeText(androidx.compose.ui.platform.LocalContext.current, "More $label coming soon", android.widget.Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(context, "More $label coming soon", android.widget.Toast.LENGTH_SHORT).show()
                         }
                     )
                 }
@@ -406,7 +407,8 @@ private fun CommunityStoryAvatar(story: CommunityStory, isOnline: Boolean) {
 }
 
 @Composable
-private fun FocusAreaChip(item: CategoryItem) {
+private fun FocusAreaItem(item: FocusArea) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val primary = MaterialTheme.colorScheme.primary
     val accent = remember(item.accentHex) {
         runCatching { Color(android.graphics.Color.parseColor(item.accentHex)) }
@@ -419,7 +421,7 @@ private fun FocusAreaChip(item: CategoryItem) {
             .background(MaterialTheme.colorScheme.surface)
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
             .clickable { 
-                android.widget.Toast.makeText(androidx.compose.ui.platform.LocalContext.current, "Category: ${item.title}", android.widget.Toast.LENGTH_SHORT).show()
+                android.widget.Toast.makeText(context, "Category: ${item.title}", android.widget.Toast.LENGTH_SHORT).show()
             }
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {

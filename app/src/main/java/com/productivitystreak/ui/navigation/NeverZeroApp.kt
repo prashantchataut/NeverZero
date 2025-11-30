@@ -239,8 +239,8 @@ fun NeverZeroApp(
                 targetState = currentDestination,
                 transitionSpec = {
                     (androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(300)) +
-                            androidx.compose.animation.scaleIn(initialScale = 0.95f, animationSpec = androidx.compose.animation.core.tween(300)))
-                        .togetherWith(androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(300)))
+                            androidx.compose.animation.scaleIn(initialScale = 0.95f, animationSpec = androidx.compose.animation.core.tween(300))) with
+                            androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(300))
                 },
                 label = "main-nav"
             ) { destination ->

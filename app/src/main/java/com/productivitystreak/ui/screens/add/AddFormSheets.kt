@@ -76,6 +76,7 @@ import androidx.compose.ui.unit.sp
 import com.productivitystreak.data.gemini.TeachingLesson
 import com.productivitystreak.ui.state.AddEntryType
 import com.productivitystreak.ui.state.vocabulary.TeachWordUiState
+import com.productivitystreak.ui.state.vocabulary.VocabularyWord
 
 @Composable
 fun AddEntryMenuSheet(

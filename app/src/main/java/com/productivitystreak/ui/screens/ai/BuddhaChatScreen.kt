@@ -53,7 +53,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.productivitystreak.data.ai.BuddhaRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BuddhaChatScreen(
     onBackClick: () -> Unit,
