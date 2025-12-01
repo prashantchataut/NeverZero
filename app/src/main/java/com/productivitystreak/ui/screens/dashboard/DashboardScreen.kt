@@ -115,6 +115,76 @@ fun DashboardScreen(
         }
 
         // 3. Tasks (To-Do List Focus)
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = Spacing.md),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "TASKS",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = NeverZeroTheme.designColors.textSecondary
+                )
+                IconButton(
+                    onClick = { 
+                        performHaptic()
+                        showAddTaskDialog = true 
+                    },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Add Task",
+                        tint = NeverZeroTheme.designColors.primary
+                    )
+                }
+            }
+        }
+
+        if (streakUiState.oneOffTasks.isNotEmpty()) {
+            items(streakUiState.oneOffTasks.size) { index ->
+                val task = streakUiState.oneOffTasks[index]
+                OneOffTaskRow(
+                    task = task,
+                    onToggle = { 
+                        performHaptic()
+                        onToggleOneOffTask(task.id) 
+                    },
+                    onDelete = { 
+                        performHaptic()
+                        onDeleteOneOffTask(task.id) 
+                    }
+                )
+                Spacer(modifier = Modifier.height(Spacing.sm))
+            }
+        } else {
+            item {
+                // Empty state for tasks to encourage usage
+                com.productivitystreak.ui.components.GlassCard(
+                    modifier = Modifier.fillMaxWidth().clickable { showAddTaskDialog = true },
+                    contentPadding = PaddingValues(16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Add a task for today",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
         }
 
         // 4. Teach Me a Word (AI Highlight)

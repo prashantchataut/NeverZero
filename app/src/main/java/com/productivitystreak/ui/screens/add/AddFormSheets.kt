@@ -97,10 +97,11 @@ fun AddEntryMenuSheet(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Text(
                 text = "What would you like to do?",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
         // Actions List
         CommandCenterItem(
             icon = com.productivitystreak.ui.icons.AppIcons.AddHabit,
