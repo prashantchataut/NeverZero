@@ -239,6 +239,17 @@ private fun LeaderboardSection(
                             onClick = { onEntrySelected(entry) }
                         )
                     }
+
+                androidx.compose.material3.TextButton(
+                    onClick = onOpenLeaderboard,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "View Full Leaderboard",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         }
     }

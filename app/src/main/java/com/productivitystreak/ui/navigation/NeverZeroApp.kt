@@ -374,7 +374,8 @@ fun NeverZeroApp(
                                     appViewModel.setAddSubmitting(true)
                                     appViewModel.completeAddFlow()
                                 },
-                                onDismissLesson = vocabularyViewModel::resetTeachUiState
+                                onDismissLesson = vocabularyViewModel::resetTeachUiState,
+                                onNextWord = vocabularyViewModel::suggestNewWord
                             )
                         }
                         AddEntryType.TIME_CAPSULE -> {

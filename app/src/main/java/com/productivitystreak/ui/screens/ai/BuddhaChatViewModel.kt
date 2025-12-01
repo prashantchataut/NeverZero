@@ -57,8 +57,12 @@ class BuddhaChatViewModel(
                     _uiState.value = _uiState.value.copy(isLoading = false) // Handle error/empty
                 }
             } catch (e: Exception) {
+                // Log the actual error for debugging
+                android.util.Log.e("BuddhaChat", "Error generating response", e)
+                
                 val updatedMessages = _uiState.value.messages.toMutableList()
-                updatedMessages.add(BuddhaChatMessage("silence is also an answer. (error: ${e.message})", isUser = false))
+                // Show a mystical, thematic error message instead of raw technical details
+                updatedMessages.add(BuddhaChatMessage("The cosmos is silent right now. Please try again later.", isUser = false))
                 _uiState.value = _uiState.value.copy(messages = updatedMessages, isLoading = false)
             }
         }
