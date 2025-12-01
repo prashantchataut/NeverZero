@@ -31,8 +31,7 @@ class AICoach(
         """.trimIndent()
 
         try {
-            val response = geminiClient.model?.generateContent(com.google.ai.client.generativeai.type.content { text(prompt) })
-            response?.text?.trim().takeUnless { it.isNullOrEmpty() } ?: "Stay hard. Keep pushing."
+            geminiClient.generateMotivationPrompt(prompt)
         } catch (e: Exception) {
             "Focus on the process. The results will follow."
         }

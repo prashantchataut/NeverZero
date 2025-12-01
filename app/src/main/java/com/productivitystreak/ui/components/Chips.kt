@@ -55,7 +55,7 @@ fun StyledFilterChip(
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = "Selected",
-                    modifier = Modifier.size(IconSize.small)
+                    modifier = Modifier.size(Size.iconSmall)
                 )
             }
         } else if (leadingIcon != null) {
@@ -63,7 +63,7 @@ fun StyledFilterChip(
                 Icon(
                     imageVector = leadingIcon,
                     contentDescription = null,
-                    modifier = Modifier.size(IconSize.small)
+                    modifier = Modifier.size(Size.iconSmall)
                 )
             }
         } else null,
@@ -97,7 +97,7 @@ fun SuggestionChip(
                 Icon(
                     imageVector = it,
                     contentDescription = null,
-                    modifier = Modifier.size(IconSize.small)
+                    modifier = Modifier.size(Size.iconSmall)
                 )
             }
         },
@@ -131,7 +131,7 @@ fun StyledInputChip(
                 Icon(
                     imageVector = it,
                     contentDescription = null,
-                    modifier = Modifier.size(IconSize.small)
+                    modifier = Modifier.size(Size.iconSmall)
                 )
             }
         },
@@ -139,12 +139,12 @@ fun StyledInputChip(
             {
                 IconButton(
                     onClick = onRemove,
-                    modifier = Modifier.size(IconSize.medium)
+                    modifier = Modifier.size(Size.iconMedium)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Remove",
-                        modifier = Modifier.size(IconSize.small)
+                        modifier = Modifier.size(Size.iconSmall)
                     )
                 }
             }
@@ -180,7 +180,7 @@ fun AssistChip(
                 Icon(
                     imageVector = it,
                     contentDescription = null,
-                    modifier = Modifier.size(IconSize.small)
+                    modifier = Modifier.size(Size.iconSmall)
                 )
             }
         },
@@ -189,7 +189,7 @@ fun AssistChip(
                 Icon(
                     imageVector = it,
                     contentDescription = null,
-                    modifier = Modifier.size(IconSize.small)
+                    modifier = Modifier.size(Size.iconSmall)
                 )
             }
         },
@@ -256,7 +256,7 @@ fun ColorChip(
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = "Selected",
-                    modifier = Modifier.size(IconSize.small),
+                    modifier = Modifier.size(Size.iconSmall),
                     tint = color
                 )
             }
