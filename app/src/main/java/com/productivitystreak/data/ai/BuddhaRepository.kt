@@ -20,19 +20,29 @@ class BuddhaRepository {
             generativeModel = null
             isMockMode = true
         } else {
-            generativeModel = GenerativeModel(
-                modelName = "gemini-1.5-flash",
-                apiKey = apiKey,
-                systemInstruction = content { text(BUDDHA_SYSTEM_PROMPT) },
-                generationConfig = generationConfig {
-                    temperature = 0.9f
-                    topK = 40
-                    topP = 0.95f
-                    maxOutputTokens = 100
-                    responseMimeType = "text/plain"
-                }
-            )
-            isMockMode = false
+            var model: GenerativeModel? = null
+            var mock = false
+            try {
+                model = GenerativeModel(
+                    modelName = "gemini-1.5-flash",
+                    apiKey = apiKey,
+                    systemInstruction = content { text(BUDDHA_SYSTEM_PROMPT) },
+                    generationConfig = generationConfig {
+                        temperature = 0.9f
+                        topK = 40
+                        topP = 0.95f
+                        maxOutputTokens = 100
+                        responseMimeType = "text/plain"
+                    }
+                )
+                mock = false
+            } catch (e: Exception) {
+                android.util.Log.e("BuddhaRepository", "Failed to initialize Gemini", e)
+                model = null
+                mock = true
+            }
+            generativeModel = model
+            isMockMode = mock
         }
     }
 

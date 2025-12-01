@@ -192,30 +192,6 @@ fun DashboardScreen(
 
         // 4. Teach Me a Word (AI Highlight)
         item {
-            com.productivitystreak.ui.screens.dashboard.components.TeachWordWidget(
-                onClick = { 
-                    performHaptic()
-                    onAddEntrySelected(AddEntryType.TEACH) 
-                }
-            )
-        }
-
-        // 5. Buddha's Wisdom
-        item {
-            streakUiState.buddhaInsight?.let { insight ->
-                BuddhaInsightCard(
-                    insight = insight,
-                    onRefresh = {
-                        performHaptic(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
-                        onRefreshQuote()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { 
-                            performHaptic()
-                            onOpenBuddhaChat() 
-                        }
-                )
             }
         }
 

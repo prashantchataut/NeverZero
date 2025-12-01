@@ -297,6 +297,7 @@ fun NeverZeroApp(
                         val streakState by streakViewModel.uiState.collectAsStateWithLifecycle()
                         StatsScreen(
                             statsState = streakState.statsState,
+                            onLeaderboardTypeSelected = streakViewModel::toggleLeaderboardType,
                             onOpenLeaderboard = { showLeaderboard = true }
                         )
                     }
@@ -325,7 +326,14 @@ fun NeverZeroApp(
             if (isSheetVisible) {
                 ModalBottomSheet(
                     onDismissRequest = {
-                        if (addUi.activeForm != null) onDismissAddForm() else onDismissAddMenu()
+                        // Use a coroutine to avoid blocking the UI thread during dismissal
+                        scope.launch {
+                            if (addUi.activeForm != null) {
+                                onDismissAddForm()
+                            } else {
+                                onDismissAddMenu()
+                            }
+                        }
                     },
                     sheetState = sheetState,
                     shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
