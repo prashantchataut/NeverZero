@@ -61,13 +61,16 @@ fun DashboardScreen(
     val haptics = androidx.compose.ui.platform.LocalHapticFeedback.current
     val hapticsEnabled = uiState.profileState.hapticsEnabled
 
-    fun performHaptic(type: androidx.compose.ui.hapticfeedback.HapticFeedbackType = androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress) {
+    fun performHaptic(type: androidx.compose.ui.hapticfeedback.HapticFeedbackType = com.productivitystreak.ui.theme.HapticTokens.Impact) {
         if (hapticsEnabled) {
             haptics.performHapticFeedback(type)
         }
     }
 
+    val scrollState = androidx.compose.foundation.lazy.rememberLazyListState()
+
     androidx.compose.foundation.lazy.LazyColumn(
+        state = scrollState,
         modifier = modifier
             .fillMaxSize()
             .background(NeverZeroTheme.designColors.background)
@@ -77,25 +80,39 @@ fun DashboardScreen(
     ) {
         // 1. Header
         item {
-            DashboardHeader(userName = uiState.userName)
+            val habitsCompleted = uiState.todayTasks.count { it.isCompleted }
+            val totalHabits = uiState.todayTasks.size
+            val currentStreak = uiState.statsState.currentLongestStreak
+
+            DashboardHeader(
+                userName = uiState.userName,
+                currentStreak = currentStreak,
+                habitsCompleted = habitsCompleted,
+                totalHabits = totalHabits,
+                scrollOffset = scrollState.firstVisibleItemScrollOffset
+            )
         }
 
-        // 2. Today's Focus (Top Priority)
+        // 2. Today's Focus (Horizontal Swipeable Cards)
         item {
             Text(
                 text = "TODAY'S FOCUS",
-                style = MaterialTheme.typography.labelMedium,
-                color = NeverZeroTheme.designColors.textSecondary
+                style = MaterialTheme.typography.labelLarge,
+                color = NeverZeroTheme.designColors.textSecondary,
+                modifier = Modifier.padding(bottom = Spacing.sm)
             )
         }
 
         if (streakUiState.isLoading) {
-            items(3) {
-                com.productivitystreak.ui.components.GlassCard(
-                    modifier = Modifier.fillMaxWidth().height(80.dp),
-                    content = {}
-                )
-                Spacer(modifier = Modifier.height(Spacing.sm))
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                    repeat(2) {
+                        com.productivitystreak.ui.components.GlassCard(
+                            modifier = Modifier.width(280.dp).height(160.dp),
+                            content = {}
+                        )
+                    }
+                }
             }
         } else if (streakUiState.todayTasks.isEmpty()) {
             item {
@@ -105,17 +122,30 @@ fun DashboardScreen(
                 })
             }
         } else {
-            items(streakUiState.todayTasks.size) { index ->
-                val task = streakUiState.todayTasks[index]
-                com.productivitystreak.ui.screens.home.ImprovedHabitRow(
-                    task = task,
-                    onToggle = { 
-                        performHaptic(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                        onToggleTask(task.id) 
-                    },
+            item {
+                androidx.compose.foundation.lazy.LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                    contentPadding = PaddingValues(end = Spacing.md),
                     modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(Spacing.sm))
+                ) {
+                    items(
+                        items = streakUiState.todayTasks,
+                        key = { it.id }
+                    ) { task ->
+                        com.productivitystreak.ui.screens.dashboard.components.SwipeableHabitCard(
+                            task = task,
+                            onComplete = {
+                                performHaptic(com.productivitystreak.ui.theme.HapticTokens.Success)
+                                onToggleTask(task.id)
+                            },
+                            onSkip = {
+                                performHaptic(com.productivitystreak.ui.theme.HapticTokens.Impact)
+                                // TODO: Implement skip logic in ViewModel
+                            },
+                            modifier = Modifier.width(300.dp)
+                        )
+                    }
+                }
             }
         }
 
@@ -128,7 +158,7 @@ fun DashboardScreen(
             ) {
                 Text(
                     text = "TASKS",
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelLarge,
                     color = NeverZeroTheme.designColors.textSecondary
                 )
                 IconButton(
@@ -238,7 +268,7 @@ fun DashboardScreen(
         item {
             Text(
                 text = "DAILY DISCIPLINES",
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelLarge,
                 color = NeverZeroTheme.designColors.textSecondary,
                 modifier = Modifier.padding(top = Spacing.md, bottom = Spacing.sm)
             )
@@ -283,17 +313,27 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun DashboardHeader(userName: String) {
-    Column(modifier = Modifier.padding(bottom = Spacing.sm)) {
-        Text(
-            text = "Welcome back,",
-            style = MaterialTheme.typography.bodyLarge,
-            color = NeverZeroTheme.designColors.textSecondary
-        )
-        Text(
-            text = userName,
-            style = MaterialTheme.typography.displaySmall, // Bold from Type.kt update
-            color = NeverZeroTheme.designColors.textPrimary
-        )
-    }
+private fun DashboardHeader(
+    userName: String,
+    currentStreak: Int,
+    habitsCompleted: Int,
+    totalHabits: Int,
+    scrollOffset: Int = 0
+) {
+    // We need to update HeroSection usage here, but wait, DashboardHeader currently just shows Text.
+    // The previous HeroSection was likely used inside DashboardHeader or replaced it.
+    // Let's check the file content again. Ah, DashboardHeader in the file I read (Step 154) ONLY has Text.
+    // It seems I need to REPLACE the Text with the HeroSection component!
+    
+    // Wait, the plan says "Integrate HeroSection".
+    // So I should replace the simple Text header with the HeroSection component.
+    
+    com.productivitystreak.ui.screens.dashboard.components.HeroSection(
+        userName = userName,
+        currentStreak = currentStreak,
+        habitsCompleted = habitsCompleted,
+        totalHabits = totalHabits,
+        scrollOffset = scrollOffset,
+        modifier = Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(24.dp))
+    )
 }

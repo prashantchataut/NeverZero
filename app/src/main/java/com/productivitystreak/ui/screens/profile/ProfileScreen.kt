@@ -56,8 +56,8 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+            .padding(horizontal = com.productivitystreak.ui.theme.Spacing.lg, vertical = com.productivitystreak.ui.theme.Spacing.md),
+        verticalArrangement = Arrangement.spacedBy(com.productivitystreak.ui.theme.Spacing.xl)
     ) {
         // 1. Profile Header
         ProfileHeader(
@@ -119,7 +119,7 @@ fun ProfileScreen(
             LegalLinks(profileState)
         }
         
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(com.productivitystreak.ui.theme.Spacing.xxxl))
     }
 
     if (showTimeCapsuleSheet) {
@@ -168,7 +168,7 @@ private fun SettingsSection(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(start = 4.dp)
+            modifier = Modifier.padding(start = com.productivitystreak.ui.theme.Spacing.xxs)
         )
         content()
     }

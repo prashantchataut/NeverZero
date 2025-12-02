@@ -71,6 +71,10 @@ class NeverZeroApplication : Application() {
         }
 
         // Schedule ghost notifications
-        ghostScheduler.schedule()
+        try {
+            ghostScheduler.schedule()
+        } catch (e: Exception) {
+            android.util.Log.e("NeverZeroApp", "Failed to schedule ghost notifications", e)
+        }
     }
 }

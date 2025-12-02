@@ -218,12 +218,12 @@ fun NeverZeroApp(
                     if (destination == MainDestination.HOME && currentDestination == MainDestination.HOME) return@NeverZeroBottomBar
                     currentDestination = destination
                     if (uiState.profileState.hapticsEnabled) {
-                        haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        haptics.performHapticFeedback(com.productivitystreak.ui.theme.HapticTokens.Selection)
                     }
                 },
                 onAddTapped = {
                     if (uiState.profileState.hapticsEnabled) {
-                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        haptics.performHapticFeedback(com.productivitystreak.ui.theme.HapticTokens.Impact)
                     }
                     onAddButtonTapped()
                 },
@@ -239,9 +239,9 @@ fun NeverZeroApp(
             AnimatedContent(
                 targetState = currentDestination,
                 transitionSpec = {
-                    (androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(300)) +
-                            androidx.compose.animation.scaleIn(initialScale = 0.95f, animationSpec = androidx.compose.animation.core.tween(300))) with
-                            androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(300))
+                    (androidx.compose.animation.fadeIn(com.productivitystreak.ui.theme.AnimationPresets.screenTransition()) +
+                            androidx.compose.animation.scaleIn(initialScale = 0.95f, animationSpec = com.productivitystreak.ui.theme.AnimationPresets.screenTransition())) with
+                            androidx.compose.animation.fadeOut(com.productivitystreak.ui.theme.AnimationPresets.screenTransition())
                 },
                 label = "main-nav"
             ) { destination ->

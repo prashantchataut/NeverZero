@@ -25,6 +25,23 @@ import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.Spa
 import androidx.compose.material.icons.automirrored.rounded.TrendingUp
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
@@ -50,6 +67,32 @@ object AppIcons {
     // Vibration icon better represents haptic feedback than headphones
     val Haptics: ImageVector = Icons.Outlined.Vibration
     val Default: ImageVector = Icons.Outlined.CheckCircle
+    
+    // Navigation
+    val Home: ImageVector = Icons.Outlined.Home
+    val HomeSelected: ImageVector = Icons.Filled.Home
+    val Stats: ImageVector = Icons.Outlined.BarChart
+    val StatsSelected: ImageVector = Icons.Filled.BarChart
+    val Profile: ImageVector = Icons.Outlined.Person
+    val ProfileSelected: ImageVector = Icons.Filled.Person
+    val Mentor: ImageVector = Icons.Rounded.Spa
+    val MentorSelected: ImageVector = Icons.Rounded.Spa
+
+    // Actions
+    val Add: ImageVector = Icons.Rounded.Add
+    val Close: ImageVector = Icons.Rounded.Close
+    val Back: ImageVector = Icons.AutoMirrored.Rounded.ArrowBack
+    val Settings: ImageVector = Icons.Outlined.Settings
+    val Edit: ImageVector = Icons.Outlined.Edit
+    val Delete: ImageVector = Icons.Outlined.Delete
+    val Share: ImageVector = Icons.Outlined.Share
+    val Check: ImageVector = Icons.Rounded.Check
+    val MoreVert: ImageVector = Icons.Rounded.MoreVert
+    
+    // Feedback
+    val Success: ImageVector = Icons.Rounded.CheckCircle
+    val Error: ImageVector = Icons.Rounded.Warning
+    val Info: ImageVector = Icons.Rounded.Info
     
     // Stats & Leaderboard Icons
     val Crown: ImageVector = Icons.Rounded.EmojiEvents // Trophy/Crown for #1

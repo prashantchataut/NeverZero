@@ -74,8 +74,8 @@ fun StatsScreen(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = com.productivitystreak.ui.theme.Spacing.lg, vertical = com.productivitystreak.ui.theme.Spacing.md),
+        verticalArrangement = Arrangement.spacedBy(com.productivitystreak.ui.theme.Spacing.md)
     ) {
         Text(
             text = "Your streak story",
@@ -87,7 +87,7 @@ fun StatsScreen(
             com.productivitystreak.ui.components.EmptyState(
                 icon = com.productivitystreak.ui.icons.AppIcons.BarChart,
                 message = "No stats yet. Complete some habits to see your progress!",
-                modifier = Modifier.padding(vertical = 32.dp)
+                modifier = Modifier.padding(vertical = com.productivitystreak.ui.theme.Spacing.xxl)
             )
         } else {
             SummaryRow(statsState = statsState)
@@ -775,7 +775,7 @@ private fun SkillPathsEntryCard(onClick: () -> Unit) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(com.productivitystreak.ui.theme.Spacing.md),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {

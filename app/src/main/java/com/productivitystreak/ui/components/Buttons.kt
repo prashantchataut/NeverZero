@@ -74,9 +74,18 @@ fun GradientButton(
     val isPressed by interactionSource.collectIsPressedAsState()
     val designColors = NeverZeroTheme.designColors
     
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = com.productivitystreak.ui.theme.AnimationPresets.buttonPress(),
+        label = "button_scale"
+    )
+
     Button(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier.graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        },
         enabled = enabled,
         shape = shape,
         colors = ButtonDefaults.buttonColors(
