@@ -23,54 +23,39 @@ fun BuddhaInsightCard(
 ) {
     PremiumGlassCard(
         modifier = modifier.fillMaxWidth(),
-        onClick = { onRefresh() } // Tap anywhere to refresh/interact
+        onClick = { onRefresh() }
     ) {
-        Box(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Header with Icon
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    androidx.compose.material3.Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.Refresh, // Or a better "Wisdom" icon if available
-                        contentDescription = null,
-                        tint = NeverZeroTheme.designColors.primary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "DAILY WISDOM",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = NeverZeroTheme.designColors.primary,
-                        letterSpacing = 2.sp,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                    )
-                }
-                
-                // The Wisdom Content
-                Text(
-                    text = insight,
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontStyle = FontStyle.Italic,
-                        lineHeight = 32.sp
-                    ),
-                    color = NeverZeroTheme.designColors.textPrimary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Header
+            Text(
+                text = "DAILY WISDOM",
+                style = MaterialTheme.typography.labelSmall,
+                color = NeverZeroTheme.designColors.primary,
+                letterSpacing = 2.sp,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            )
+            
+            // The Wisdom Content
+            Text(
+                text = insight,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontStyle = FontStyle.Italic,
+                    lineHeight = 24.sp
+                ),
+                color = NeverZeroTheme.designColors.textPrimary,
+                textAlign = TextAlign.Center
+            )
 
-                // Footer / CTA
-                Text(
-                    text = "Tap to reflect",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = NeverZeroTheme.designColors.textSecondary.copy(alpha = 0.5f)
-                )
-            }
+            // Footer
+            Text(
+                text = "Tap to reflect",
+                style = MaterialTheme.typography.labelSmall,
+                color = NeverZeroTheme.designColors.textSecondary.copy(alpha = 0.6f)
+            )
         }
     }
 }

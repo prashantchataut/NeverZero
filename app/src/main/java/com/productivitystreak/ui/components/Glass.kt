@@ -63,30 +63,23 @@ object GlassDefaults {
 }
 
 /**
- * Glassmorphic Card Component
- * Uses a semi-transparent background with a subtle gradient border and glow.
- * Optimized for Deep Space theme.
+ * Simplified Glass Card Component
+ * Clean, professional design with standard radius and solid colors
  */
 @Composable
 fun GlassCard(
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(24.dp),
-    elevation: Dp = 0.dp,
-    borderGradient: Brush = GlassDefaults.DefaultBorderGradient,
-    containerColor: Color = NeverZeroTheme.designColors.surfaceElevated.copy(alpha = 0.6f),
-    contentPadding: PaddingValues = PaddingValues(Spacing.lg),
+    shape: Shape = RoundedCornerShape(16.dp), // Standard 16dp
+    containerColor: Color = NeverZeroTheme.designColors.surface,
+    contentPadding: PaddingValues = PaddingValues(16.dp), // Standard padding
     content: @Composable ColumnScope.() -> Unit
 ) {
     Surface(
-        modifier = modifier
-            .clip(shape)
-            .border(
-                BorderStroke(1.dp, borderGradient),
-                shape
-            ),
+        modifier = modifier,
         color = containerColor,
         shape = shape,
-        tonalElevation = elevation
+        border = BorderStroke(1.dp, NeverZeroTheme.designColors.border), // Solid border
+        tonalElevation = 0.dp
     ) {
         Column(
             modifier = Modifier
@@ -164,8 +157,8 @@ fun GlowCard(
 }
 
 /**
- * Premium Glass Card
- * Uses the Premium gradient for a more striking look.
+ * Premium Glass Card - Simplified
+ * Accent border for emphasis, clean background
  */
 @Composable
 fun PremiumGlassCard(
@@ -175,49 +168,39 @@ fun PremiumGlassCard(
 ) {
     Surface(
         onClick = onClick,
-        modifier = modifier
-            .clip(RoundedCornerShape(24.dp))
-            .border(
-                BorderStroke(1.dp, GlassDefaults.PremiumBorderGradient),
-                RoundedCornerShape(24.dp)
-            ),
-        color = Color.Transparent,
-        shape = RoundedCornerShape(24.dp)
+        modifier = modifier,
+        color = NeverZeroTheme.designColors.surface,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, NeverZeroTheme.designColors.primary.copy(alpha = 0.3f)),
+        tonalElevation = 0.dp
     ) {
-        Box(
+        Column(
             modifier = Modifier
-                .background(GlassDefaults.PremiumBackgroundGradient)
                 .fillMaxWidth()
+                .padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Spacing.lg)
-            ) {
-                content()
-            }
+            content()
         }
     }
 }
 
 /**
- * Interactive Glass Card - Glass card with press animation
+ * Interactive Glass Card - Simplified with press animation
  */
 @Composable
 fun InteractiveGlassCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(24.dp),
-    elevation: Dp = 0.dp,
-    containerColor: Color = NeverZeroTheme.designColors.surfaceElevated.copy(alpha = 0.6f),
-    contentPadding: PaddingValues = PaddingValues(Spacing.lg),
+    shape: Shape = RoundedCornerShape(16.dp),
+    containerColor: Color = NeverZeroTheme.designColors.surface,
+    contentPadding: PaddingValues = PaddingValues(16.dp),
     content: @Composable ColumnScope.() -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.97f else 1f,
+        targetValue = if (isPressed) 0.98f else 1f,
         animationSpec = MotionSpec.quickScale(),
         label = "glass-card-scale"
     )
@@ -226,22 +209,17 @@ fun InteractiveGlassCard(
     
     Surface(
         onClick = {
-            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress) // Using LongPress for a heavier feel, or TextHandleMove for lighter
+            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
             onClick()
         },
-        modifier = modifier
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .clip(shape)
-            .border(
-                BorderStroke(1.dp, GlassDefaults.InteractiveBorderGradient),
-                shape
-            ),
+        modifier = modifier.graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        },
         color = containerColor,
         shape = shape,
-        tonalElevation = elevation,
+        border = BorderStroke(1.dp, NeverZeroTheme.designColors.border),
+        tonalElevation = 0.dp,
         interactionSource = interactionSource
     ) {
         Column(

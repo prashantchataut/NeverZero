@@ -42,7 +42,7 @@ fun ElevatedCard(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = Shapes.large, // Standardized to Large (20dp)
+    shape: Shape = Shapes.medium, // Standardized to Medium (16dp)
     elevation: Dp = Elevation.level2,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -76,7 +76,7 @@ fun FilledCard(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = Shapes.large, // Standardized to Large (20dp)
+    shape: Shape = Shapes.medium, // Standardized to Medium (16dp)
     content: @Composable ColumnScope.() -> Unit
 ) {
     if (onClick != null) {
@@ -109,7 +109,7 @@ fun OutlinedCard(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = Shapes.large, // Standardized to Large (20dp)
+    shape: Shape = Shapes.medium, // Standardized to Medium (16dp)
     borderColor: Color = MaterialTheme.colorScheme.outline,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -145,7 +145,7 @@ fun InteractiveCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = Shapes.large, // Standardized to Large (20dp)
+    shape: Shape = Shapes.medium, // Standardized to Medium (16dp)
     elevation: Dp = Elevation.level2,
     pressScale: Float = 0.97f,
     content: @Composable ColumnScope.() -> Unit
@@ -187,7 +187,7 @@ fun GradientCard(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = Shapes.extraLarge, // Hero cards use Extra Large (28dp)
+    shape: Shape = Shapes.medium, // Standard for hero cards
     elevation: Dp = Elevation.level3,
     content: @Composable BoxScope.() -> Unit
 ) {

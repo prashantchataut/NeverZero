@@ -14,10 +14,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 /**
- * Deep Space Color Scheme
- * Enforced Dark Mode for Premium Aesthetic
+ * Calm Zen RPG Color Scheme
+ * Professional Dark Mode with Muted Colors
  */
-private val DeepSpaceColorScheme = darkColorScheme(
+private val CalmZenRPGColorScheme = darkColorScheme(
     primary = Primary,
     onPrimary = OnPrimary,
     primaryContainer = PrimaryContainer,
@@ -91,7 +91,7 @@ private val AppShapes = Shapes(
 val LocalStreakColors = staticCompositionLocalOf { StreakColors }
 val LocalGradientColors = staticCompositionLocalOf { GradientColors }
 val LocalSemanticColors = staticCompositionLocalOf { SemanticColors }
-val LocalDesignColors = staticCompositionLocalOf { NeverZeroDesignPalettes.DeepSpace }
+val LocalDesignColors = staticCompositionLocalOf { NeverZeroDesignPalettes.CalmZenRPG }
 
 /**
  * Never Zero Theme
@@ -103,8 +103,8 @@ fun AppTheme(
     dynamicColor: Boolean = false, // Disable dynamic color
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DeepSpaceColorScheme else LightColorScheme
-    val designColors = if (darkTheme) NeverZeroDesignPalettes.DeepSpace else NeverZeroDesignPalettes.Light
+    val colorScheme = if (darkTheme) CalmZenRPGColorScheme else LightColorScheme
+    val designColors = if (darkTheme) NeverZeroDesignPalettes.CalmZenRPG else NeverZeroDesignPalettes.Light
     
     CompositionLocalProvider(
         LocalStreakColors provides StreakColors,

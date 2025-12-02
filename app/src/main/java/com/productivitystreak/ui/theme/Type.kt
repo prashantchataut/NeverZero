@@ -9,7 +9,7 @@ import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.sp
 import com.productivitystreak.R
 
-private val interFont = GoogleFont("Poppins")
+private val poppinsFont = GoogleFont("Poppins")
 
 private val googleFontProvider = GoogleFont.Provider(
     providerAuthority = "com.google.android.gms.fonts",
@@ -17,32 +17,32 @@ private val googleFontProvider = GoogleFont.Provider(
     certificates = R.array.com_google_android_gms_fonts_certs
 )
 
-val InterFontFamily = FontFamily(
-    Font(googleFont = interFont, fontProvider = googleFontProvider, weight = FontWeight.Light),
-    Font(googleFont = interFont, fontProvider = googleFontProvider, weight = FontWeight.Normal),
-    Font(googleFont = interFont, fontProvider = googleFontProvider, weight = FontWeight.Medium),
-    Font(googleFont = interFont, fontProvider = googleFontProvider, weight = FontWeight.SemiBold),
-    Font(googleFont = interFont, fontProvider = googleFontProvider, weight = FontWeight.Bold),
-    Font(googleFont = interFont, fontProvider = googleFontProvider, weight = FontWeight.ExtraBold)
+val PoppinsFontFamily = FontFamily(
+    Font(googleFont = poppinsFont, fontProvider = googleFontProvider, weight = FontWeight.Light),
+    Font(googleFont = poppinsFont, fontProvider = googleFontProvider, weight = FontWeight.Normal),
+    Font(googleFont = poppinsFont, fontProvider = googleFontProvider, weight = FontWeight.Medium),
+    Font(googleFont = poppinsFont, fontProvider = googleFontProvider, weight = FontWeight.SemiBold),
+    Font(googleFont = poppinsFont, fontProvider = googleFontProvider, weight = FontWeight.Bold),
+    Font(googleFont = poppinsFont, fontProvider = googleFontProvider, weight = FontWeight.ExtraBold)
 )
 
 val NeverZeroTypography = Typography(
     displayLarge = TextStyle(
-        fontFamily = InterFontFamily,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 40.sp,
         lineHeight = 48.sp,
         letterSpacing = (-1.0).sp
     ),
     displayMedium = TextStyle(
-        fontFamily = InterFontFamily,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 36.sp,
         lineHeight = 44.sp,
         letterSpacing = (-0.5).sp
     ),
     displaySmall = TextStyle(
-        fontFamily = InterFontFamily,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 32.sp,
         lineHeight = 40.sp,
@@ -50,21 +50,21 @@ val NeverZeroTypography = Typography(
     ),
 
     headlineLarge = TextStyle(
-        fontFamily = InterFontFamily,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp
     ),
     headlineMedium = TextStyle(
-        fontFamily = InterFontFamily,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 24.sp,
         lineHeight = 32.sp,
         letterSpacing = 0.sp
     ),
     headlineSmall = TextStyle(
-        fontFamily = InterFontFamily,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 20.sp,
         lineHeight = 28.sp,
@@ -72,21 +72,21 @@ val NeverZeroTypography = Typography(
     ),
 
     titleLarge = TextStyle(
-        fontFamily = InterFontFamily,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 20.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp
     ),
     titleMedium = TextStyle(
-        fontFamily = InterFontFamily,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.15.sp
     ),
     titleSmall = TextStyle(
-        fontFamily = InterFontFamily,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
@@ -94,21 +94,21 @@ val NeverZeroTypography = Typography(
     ),
 
     bodyLarge = TextStyle(
-        fontFamily = InterFontFamily,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
     ),
     bodyMedium = TextStyle(
-        fontFamily = InterFontFamily,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.25.sp
     ),
     bodySmall = TextStyle(
-        fontFamily = InterFontFamily,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 16.sp,
@@ -116,21 +116,21 @@ val NeverZeroTypography = Typography(
     ),
 
     labelLarge = TextStyle(
-        fontFamily = InterFontFamily,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp
     ),
     labelMedium = TextStyle(
-        fontFamily = InterFontFamily,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp
     ),
     labelSmall = TextStyle(
-        fontFamily = InterFontFamily,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 11.sp,
         lineHeight = 16.sp,
