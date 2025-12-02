@@ -65,7 +65,7 @@ fun SkillPathsScreen(
         ) {
             item {
                 Text(
-                    text = "Master your habits",
+                    text = "Master your protocols",
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.padding(vertical = Spacing.sm)

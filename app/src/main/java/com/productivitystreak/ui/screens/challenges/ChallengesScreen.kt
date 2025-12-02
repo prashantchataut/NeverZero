@@ -129,7 +129,7 @@ fun ChallengeCard(challenge: Challenge) {
             Spacer(modifier = Modifier.height(Spacing.lg))
             
             PrimaryButton(
-                text = "Join Protocol",
+                text = "Accept Quest",
                 onClick = { /* TODO: Join logic */ },
                 modifier = Modifier.fillMaxWidth()
             )

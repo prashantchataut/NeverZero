@@ -58,7 +58,7 @@ fun OnboardingPermissionStep(
 
         PermissionCard(
             title = "Exact alarms",
-            description = "Guaranteed reminders for high-priority habits.",
+            description = "Guaranteed reminders for high-priority protocols.",
             enabled = exactAlarmsGranted,
             actionLabel = if (exactAlarmsGranted) "Enabled" else "Enable",
             onClick = {

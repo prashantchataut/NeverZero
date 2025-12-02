@@ -10,7 +10,8 @@ import kotlin.random.Random
 class QuoteRepository(
     private val personalizedEngine: PersonalizedQuoteEngine,
     private val reflectionRepository: com.productivitystreak.data.repository.ReflectionRepository,
-    private val timeCapsuleRepository: com.productivitystreak.data.repository.TimeCapsuleRepository
+    private val timeCapsuleRepository: com.productivitystreak.data.repository.TimeCapsuleRepository,
+    private val geminiClient: com.productivitystreak.data.gemini.GeminiClient? = null
 ) {
     
     private val fallbackQuotes = listOf(

@@ -3,7 +3,6 @@ package com.productivitystreak.ui.screens.ai
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewModelScope
 import com.google.ai.client.generativeai.type.Content
 import com.google.ai.client.generativeai.type.TextPart
 import com.productivitystreak.data.ai.BuddhaRepository
@@ -46,23 +45,27 @@ class BuddhaChatViewModel(
 
         viewModelScope.launch {
             try {
-                val response = chatSession?.sendMessage(text)
-                val responseText = response?.text
+                val responseText = chatSession?.sendMessage(text)
 
-                if (responseText != null) {
+                if (!responseText.isNullOrBlank()) {
                     val updatedMessages = _uiState.value.messages.toMutableList()
                     updatedMessages.add(BuddhaChatMessage(responseText, isUser = false))
                     _uiState.value = _uiState.value.copy(messages = updatedMessages, isLoading = false)
                 } else {
-                    _uiState.value = _uiState.value.copy(isLoading = false) // Handle error/empty
+                    _uiState.value = _uiState.value.copy(isLoading = false)
                 }
             } catch (e: Exception) {
                 // Log the actual error for debugging
                 android.util.Log.e("BuddhaChat", "Error generating response", e)
                 
                 val updatedMessages = _uiState.value.messages.toMutableList()
-                // Show a mystical, thematic error message instead of raw technical details
-                updatedMessages.add(BuddhaChatMessage("The cosmos is silent right now. Please try again later.", isUser = false))
+                // Show a mystical, thematic error message
+                val errorMessage = if (e.message?.contains("Unable to resolve host") == true) {
+                    "The connection to the cosmos is weak. Check your internet."
+                } else {
+                    "I am in deep meditation. Please try again in a moment."
+                }
+                updatedMessages.add(BuddhaChatMessage(errorMessage, isUser = false))
                 _uiState.value = _uiState.value.copy(messages = updatedMessages, isLoading = false)
             }
         }

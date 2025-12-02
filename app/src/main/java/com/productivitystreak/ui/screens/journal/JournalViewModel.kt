@@ -23,6 +23,12 @@ class JournalViewModel(
     private val _buddhaResponse = MutableStateFlow<String?>(null)
     val buddhaResponse: StateFlow<String?> = _buddhaResponse.asStateFlow()
 
+    private val _realtimeFeedback = MutableStateFlow<String?>(null)
+    val realtimeFeedback: StateFlow<String?> = _realtimeFeedback.asStateFlow()
+
+    private val _isGeneratingFeedback = MutableStateFlow(false)
+    val isGeneratingFeedback: StateFlow<Boolean> = _isGeneratingFeedback.asStateFlow()
+
     fun onSubmitJournalEntry(
         mood: Int,
         notes: String,
@@ -71,5 +77,35 @@ class JournalViewModel(
 
     fun clearBuddhaResponse() {
         _buddhaResponse.value = null
+    }
+
+    /**
+     * Generate real-time AI feedback as user types
+     * Debounced to avoid excessive API calls
+     */
+    fun onJournalTextChanged(text: String) {
+        if (text.trim().length < 50) {
+            _realtimeFeedback.value = null
+            return
+        }
+
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(2000) // Debounce 2 seconds
+            if (_isGeneratingFeedback.value) return@launch
+
+            _isGeneratingFeedback.value = true
+            try {
+                val feedback = geminiClient.generateJournalFeedback(text.trim())
+                _realtimeFeedback.value = feedback
+            } catch (e: Exception) {
+                Log.e("JournalViewModel", "Error generating real-time feedback", e)
+            } finally {
+                _isGeneratingFeedback.value = false
+            }
+        }
+    }
+
+    fun clearRealtimeFeedback() {
+        _realtimeFeedback.value = null
     }
 }

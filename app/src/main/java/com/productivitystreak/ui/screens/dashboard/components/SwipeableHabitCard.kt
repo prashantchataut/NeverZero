@@ -55,6 +55,12 @@ fun SwipeableHabitCard(
         }
     }
 
+    val accentColor = try {
+        Color(android.graphics.Color.parseColor(task.accentHex))
+    } catch (e: Exception) {
+        MaterialTheme.colorScheme.primary
+    }
+
     Box(
         modifier = modifier
             .height(160.dp)
@@ -67,7 +73,7 @@ fun SwipeableHabitCard(
                 .clip(RoundedCornerShape(24.dp))
                 .background(
                     when {
-                        offsetY.value < 0 -> com.productivitystreak.ui.theme.NeverZeroTheme.designColors.success.copy(alpha = 0.2f)
+                        offsetY.value < 0 -> accentColor.copy(alpha = 0.2f)
                         offsetY.value > 0 -> MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
                         else -> Color.Transparent
                     }
@@ -87,12 +93,12 @@ fun SwipeableHabitCard(
                     Icon(
                         imageVector = Icons.Rounded.Check,
                         contentDescription = "Complete",
-                        tint = com.productivitystreak.ui.theme.NeverZeroTheme.designColors.success
+                        tint = accentColor
                     )
                     Text(
-                        text = "COMPLETE",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = com.productivitystreak.ui.theme.NeverZeroTheme.designColors.success,
+                        text = "+50 XP",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = accentColor,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -160,7 +166,7 @@ fun SwipeableHabitCard(
                         Text(
                             text = task.category.uppercase(),
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color(android.graphics.Color.parseColor(task.accentHex)).copy(alpha = 0.8f)
+                            color = accentColor.copy(alpha = 0.8f)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
@@ -177,7 +183,7 @@ fun SwipeableHabitCard(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .background(
-                                    color = Color(android.graphics.Color.parseColor(task.accentHex)).copy(alpha = 0.1f),
+                                    color = accentColor.copy(alpha = 0.1f),
                                     shape = RoundedCornerShape(12.dp)
                                 )
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
@@ -185,14 +191,14 @@ fun SwipeableHabitCard(
                             Icon(
                                 imageVector = com.productivitystreak.ui.icons.AppIcons.FireStreak,
                                 contentDescription = null,
-                                tint = Color(android.graphics.Color.parseColor(task.accentHex)),
+                                tint = accentColor,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "${task.streakCount}",
                                 style = MaterialTheme.typography.labelMedium,
-                                color = Color(android.graphics.Color.parseColor(task.accentHex)),
+                                color = accentColor,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -205,16 +211,16 @@ fun SwipeableHabitCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = com.productivitystreak.ui.icons.AppIcons.FireStreak,
+                        imageVector = androidx.compose.material.icons.Icons.Rounded.AutoAwesome,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = accentColor,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Swipe up to complete",
+                        text = "Swipe up to Claim XP",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = accentColor
                     )
                 }
             }

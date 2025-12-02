@@ -50,6 +50,7 @@ class AppViewModelFactory(private val application: Application) : ViewModelProvi
                 ProfileViewModel(
                     application = application,
                     preferencesManager = app.preferencesManager,
+                    streakRepository = app.streakRepository,
                     timeCapsuleRepository = app.timeCapsuleRepository,
                     reminderScheduler = StreakReminderScheduler(application)
                 ) as T

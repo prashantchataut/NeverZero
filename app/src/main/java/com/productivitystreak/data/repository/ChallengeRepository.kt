@@ -21,7 +21,7 @@ class ChallengeRepository {
                 ),
                 Challenge(
                     id = "savage_september",
-                    title = "Savage September",
+                    title = "Savage 30-Day Protocol",
                     description = "Wake up at 5 AM. Cold Shower. 100 Pushups.",
                     durationDays = 30,
                     iconId = "sword",

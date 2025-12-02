@@ -87,7 +87,7 @@ fun StatsScreen(
         if (statsState.currentLongestStreak == 0 && statsState.streakConsistency.isEmpty()) {
             com.productivitystreak.ui.components.EmptyState(
                 icon = com.productivitystreak.ui.icons.AppIcons.BarChart,
-                message = "No stats yet. Complete some habits to see your progress!",
+                message = "No stats yet. Complete some protocols to see your progress!",
                 modifier = Modifier.padding(vertical = com.productivitystreak.ui.theme.Spacing.xxl)
             )
         } else {
@@ -636,7 +636,7 @@ private fun TrendChart(trend: AverageDailyTrend) {
 private fun BreakdownRow(breakdown: List<HabitBreakdown>) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = "Habits at a glance",
+            text = "Protocols at a glance",
             style = MaterialTheme.typography.titleMedium
         )
         LazyRow(
@@ -791,7 +791,7 @@ private fun SkillPathsEntryCard(onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "Level up your habits",
+                    text = "Level up your protocols",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

@@ -163,7 +163,7 @@ fun MorningBriefCard(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 if (total > 0) {
-                    val progressText = "$completed / $total habits logged"
+                    val progressText = "$completed / $total quests claimed"
                     Text(
                         text = progressText,
                         style = MaterialTheme.typography.labelSmall,
@@ -190,7 +190,7 @@ fun MorningBriefCard(
                     }
                 } else {
                     Text(
-                        text = "No habits scheduled. Set one tiny target.",
+                        text = "No quests scheduled. Set one tiny target.",
                         style = MaterialTheme.typography.labelSmall,
                         color = designColors.textSecondary
                     )

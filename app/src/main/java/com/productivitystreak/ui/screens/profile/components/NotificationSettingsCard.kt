@@ -74,7 +74,7 @@ fun NotificationSettingsCard(
 
             PreferenceRow(
                 title = "Enable notifications",
-                subtitle = "Allow Never Zero to send habit nudges.",
+                subtitle = "Allow Never Zero to send protocol nudges.",
                 checked = profileState.notificationEnabled,
                 onCheckedChange = {
                     if (it) {

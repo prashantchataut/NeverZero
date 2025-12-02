@@ -25,6 +25,7 @@ import com.productivitystreak.ui.state.AddEntryType
 import com.productivitystreak.ui.components.EmptyState
 import com.productivitystreak.ui.components.PrimaryButton
 import com.productivitystreak.ui.state.DashboardTask
+import com.productivitystreak.ui.screens.profile.components.RpgStatsCard
 
 @Composable
 fun DashboardScreen(
@@ -95,10 +96,18 @@ fun DashboardScreen(
             )
         }
 
+        // 1.5 Character Stats (RPG)
+        item {
+            RpgStatsCard(
+                stats = streakUiState.rpgStats,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
         // 2. Today's Focus (Horizontal Swipeable Cards)
         item {
             Text(
-                text = "TODAY'S FOCUS",
+                text = "ACTIVE PROTOCOLS",
                 style = MaterialTheme.typography.labelLarge,
                 color = NeverZeroTheme.designColors.textSecondary,
                 modifier = Modifier.padding(bottom = Spacing.sm)
@@ -152,7 +161,7 @@ fun DashboardScreen(
             }
         }
 
-        // 3. Tasks (To-Do List Focus)
+        // 3. Quests (To-Do List Focus)
         item {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(top = Spacing.md),
@@ -160,7 +169,7 @@ fun DashboardScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "TASKS",
+                    text = "QUESTS",
                     style = MaterialTheme.typography.labelLarge,
                     color = NeverZeroTheme.designColors.textSecondary
                 )
@@ -173,7 +182,7 @@ fun DashboardScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Add,
-                        contentDescription = "Add Task",
+                        contentDescription = "Add Quest",
                         tint = NeverZeroTheme.designColors.primary
                     )
                 }
@@ -215,7 +224,7 @@ fun DashboardScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Add a task for today",
+                            text = "Add a quest for today",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

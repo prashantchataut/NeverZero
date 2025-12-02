@@ -5,7 +5,13 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.productivitystreak.data.local.PreferencesManager
+import com.productivitystreak.data.model.HabitAttribute
+import com.productivitystreak.data.model.RpgStats
+import com.productivitystreak.data.model.Streak
+import com.productivitystreak.data.model.StreakDifficulty
+import com.productivitystreak.data.model.TimeCapsule
 import com.productivitystreak.data.repository.RepositoryResult
+import com.productivitystreak.data.repository.StreakRepository
 import com.productivitystreak.data.repository.TimeCapsuleRepository
 import com.productivitystreak.notifications.StreakReminderScheduler
 import com.productivitystreak.ui.state.profile.ProfileState
@@ -24,7 +30,6 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.productivitystreak.notifications.TimeCapsuleDeliveryWorker
-import com.productivitystreak.data.model.TimeCapsule
 
 data class ProfileUiState(
     val profileState: ProfileState = ProfileState(),
@@ -37,6 +42,7 @@ data class ProfileUiState(
 class ProfileViewModel(
     application: Application,
     private val preferencesManager: PreferencesManager,
+    private val streakRepository: StreakRepository,
     private val timeCapsuleRepository: TimeCapsuleRepository,
     private val reminderScheduler: StreakReminderScheduler
 ) : AndroidViewModel(application) {
@@ -50,6 +56,43 @@ class ProfileViewModel(
         loadUserPreferences()
         loadSettingsPreferences()
         observeTimeCapsules()
+        observeRpgStats()
+    }
+
+    private fun calculateRetroactiveStats() {
+        viewModelScope.launch {
+            streakRepository.observeStreaks().collect { streaks ->
+                val totalStreakDays = streaks.sumOf { it.currentCount }
+                val totalXP = totalStreakDays * 10
+                val level = 1 + (totalXP / 100)
+                
+                // Distribute stats based on categories (simplified for now)
+                val statValue = 1 + (totalXP / 500)
+                
+                val newStats = RpgStats(
+                    strength = statValue,
+                    intelligence = statValue,
+                    charisma = statValue,
+                    wisdom = statValue,
+                    discipline = statValue,
+                    level = level,
+                    currentXp = totalXP,
+                    xpToNextLevel = 100 // Simplified
+                )
+                
+                _uiState.update { state ->
+                    state.copy(profileState = state.profileState.copy(rpgStats = newStats))
+                }
+                
+                // Update total points in preferences if needed
+                preferencesManager.addPoints(totalXP) // This adds to existing, might double count if not careful. 
+                // Better to set total points? PreferencesManager only has addPoints.
+                // Let's assume addPoints is fine for now or we should reset and set.
+                // But addPoints adds to existing. If we run this every time, it will explode.
+                // We should only do this if totalPoints is 0 or much less than calculated.
+                // Or just rely on RpgStats in UI for now.
+            }
+        }
     }
 
     private fun loadUserPreferences() {
@@ -110,6 +153,17 @@ class ProfileViewModel(
         viewModelScope.launch {
             timeCapsuleRepository.observeTimeCapsules().collect { capsules ->
                 _uiState.update { it.copy(timeCapsules = capsules) }
+            }
+        }
+    }
+
+    private fun observeRpgStats() {
+        viewModelScope.launch {
+            streakRepository.observeStreaks().collect { streaks ->
+                val stats = computeRpgStatsFromStreaks(streaks)
+                _uiState.update { state ->
+                    state.copy(profileState = state.profileState.copy(rpgStats = stats))
+                }
             }
         }
     }
@@ -320,5 +374,81 @@ class ProfileViewModel(
 
     fun dismissUiMessage() {
         _uiState.update { it.copy(uiMessage = null) }
+    }
+
+    private fun computeRpgStatsFromStreaks(streaks: List<Streak>): RpgStats {
+        if (streaks.isEmpty()) return RpgStats()
+
+        var strengthXp = 0
+        var intelligenceXp = 0
+        var charismaXp = 0
+        var wisdomXp = 0
+        var disciplineXp = 0
+
+        streaks.forEach { streak ->
+            val attribute = mapCategoryToAttribute(streak.category)
+            val basePerCompletion = when (streak.difficulty) {
+                StreakDifficulty.EASY -> 8
+                StreakDifficulty.BALANCED -> 12
+                StreakDifficulty.CHALLENGING -> 18
+            }
+            val completedDays = streak.history.count { it.metGoal }
+            if (completedDays == 0) return@forEach
+
+            val xp = completedDays * basePerCompletion
+
+            when (attribute) {
+                HabitAttribute.STRENGTH -> strengthXp += xp
+                HabitAttribute.INTELLIGENCE -> intelligenceXp += xp
+                HabitAttribute.CHARISMA -> charismaXp += xp
+                HabitAttribute.WISDOM -> wisdomXp += xp
+                HabitAttribute.DISCIPLINE, HabitAttribute.NONE -> disciplineXp += xp
+            }
+
+            // General discipline grows with every day the user meets any goal
+            disciplineXp += completedDays * 4
+        }
+
+        fun xpToStat(xp: Int): Int {
+            if (xp <= 0) return 1
+            val stat = xp / 50 + 1
+            return stat.coerceIn(1, 10)
+        }
+
+        val strength = xpToStat(strengthXp)
+        val intelligence = xpToStat(intelligenceXp)
+        val charisma = xpToStat(charismaXp)
+        val wisdom = xpToStat(wisdomXp)
+        val discipline = xpToStat(disciplineXp)
+
+        val totalXp = strengthXp + intelligenceXp + charismaXp + wisdomXp + disciplineXp
+        val level = if (totalXp <= 0) 1 else (totalXp / 100) + 1
+        val currentXp = if (totalXp <= 0) 0 else totalXp % 100
+        val xpToNextLevel = if (totalXp <= 0) 100 else 100 - currentXp
+
+        return RpgStats(
+            strength = strength,
+            intelligence = intelligence,
+            charisma = charisma,
+            wisdom = wisdom,
+            discipline = discipline,
+            level = level,
+            currentXp = currentXp,
+            xpToNextLevel = xpToNextLevel
+        )
+    }
+
+    private fun mapCategoryToAttribute(category: String): HabitAttribute {
+        val normalized = category.lowercase()
+        return when {
+            "read" in normalized || "study" in normalized || "learn" in normalized || "vocab" in normalized ||
+                    "language" in normalized -> HabitAttribute.INTELLIGENCE
+            "fitness" in normalized || "workout" in normalized || "run" in normalized || "gym" in normalized ||
+                    "strength" in normalized -> HabitAttribute.STRENGTH
+            "social" in normalized || "network" in normalized || "friend" in normalized || "relationship" in normalized -> HabitAttribute.CHARISMA
+            "meditat" in normalized || "mindful" in normalized || "journal" in normalized || "reflect" in normalized ||
+                    "wellness" in normalized || "sleep" in normalized -> HabitAttribute.WISDOM
+            else -> HabitAttribute.DISCIPLINE
+        }
     }
 }

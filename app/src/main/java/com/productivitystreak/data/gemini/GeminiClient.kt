@@ -51,6 +51,9 @@ class GeminiClient private constructor() {
         null
     }
 
+    private val cache = com.productivitystreak.data.ai.AIResponseCache.getInstance()
+    private val rateLimiter = com.productivitystreak.data.ai.RateLimiter.getInstance()
+
     suspend fun generateTeachingLesson(word: String, learnerContext: String?): TeachingLesson = withContext(Dispatchers.IO) {
         val fallback = fallbackTeachingLesson(word)
         val generativeModel = model ?: return@withContext fallback
@@ -147,8 +150,25 @@ class GeminiClient private constructor() {
         }
     }
 
-    suspend fun generateWordOfTheDay(interests: String = "general knowledge"): com.productivitystreak.ui.state.vocabulary.VocabularyWord? = withContext(Dispatchers.IO) {
+    suspend fun generateWordOfTheDay(interests: String = "general knowledge", forceRefresh: Boolean = false): com.productivitystreak.ui.state.vocabulary.VocabularyWord? = withContext(Dispatchers.IO) {
+        val cacheKey = "word_of_day_$interests"
+        
+        // Check cache first
+        if (!forceRefresh) {
+            cache.get<com.productivitystreak.ui.state.vocabulary.VocabularyWord>(cacheKey)?.let {
+                Log.d(TAG, "Returning cached Word of the Day")
+                return@withContext it
+            }
+        }
+        
         val generativeModel = model ?: return@withContext null
+        
+        // Check rate limit
+        if (!rateLimiter.acquirePermit()) {
+            Log.w(TAG, "Rate limit exceeded for Word of the Day")
+            return@withContext cache.get<com.productivitystreak.ui.state.vocabulary.VocabularyWord>(cacheKey)
+        }
+        
         val prompt = """
             Generate a unique, sophisticated 'Word of the Day' for someone interested in $interests.
             Return ONLY a valid JSON object with the following fields:
@@ -175,24 +195,53 @@ class GeminiClient private constructor() {
             val adapter = moshi.adapter(WordOfTheDayResponse::class.java)
             val wordResponse = adapter.fromJson(json) ?: return@withContext null
             
-            com.productivitystreak.ui.state.vocabulary.VocabularyWord(
+            val result = com.productivitystreak.ui.state.vocabulary.VocabularyWord(
                 word = wordResponse.word,
                 definition = wordResponse.definition,
                 example = wordResponse.example,
                 addedToday = false
             )
+            
+            // Cache the result
+            cache.put(cacheKey, result, com.productivitystreak.data.ai.AIResponseCache.WORD_OF_DAY_TTL, java.util.concurrent.TimeUnit.MILLISECONDS)
+            Log.d(TAG, "Cached Word of the Day")
+            
+            result
         } catch (e: Exception) {
             Log.e(TAG, "Failed to generate word of the day", e)
             null
         }
     }
 
-    suspend fun generateBuddhaInsight(context: String = "general"): String = withContext(Dispatchers.IO) {
+    suspend fun generateBuddhaInsight(context: String = "general", forceRefresh: Boolean = false): String = withContext(Dispatchers.IO) {
+        val cacheKey = "buddha_insight_$context"
+        
+        // Check cache first
+        if (!forceRefresh) {
+            cache.get<String>(cacheKey)?.let {
+                Log.d(TAG, "Returning cached Buddha insight")
+                return@withContext it
+            }
+        }
+        
         val generativeModel = model ?: return@withContext "The obstacle is the way."
+        
+        // Check rate limit
+        if (!rateLimiter.acquirePermit()) {
+            Log.w(TAG, "Rate limit exceeded for Buddha insight")
+            return@withContext cache.get<String>(cacheKey) ?: "The obstacle is the way."
+        }
+        
         val prompt = "Give me a short, profound quote, proverb, or stoic insight about $context. Max 20 words. No quotes around the text."
         try {
             val response = generativeModel.generateContent(content { text(prompt) })
-            response.text?.trim() ?: "The obstacle is the way."
+            val result = response.text?.trim() ?: "The obstacle is the way."
+            
+            // Cache the result
+            cache.put(cacheKey, result, com.productivitystreak.data.ai.AIResponseCache.BUDDHA_INSIGHT_TTL, java.util.concurrent.TimeUnit.MILLISECONDS)
+            Log.d(TAG, "Cached Buddha insight")
+            
+            result
         } catch (e: Exception) {
             Log.e(TAG, "Failed to generate Buddha insight", e)
             "The obstacle is the way."

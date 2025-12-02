@@ -35,7 +35,7 @@ fun OnboardingFirstHabitStep(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "Pick one lead habit to start.",
+            text = "Pick one lead protocol to start.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f)
         )
@@ -86,7 +86,7 @@ fun OnboardingFirstHabitStep(
                 localGoal = it
                 onSetGoal(it)
             },
-            label = { Text("Or describe your own habit") },
+            label = { Text("Or describe your own protocol") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )

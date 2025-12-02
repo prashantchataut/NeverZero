@@ -54,32 +54,42 @@ class BuddhaRepository {
             return MockChatSession(userName)
         }
 
-        val systemPrompt = BUDDHA_SYSTEM_PROMPT.replace("{USER_NAME}", userName)
-        
-        // Re-create model with personalized system prompt if needed, 
-        // but GenerativeModel is immutable. We can pass history with context.
-        // Actually, we can't easily change system prompt per session on the same model instance 
-        // without creating a new model instance. 
-        // For simplicity, we'll inject the context in the first history message.
-        
         val personalizedHistory = listOf(
             content(role = "user") { text("My name is $userName. Who are you?") },
             content(role = "model") { text("i am buddha. i know you, $userName. i am here to help you build discipline. what is on your mind?") }
         )
 
-        return RealChatSession(generativeModel.startChat(history = personalizedHistory))
+        return try {
+            RealChatSession(generativeModel.startChat(history = personalizedHistory))
+        } catch (e: Exception) {
+            android.util.Log.e("BuddhaRepository", "Failed to start chat, falling back to mock", e)
+            MockChatSession(userName)
+        }
     }
 
     interface ChatSessionWrapper {
         val history: List<com.google.ai.client.generativeai.type.Content>
-        suspend fun sendMessage(prompt: String): com.google.ai.client.generativeai.type.GenerateContentResponse
+        suspend fun sendMessage(prompt: String): String
     }
 
     class RealChatSession(private val chat: com.google.ai.client.generativeai.Chat) : ChatSessionWrapper {
         override val history: List<com.google.ai.client.generativeai.type.Content>
             get() = chat.history
-            
-        override suspend fun sendMessage(prompt: String) = chat.sendMessage(prompt)
+
+        override suspend fun sendMessage(prompt: String): String {
+            return try {
+                val response = chat.sendMessage(prompt)
+                val text = response.text?.trim()
+                if (text.isNullOrEmpty()) {
+                    "the cosmos is quiet, but i am still here. say it in simpler words."
+                } else {
+                    text
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("BuddhaRepository", "Error during chat.sendMessage", e)
+                "the temple's connection to the cloud glitched. this is on me, not you. let us try again in a little while."
+            }
+        }
     }
 
     class MockChatSession(private val userName: String) : ChatSessionWrapper {
@@ -91,37 +101,19 @@ class BuddhaRepository {
         override val history: List<com.google.ai.client.generativeai.type.Content>
             get() = _history
 
-        override suspend fun sendMessage(prompt: String): com.google.ai.client.generativeai.type.GenerateContentResponse {
+        override suspend fun sendMessage(prompt: String): String {
             _history.add(content(role = "user") { text(prompt) })
-            
+
             val responseText = when {
                 prompt.contains("hello", ignoreCase = true) -> "peace be with you, $userName."
                 prompt.contains("fail", ignoreCase = true) -> "failure is just a lesson in disguise."
                 prompt.contains("tired", ignoreCase = true) -> "rest if you must, but do not quit."
                 else -> "the obstacle is the way. tell me more."
             }
-            
+
             _history.add(content(role = "model") { text(responseText) })
-            
-            // We cannot instantiate GenerateContentResponse directly as it has internal constructor.
-            // However, since this is a mock, we can throw an exception or return a dummy if possible.
-            // But better yet, let's change the interface to return a String or a wrapper that we control.
-            // For now, to fix the build without changing the interface (which affects RealChatSession),
-            // we will use reflection or just return null if the return type allows, but it doesn't.
-            // Actually, let's change the interface to return String for simplicity in this app context.
-            // But RealChatSession returns GenerateContentResponse.
-            
-            // ALTERNATIVE: Use a wrapper class for the response that we can instantiate.
-            // But that requires changing the interface.
-            
-            // Let's try to find a public constructor or factory. There isn't one easily accessible.
-            // We will change the interface to return `String` (the text response) which is what we actually use.
-            
-            return com.google.ai.client.generativeai.type.GenerateContentResponse(
-                candidates = listOf(),
-                promptFeedback = null,
-                usageMetadata = null
-            )
+
+            return responseText
         }
     }
     

@@ -146,6 +146,7 @@ fun BuddhaChatScreen(
                     onValueChange = { inputText = it },
                     placeholder = { Text("Speak your mind...") },
                     modifier = Modifier.weight(1f),
+                    enabled = !uiState.isLoading,
                     shape = RoundedCornerShape(24.dp),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -158,7 +159,7 @@ fun BuddhaChatScreen(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                     keyboardActions = KeyboardActions(
                         onSend = {
-                            if (inputText.isNotBlank()) {
+                            if (!uiState.isLoading && inputText.isNotBlank()) {
                                 if (hapticsEnabled) {
                                     haptics.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
                                 }
@@ -173,7 +174,7 @@ fun BuddhaChatScreen(
                 
                 IconButton(
                     onClick = {
-                        if (inputText.isNotBlank()) {
+                        if (!uiState.isLoading && inputText.isNotBlank()) {
                             if (hapticsEnabled) {
                                 haptics.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
                             }
@@ -183,7 +184,8 @@ fun BuddhaChatScreen(
                     },
                     modifier = Modifier
                         .size(48.dp)
-                        .background(MaterialTheme.colorScheme.primary, CircleShape)
+                        .background(MaterialTheme.colorScheme.primary, CircleShape),
+                    enabled = !uiState.isLoading
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Send,

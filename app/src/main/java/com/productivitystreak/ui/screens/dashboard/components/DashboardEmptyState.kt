@@ -114,13 +114,13 @@ fun DashboardEmptyState(onAddHabitClick: () -> Unit) {
                 }
 
                 Text(
-                    text = "No habits for today",
+                    text = "No protocols for today",
                     style = MaterialTheme.typography.titleLarge,
                     color = designColors.textPrimary,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "Enjoy your free time or add a new habit to keep the streak alive.",
+                    text = "Enjoy your free time or define a new protocol to keep the streak alive.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = designColors.textSecondary,
                     modifier = Modifier.padding(horizontal = 12.dp),
@@ -128,7 +128,7 @@ fun DashboardEmptyState(onAddHabitClick: () -> Unit) {
                 )
 
                 PrimaryButton(
-                    text = "Add a habit",
+                    text = "Define Protocol",
                     onClick = onAddHabitClick,
                     modifier = Modifier.padding(top = 8.dp)
                 )
