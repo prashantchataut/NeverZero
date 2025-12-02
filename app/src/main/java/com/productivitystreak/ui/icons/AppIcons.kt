@@ -37,6 +37,8 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.Flag
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -88,6 +90,8 @@ object AppIcons {
     val Share: ImageVector = Icons.Outlined.Share
     val Check: ImageVector = Icons.Rounded.Check
     val MoreVert: ImageVector = Icons.Rounded.MoreVert
+    val Flag: ImageVector = Icons.Outlined.Flag
+    val Star: ImageVector = Icons.Outlined.Star
     
     // Feedback
     val Success: ImageVector = Icons.Rounded.CheckCircle

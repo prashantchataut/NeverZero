@@ -4,11 +4,16 @@ import androidx.compose.ui.graphics.Color
 
 // ==================== CALM ZEN RPG PALETTE ====================
 
+// Basic Colors
+val White = Color(0xFFFFFFFF)
+val NeonCyan = Color(0xFF00F5FF) // Bright cyan for accents
+val NeonPurple = Color(0xFFBF40BF) // Bright purple for accents
+
 // Backgrounds (Deep Muted Blue-Greys)
 val Background = Color(0xFF0B0F14) // Very dark desaturated blue
 val Surface = Color(0xFF151A21) // Slightly lighter
 val SurfaceVariant = Color(0xFF1E242C) // Elevated surface
-val Border = Color(0xFF2A323C) // Muted border
+val BorderColor = Color(0xFF2A323C) // Muted border (renamed to avoid conflict with Border object)
 
 // Primary Colors (Muted Blues & Desaturated Accents)
 val PrimaryBlue = Color(0xFF6482AD) // Muted Steel Blue
@@ -64,7 +69,7 @@ val OnSurface = TextSecondary
 val SurfaceVariantColor = SurfaceVariant
 val OnSurfaceVariant = TextTertiary
 
-val Outline = Border
+val Outline = BorderColor
 val OutlineVariant = Color(0xFF1A1A1A)
 val Scrim = Color(0xFF000000)
 
@@ -131,11 +136,11 @@ object GradientColors {
 
 object SemanticColors {
     val Success = Color(0xFF2ED573)
-    val OnSuccess = Void
+    val OnSuccess = Background
     val SuccessContainer = Success.copy(alpha = 0.2f)
     
     val Warning = Color(0xFFFFA502)
-    val OnWarning = Void
+    val OnWarning = Background
     val WarningContainer = Warning.copy(alpha = 0.2f)
 
     val Info = Color(0xFF1E90FF)
@@ -195,9 +200,9 @@ object NeverZeroDesignPalettes {
     val Light = NeverZeroDesignColors(
         isDark = false,
         background = Color(0xFFF7F8FA), // Surface.Base
-        backgroundAlt = Color(0xFFFFFFFF),
-        surface = Color(0xFFFFFFFF), // Surface.Card
-        surfaceElevated = Color(0xFFFFFFFF),
+        backgroundAlt = White,
+        surface = White, // Surface.Card
+        surfaceElevated = White,
         border = Color(0xFFE2E4EA), // Border.Muted
         glow = Color.Transparent,
         primary = Color(0xFF00C853), // Brand.Primary (Emerald)
