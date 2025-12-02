@@ -182,7 +182,7 @@ object NeverZeroDesignPalettes {
         backgroundAlt = Surface,
         surface = Surface,
         surfaceElevated = SurfaceVariant,
-        border = Border,
+        border = BorderColor,
         glow = PrimaryBlue.copy(alpha = 0.3f),
         primary = PrimaryBlue,
         onPrimary = TextPrimary,
