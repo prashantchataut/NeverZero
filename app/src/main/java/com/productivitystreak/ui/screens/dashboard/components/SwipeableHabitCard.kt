@@ -10,6 +10,7 @@ import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
@@ -211,7 +212,7 @@ fun SwipeableHabitCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Rounded.AutoAwesome,
+                        imageVector = Icons.Rounded.AutoAwesome,
                         contentDescription = null,
                         tint = accentColor,
                         modifier = Modifier.size(16.dp)
