@@ -3,12 +3,14 @@ package com.productivitystreak.ui.screens.dashboard
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -129,9 +131,10 @@ fun DashboardScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     items(
-                        items = streakUiState.todayTasks,
-                        key = { it.id }
-                    ) { task ->
+                        count = streakUiState.todayTasks.size,
+                        key = { index -> streakUiState.todayTasks[index].id }
+                    ) { index ->
+                        val task = streakUiState.todayTasks[index]
                         com.productivitystreak.ui.screens.dashboard.components.SwipeableHabitCard(
                             task = task,
                             onComplete = {
@@ -221,17 +224,20 @@ fun DashboardScreen(
             }
         }
 
-        // 4. Teach Me a Word (AI Highlight) & Monk Mode
+        // 4. AI Briefing as Chat
         item {
-            com.productivitystreak.ui.screens.dashboard.components.MorningBriefCard(
-                quote = null,  // Quote not in StreakUiState
+            com.productivitystreak.ui.screens.dashboard.components.AiBriefingCard(
                 briefing = streakUiState.dailyBriefing,
-                isQuoteLoading = streakUiState.isLoading,
-                todayTasks = streakUiState.todayTasks,
-                onRefreshQuote = onRefreshQuote,
+                isLoading = streakUiState.isLoading,
+                onReplyClick = {
+                    performHaptic()
+                    onOpenBuddhaChat()
+                },
                 modifier = Modifier.fillMaxWidth()
             )
         }
+        
+        // 5. Teach Me a Word & Monk Mode
 
         item {
             Row(
@@ -254,7 +260,7 @@ fun DashboardScreen(
             }
         }
 
-        // 5. Challenges
+        // 6. Challenges
         item {
             com.productivitystreak.ui.screens.dashboard.components.ChallengesWidget(
                 onClick = {
@@ -264,7 +270,7 @@ fun DashboardScreen(
             )
         }
 
-        // 6. Habits List (Renamed to Disciplines)
+        // 7. Habits List (Renamed to Disciplines)
         item {
             Text(
                 text = "DAILY DISCIPLINES",

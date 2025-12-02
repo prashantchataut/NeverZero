@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.productivitystreak.ui.theme.Spacing
+import com.productivitystreak.ui.theme.AnimationTokens
 import java.time.LocalTime
 import java.time.LocalDate
 import java.time.DayOfWeek
@@ -65,7 +66,7 @@ fun HeroSection(
     val progress = if (totalHabits > 0) habitsCompleted.toFloat() / totalHabits else 0f
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
-        animationSpec = com.productivitystreak.ui.theme.AnimationTokens.AnimationCurves.SpringyEnter,
+        animationSpec = AnimationTokens.AnimationCurves.SpringyEnter,
         label = "progress"
     )
     
@@ -156,7 +157,7 @@ fun HeroSection(
 @Composable
 private fun ProgressRing(
     progress: Float,
-    size: dp,
+    size: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary

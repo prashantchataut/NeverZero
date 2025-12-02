@@ -59,6 +59,7 @@ import com.productivitystreak.ui.theme.NeverZeroTheme
 import com.productivitystreak.ui.state.stats.LeaderboardType
 import androidx.compose.ui.res.stringResource
 import com.productivitystreak.R
+import com.productivitystreak.ui.screens.stats.components.StoryCardsSection
 import kotlin.math.absoluteValue
 
 @Composable
@@ -90,6 +91,9 @@ fun StatsScreen(
                 modifier = Modifier.padding(vertical = com.productivitystreak.ui.theme.Spacing.xxl)
             )
         } else {
+            // Story Cards Section
+            StoryCardsSection(statsState = statsState)
+            
             SummaryRow(statsState = statsState)
 
             // Consistency Score Card - use top consistency streak if available
