@@ -166,13 +166,31 @@ fun PremiumGlassCard(
     onClick: () -> Unit = {},
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = MotionSpec.quickScale(),
+        label = "premium-card-scale"
+    )
+    
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+
     Surface(
-        onClick = onClick,
-        modifier = modifier,
+        onClick = {
+            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+            onClick()
+        },
+        modifier = modifier.graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        },
         color = NeverZeroTheme.designColors.surface,
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, NeverZeroTheme.designColors.primary.copy(alpha = 0.3f)),
-        tonalElevation = 0.dp
+        tonalElevation = 0.dp,
+        interactionSource = interactionSource
     ) {
         Column(
             modifier = Modifier

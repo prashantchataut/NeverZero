@@ -47,13 +47,25 @@ fun ElevatedCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     if (onClick != null) {
+        val interactionSource = remember { MutableInteractionSource() }
+        val isPressed by interactionSource.collectIsPressedAsState()
+        val scale by animateFloatAsState(
+            targetValue = if (isPressed) 0.97f else 1f,
+            animationSpec = MotionSpec.quickScale(),
+            label = "scale"
+        )
+
         Card(
             onClick = onClick,
-            modifier = modifier,
+            modifier = modifier.graphicsLayer { 
+                scaleX = scale
+                scaleY = scale
+            },
             enabled = enabled,
             shape = shape,
             colors = CardDefaults.elevatedCardColors(),
             elevation = CardDefaults.elevatedCardElevation(defaultElevation = elevation),
+            interactionSource = interactionSource,
             content = content
         )
     } else {
@@ -80,13 +92,25 @@ fun FilledCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     if (onClick != null) {
+        val interactionSource = remember { MutableInteractionSource() }
+        val isPressed by interactionSource.collectIsPressedAsState()
+        val scale by animateFloatAsState(
+            targetValue = if (isPressed) 0.97f else 1f,
+            animationSpec = MotionSpec.quickScale(),
+            label = "scale"
+        )
+
         Card(
             onClick = onClick,
-            modifier = modifier,
+            modifier = modifier.graphicsLayer { 
+                scaleX = scale
+                scaleY = scale
+            },
             enabled = enabled,
             shape = shape,
             colors = CardDefaults.cardColors(),
             elevation = CardDefaults.cardElevation(),
+            interactionSource = interactionSource,
             content = content
         )
     } else {
@@ -114,14 +138,26 @@ fun OutlinedCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     if (onClick != null) {
+        val interactionSource = remember { MutableInteractionSource() }
+        val isPressed by interactionSource.collectIsPressedAsState()
+        val scale by animateFloatAsState(
+            targetValue = if (isPressed) 0.97f else 1f,
+            animationSpec = MotionSpec.quickScale(),
+            label = "scale"
+        )
+
         Card(
             onClick = onClick,
-            modifier = modifier,
+            modifier = modifier.graphicsLayer { 
+                scaleX = scale
+                scaleY = scale
+            },
             enabled = enabled,
             shape = shape,
             colors = CardDefaults.outlinedCardColors(),
             elevation = CardDefaults.outlinedCardElevation(),
             border = BorderStroke(Border.thin, borderColor),
+            interactionSource = interactionSource,
             content = content
         )
     } else {
@@ -191,13 +227,25 @@ fun GradientCard(
     elevation: Dp = Elevation.level3,
     content: @Composable BoxScope.() -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed && onClick != null) 0.97f else 1f,
+        animationSpec = MotionSpec.quickScale(),
+        label = "scale"
+    )
+
     Surface(
         onClick = onClick ?: {},
-        modifier = modifier,
+        modifier = modifier.graphicsLayer { 
+            scaleX = scale
+            scaleY = scale
+        },
         enabled = onClick != null && enabled,
         shape = shape,
         color = Color.Transparent,
-        tonalElevation = elevation
+        tonalElevation = elevation,
+        interactionSource = interactionSource
     ) {
         Box(
             modifier = Modifier

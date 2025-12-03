@@ -83,78 +83,70 @@ fun DashboardScreen(
     ) {
         // 1. Header
         item {
-            val habitsCompleted = uiState.todayTasks.count { it.isCompleted }
-            val totalHabits = uiState.todayTasks.size
-            val currentStreak = uiState.statsState.currentLongestStreak
-
-            DashboardHeader(
+            com.productivitystreak.ui.screens.home.HomeHeader(
                 userName = uiState.userName,
-                currentStreak = currentStreak,
-                habitsCompleted = habitsCompleted,
-                totalHabits = totalHabits,
-                scrollOffset = scrollState.firstVisibleItemScrollOffset
+                quote = uiState.quote,
+                level = streakUiState.rpgStats.level,
+                currentXp = streakUiState.rpgStats.currentXp,
+                xpToNextLevel = streakUiState.rpgStats.xpToNextLevel
             )
         }
 
-        // 1.5 Character Stats (RPG)
+
+
+        // 2. Focus Section (Hero Card)
         item {
-            RpgStatsCard(
-                stats = streakUiState.rpgStats,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+            val activeProtocol = streakUiState.todayTasks.firstOrNull { !it.isCompleted }
+            val activeQuest = streakUiState.oneOffTasks.firstOrNull { !it.isCompleted }
 
-        // 2. Today's Focus (Horizontal Swipeable Cards)
-        item {
-            Text(
-                text = "ACTIVE PROTOCOLS",
-                style = MaterialTheme.typography.labelLarge,
-                color = NeverZeroTheme.designColors.textSecondary,
-                modifier = Modifier.padding(bottom = Spacing.sm)
-            )
-        }
-
-        if (streakUiState.isLoading) {
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
-                    repeat(2) {
-                        com.productivitystreak.ui.components.GlassCard(
-                            modifier = Modifier.width(280.dp).height(160.dp),
-                            content = {}
-                        )
+            if (activeProtocol != null) {
+                com.productivitystreak.ui.screens.home.FocusHeroCard(
+                    title = activeProtocol.title,
+                    subtitle = "Active Protocol",
+                    accentHex = activeProtocol.accentHex,
+                    streakCount = activeProtocol.streakCount,
+                    onStart = {
+                        performHaptic()
+                        onToggleTask(activeProtocol.id)
                     }
-                }
-            }
-        } else if (streakUiState.todayTasks.isEmpty()) {
-            item {
-                DashboardEmptyState(onAddHabitClick = {
-                    performHaptic()
-                    onAddHabitClick()
-                })
-            }
-        } else {
-            item {
-                androidx.compose.foundation.lazy.LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                    contentPadding = PaddingValues(end = Spacing.md),
-                    modifier = Modifier.fillMaxWidth()
+                )
+            } else if (activeQuest != null) {
+                com.productivitystreak.ui.screens.home.FocusHeroCard(
+                    title = activeQuest.title,
+                    subtitle = "Quest of the Day",
+                    accentHex = "#FF5722", // Default orange for quests
+                    streakCount = null,
+                    onStart = {
+                        performHaptic()
+                        onToggleOneOffTask(activeQuest.id)
+                    }
+                )
+            } else {
+                // No active tasks - show empty state or "All Clear"
+                 com.productivitystreak.ui.components.GlassCard(
+                    modifier = Modifier.fillMaxWidth().clickable { onAddHabitClick() },
+                    contentPadding = PaddingValues(24.dp)
                 ) {
-                    items(
-                        count = streakUiState.todayTasks.size,
-                        key = { index -> streakUiState.todayTasks[index].id }
-                    ) { index ->
-                        val task = streakUiState.todayTasks[index]
-                        com.productivitystreak.ui.screens.dashboard.components.SwipeableHabitCard(
-                            task = task,
-                            onComplete = {
-                                performHaptic(com.productivitystreak.ui.theme.HapticTokens.Success)
-                                onToggleTask(task.id)
-                            },
-                            onSkip = {
-                                performHaptic(com.productivitystreak.ui.theme.HapticTokens.Impact)
-                                // TODO: Implement skip logic in ViewModel
-                            },
-                            modifier = Modifier.width(300.dp)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "ALL SYSTEMS GO",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = NeverZeroTheme.designColors.primary,
+                            letterSpacing = 1.5.sp
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "No active protocols",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = NeverZeroTheme.designColors.textSecondary
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        PrimaryButton(
+                            text = "Initialize New Protocol",
+                            onClick = { onAddHabitClick() }
                         )
                     }
                 }
@@ -233,46 +225,24 @@ fun DashboardScreen(
             }
         }
 
-        // 4. AI Briefing as Chat
+        // 3. Widget Grid (2x2)
         item {
-            com.productivitystreak.ui.screens.dashboard.components.AiBriefingCard(
-                briefing = streakUiState.dailyBriefing,
-                isLoading = streakUiState.isLoading,
-                onReplyClick = {
+            com.productivitystreak.ui.screens.dashboard.components.DashboardWidgetGrid(
+                wordOfTheDay = uiState.vocabularyState.wordOfTheDay, // Need to ensure this is exposed
+                buddhaInsight = streakUiState.buddhaInsight,
+                onTeachWordClick = {
                     performHaptic()
-                    onOpenBuddhaChat()
+                    onAddEntrySelected(AddEntryType.TEACH)
                 },
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        
-        // 5. Teach Me a Word & Monk Mode
-
-        item {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.md)
-            ) {
-                com.productivitystreak.ui.screens.dashboard.components.TeachWordWidget(
-                    onClick = { 
-                        performHaptic()
-                        onAddEntrySelected(AddEntryType.TEACH) 
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-                com.productivitystreak.ui.screens.dashboard.components.MonkModeWidget(
-                    onClick = {
-                        performHaptic()
-                        onOpenMonkMode()
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
-        // 6. Challenges
-        item {
-            com.productivitystreak.ui.screens.dashboard.components.ChallengesWidget(
-                onClick = {
+                onBuddhaInsightRefresh = {
+                    performHaptic()
+                    // Trigger refresh logic if available in VM
+                },
+                onMonkModeClick = {
+                    performHaptic()
+                    onOpenMonkMode()
+                },
+                onChallengesClick = {
                     performHaptic()
                     onOpenChallenges()
                 }
@@ -327,28 +297,4 @@ fun DashboardScreen(
     }
 }
 
-@Composable
-private fun DashboardHeader(
-    userName: String,
-    currentStreak: Int,
-    habitsCompleted: Int,
-    totalHabits: Int,
-    scrollOffset: Int = 0
-) {
-    // We need to update HeroSection usage here, but wait, DashboardHeader currently just shows Text.
-    // The previous HeroSection was likely used inside DashboardHeader or replaced it.
-    // Let's check the file content again. Ah, DashboardHeader in the file I read (Step 154) ONLY has Text.
-    // It seems I need to REPLACE the Text with the HeroSection component!
-    
-    // Wait, the plan says "Integrate HeroSection".
-    // So I should replace the simple Text header with the HeroSection component.
-    
-    com.productivitystreak.ui.screens.dashboard.components.HeroSection(
-        userName = userName,
-        currentStreak = currentStreak,
-        habitsCompleted = habitsCompleted,
-        totalHabits = totalHabits,
-        scrollOffset = scrollOffset,
-        modifier = Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(24.dp))
-    )
-}
+

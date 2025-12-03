@@ -16,17 +16,17 @@ import androidx.compose.ui.unit.dp
  */
 object Spacing {
     val none: Dp = 0.dp
-    val xxxs: Dp = 2.dp      // Micro spacing
-    val xxs: Dp = 4.dp       // Extra extra small
-    val xs: Dp = 8.dp        // Extra small
-    val sm: Dp = 12.dp       // Small
-    val md: Dp = 16.dp       // Medium (most common)
-    val lg: Dp = 20.dp       // Large
-    val xl: Dp = 24.dp       // Extra large
-    val xxl: Dp = 32.dp      // Extra extra large
-    val xxxl: Dp = 40.dp     // Huge
-    val xxxxl: Dp = 48.dp    // Massive
-    val xxxxxl: Dp = 64.dp   // Gigantic
+    val xxxs: Dp = 2.dp      // Micro spacing (Sub-grid)
+    val xxs: Dp = 4.dp       // Extra extra small (Half-grid)
+    val xs: Dp = 8.dp        // Extra small (1x Grid)
+    val sm: Dp = 8.dp        // Small (Aliased to 1x Grid to avoid 12dp)
+    val md: Dp = 16.dp       // Medium (2x Grid)
+    val lg: Dp = 24.dp       // Large (3x Grid)
+    val xl: Dp = 32.dp       // Extra large (4x Grid)
+    val xxl: Dp = 40.dp      // Extra extra large (5x Grid)
+    val xxxl: Dp = 48.dp     // Huge (6x Grid)
+    val xxxxl: Dp = 64.dp    // Massive (8x Grid)
+    val xxxxxl: Dp = 80.dp   // Gigantic (10x Grid)
 }
 
 // ==================== SHAPE TOKENS ====================

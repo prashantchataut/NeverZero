@@ -1,34 +1,26 @@
 package com.productivitystreak.ui.navigation
 
-import android.net.Uri
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.with
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.BarChart
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.rounded.Spa
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,8 +33,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material.icons.rounded.Spa
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,46 +43,50 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
-import androidx.compose.foundation.layout.offset
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.productivitystreak.ui.components.NeverZeroBottomBar
+import com.productivitystreak.ui.components.PrimaryButton
 import com.productivitystreak.ui.screens.add.AddEntryMenuSheet
 import com.productivitystreak.ui.screens.add.HabitFormSheet
 import com.productivitystreak.ui.screens.add.JournalFormSheet
-import com.productivitystreak.ui.screens.add.VocabularyFormSheet
 import com.productivitystreak.ui.screens.add.TeachWordSheet
+import com.productivitystreak.ui.screens.add.TimeCapsuleFormSheet
+import com.productivitystreak.ui.screens.add.VocabularyFormSheet
 import com.productivitystreak.ui.screens.dashboard.DashboardScreen
 import com.productivitystreak.ui.screens.discover.AssetDetailScreen
-import com.productivitystreak.ui.screens.discover.DiscoverScreen
 import com.productivitystreak.ui.screens.onboarding.OnboardingFlow
 import com.productivitystreak.ui.screens.profile.ProfileScreen
 import com.productivitystreak.ui.screens.stats.StatsScreen
 import com.productivitystreak.ui.state.AddEntryType
-import com.productivitystreak.ui.state.AppUiState
 import com.productivitystreak.ui.state.UiMessageType
-import com.productivitystreak.ui.theme.NeverZeroTheme
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 
-enum class MainDestination { HOME, STATS, MENTOR, PROFILE, FOCUS, CHALLENGES }
+enum class MainDestination(val route: String) {
+    HOME("home"),
+    STATS("stats"),
+    MENTOR("mentor"),
+    PROFILE("profile"),
+    FOCUS("focus"),
+    CHALLENGES("challenges")
+}
 
-@OptIn(ExperimentalMaterial3Api::class, androidx.compose.animation.ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NeverZeroApp(
     appViewModel: com.productivitystreak.ui.AppViewModel,
     viewModelFactory: androidx.lifecycle.ViewModelProvider.Factory
 ) {
     val uiState by appViewModel.uiState.collectAsStateWithLifecycle()
+    val navController = rememberNavController()
     
     // Feature ViewModels
     val streakViewModel: com.productivitystreak.ui.screens.stats.StreakViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = viewModelFactory)
@@ -121,7 +115,6 @@ fun NeverZeroApp(
     val isAuthLoading by onboardingViewModel.isLoading.collectAsStateWithLifecycle()
 
     if (isAuthLoading) {
-        // Show a blank screen or a splash logo while loading preference
         Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
         return
     }
@@ -148,7 +141,6 @@ fun NeverZeroApp(
         return
     }
 
-
     val snackbarHostState = remember { SnackbarHostState() }
     val uiMessage = uiState.uiMessage
     val scope = rememberCoroutineScope()
@@ -164,9 +156,8 @@ fun NeverZeroApp(
         }
     }
 
-    var currentDestination by rememberSaveable { mutableStateOf(MainDestination.HOME) }
+    // State for overlays
     var selectedAssetId by rememberSaveable { mutableStateOf<String?>(null) }
-    var showSkillPaths by rememberSaveable { mutableStateOf(false) }
     var showTemplates by rememberSaveable { mutableStateOf(false) }
     var showBuddhaChat by rememberSaveable { mutableStateOf(false) }
     var showLeaderboard by rememberSaveable { mutableStateOf(false) }
@@ -174,6 +165,19 @@ fun NeverZeroApp(
     val addUi = uiState.addUiState
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val isSheetVisible = addUi.isMenuOpen || addUi.activeForm != null
+
+    // Navigation State
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    val currentDestination = when (currentRoute) {
+        MainDestination.HOME.route -> MainDestination.HOME
+        MainDestination.STATS.route -> MainDestination.STATS
+        MainDestination.MENTOR.route -> MainDestination.MENTOR
+        MainDestination.PROFILE.route -> MainDestination.PROFILE
+        MainDestination.FOCUS.route -> MainDestination.FOCUS
+        MainDestination.CHALLENGES.route -> MainDestination.CHALLENGES
+        else -> MainDestination.HOME
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -212,23 +216,29 @@ fun NeverZeroApp(
             }
         },
         bottomBar = {
-            NeverZeroBottomBar(
-                current = currentDestination,
-                onDestinationSelected = { destination ->
-                    if (destination == MainDestination.HOME && currentDestination == MainDestination.HOME) return@NeverZeroBottomBar
-                    currentDestination = destination
-                    if (uiState.profileState.hapticsEnabled) {
-                        haptics.performHapticFeedback(com.productivitystreak.ui.theme.HapticTokens.Selection)
-                    }
-                },
-                onAddTapped = {
-                    if (uiState.profileState.hapticsEnabled) {
-                        haptics.performHapticFeedback(com.productivitystreak.ui.theme.HapticTokens.Impact)
-                    }
-                    onAddButtonTapped()
-                },
-                isMenuOpen = isSheetVisible
-            )
+            // Hide bottom bar on Focus and Challenges screens if desired, or keep it.
+            // For now, we keep it for main tabs.
+            if (currentRoute in listOf(MainDestination.HOME.route, MainDestination.STATS.route, MainDestination.MENTOR.route, MainDestination.PROFILE.route)) {
+                NeverZeroBottomBar(
+                    currentDestination = currentDestination,
+                    onNavigate = { destination ->
+                        navController.navigate(destination.route) {
+                            // Pop up to the start destination of the graph to
+                            // avoid building up a large stack of destinations
+                            // on the back stack as users select items
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            // Avoid multiple copies of the same destination when
+                            // reselecting the same item
+                            launchSingleTop = true
+                            // Restore state when reselecting a previously selected item
+                            restoreState = true
+                        }
+                    },
+                    onQuickAction = onAddButtonTapped
+                )
+            }
         }
     ) { innerPadding ->
         Box(
@@ -236,93 +246,95 @@ fun NeverZeroApp(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            AnimatedContent(
-                targetState = currentDestination,
-                transitionSpec = {
-                    (androidx.compose.animation.fadeIn(com.productivitystreak.ui.theme.AnimationPresets.screenTransition()) +
-                            androidx.compose.animation.scaleIn(initialScale = 0.95f, animationSpec = com.productivitystreak.ui.theme.AnimationPresets.screenTransition())) with
-                            androidx.compose.animation.fadeOut(com.productivitystreak.ui.theme.AnimationPresets.screenTransition())
-                },
-                label = "main-nav"
-            ) { destination ->
-                when (destination) {
-                    MainDestination.HOME -> {
-                        val streakState by streakViewModel.uiState.collectAsStateWithLifecycle()
-                        DashboardScreen(
-                            streakUiState = streakState,
-                            uiState = uiState,
-                            onToggleTask = streakViewModel::onToggleTask,
-                            onRefreshQuote = streakViewModel::fetchBuddhaInsight,
-                            onAddHabitClick = appViewModel::onAddButtonTapped,
-                            onSelectStreak = streakViewModel::onSelectStreak,
-                            onAddOneOffTask = streakViewModel::addOneOffTask,
-                            onToggleOneOffTask = streakViewModel::toggleOneOffTask,
-                            onDeleteOneOffTask = streakViewModel::deleteOneOffTask,
-                            onAssetSelected = { assetId -> selectedAssetId = assetId },
-                            onOpenBuddhaChat = { showBuddhaChat = true },
-                            onOpenJournal = { appViewModel.onAddEntrySelected(AddEntryType.JOURNAL) },
-                            onOpenTimeCapsule = { appViewModel.onAddEntrySelected(AddEntryType.TIME_CAPSULE) },
-                            onOpenLeaderboard = { showLeaderboard = true },
-                            onOpenMonkMode = { currentDestination = MainDestination.FOCUS },
-                            onOpenChallenges = { currentDestination = MainDestination.CHALLENGES }
-                        )
-                    }
-                    MainDestination.PROFILE -> {
-                        val profileState by profileViewModel.uiState.collectAsStateWithLifecycle()
-                        ProfileScreen(
-                            userName = uiState.userName,
-                            profileState = profileState.profileState,
-                            settingsState = profileState.settingsState,
-                            totalPoints = uiState.totalPoints,
-                            timeCapsules = profileState.timeCapsules,
-                            onSettingsThemeChange = profileViewModel::onSettingsThemeChange,
-                            onSettingsDailyRemindersToggle = profileViewModel::onSettingsDailyRemindersToggle,
-                            onSettingsWeeklyBackupsToggle = profileViewModel::onSettingsWeeklyBackupsToggle,
-                            onSettingsReminderTimeChange = profileViewModel::onSettingsReminderTimeChange,
-                            onSettingsHapticFeedbackToggle = profileViewModel::onSettingsHapticFeedbackToggle,
-                            onSettingsCreateBackup = profileViewModel::onSettingsCreateBackup,
-                            onSettingsRestoreBackup = profileViewModel::onSettingsRestoreBackup,
-                            onSettingsRestoreFileSelected = profileViewModel::onSettingsRestoreFromFile,
-                            onSettingsDismissRestoreDialog = profileViewModel::onSettingsDismissRestoreDialog,
-                            onSettingsDismissMessage = profileViewModel::onSettingsDismissMessage,
-                            onToggleNotifications = profileViewModel::onToggleNotifications,
-                            onChangeReminderFrequency = profileViewModel::onChangeReminderFrequency,
-                            onToggleWeeklySummary = profileViewModel::onToggleWeeklySummary,
-                            onToggleHaptics = profileViewModel::onToggleHaptics,
-                            onRequestNotificationPermission = appViewModel::onShowNotificationPermissionDialog,
-                            onRequestExactAlarmPermission = appViewModel::onShowAlarmPermissionDialog,
-                            onCreateTimeCapsule = profileViewModel::onCreateTimeCapsule,
-                            onSaveTimeCapsuleReflection = profileViewModel::onSaveTimeCapsuleReflection
-                        )
-                    }
-                    MainDestination.STATS -> {
-                        val streakState by streakViewModel.uiState.collectAsStateWithLifecycle()
-                        StatsScreen(
-                            statsState = streakState.statsState,
-                            onLeaderboardTypeSelected = streakViewModel::toggleLeaderboardType,
-                            onOpenLeaderboard = { showLeaderboard = true }
-                        )
-                    }
-                    MainDestination.MENTOR -> {
-                        val app = appViewModel.getApplication<com.productivitystreak.NeverZeroApplication>()
-                        com.productivitystreak.ui.screens.ai.BuddhaChatScreen(
-                            userName = uiState.userName,
-                            onBackClick = { currentDestination = MainDestination.HOME },
-                            repository = app.buddhaRepository,
-                            hapticsEnabled = uiState.profileState.hapticsEnabled,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                    MainDestination.FOCUS -> {
-                        com.productivitystreak.ui.screens.focus.FocusScreen(
-                            onBackClick = { currentDestination = MainDestination.HOME }
-                        )
-                    }
-                    MainDestination.CHALLENGES -> {
-                        com.productivitystreak.ui.screens.challenges.ChallengesScreen(
-                            onBackClick = { currentDestination = MainDestination.HOME }
-                        )
-                    }
+            NavHost(
+                navController = navController,
+                startDestination = MainDestination.HOME.route,
+                enterTransition = { fadeIn(animationSpec = tween(300)) },
+                exitTransition = { fadeOut(animationSpec = tween(300)) },
+                popEnterTransition = { fadeIn(animationSpec = tween(300)) },
+                popExitTransition = { fadeOut(animationSpec = tween(300)) }
+            ) {
+                composable(MainDestination.HOME.route) {
+                    val streakState by streakViewModel.uiState.collectAsStateWithLifecycle()
+                    DashboardScreen(
+                        streakUiState = streakState,
+                        uiState = uiState,
+                        onToggleTask = streakViewModel::onToggleTask,
+                        onRefreshQuote = streakViewModel::fetchBuddhaInsight,
+                        onAddHabitClick = appViewModel::onAddButtonTapped,
+                        onSelectStreak = streakViewModel::onSelectStreak,
+                        onAddOneOffTask = streakViewModel::addOneOffTask,
+                        onToggleOneOffTask = streakViewModel::toggleOneOffTask,
+                        onDeleteOneOffTask = streakViewModel::deleteOneOffTask,
+                        onAssetSelected = { assetId -> selectedAssetId = assetId },
+                        onOpenBuddhaChat = { navController.navigate(MainDestination.MENTOR.route) },
+                        onOpenJournal = { appViewModel.onAddEntrySelected(AddEntryType.JOURNAL) },
+                        onOpenTimeCapsule = { appViewModel.onAddEntrySelected(AddEntryType.TIME_CAPSULE) },
+                        onOpenLeaderboard = { showLeaderboard = true },
+                        onOpenMonkMode = { navController.navigate(MainDestination.FOCUS.route) },
+                        onOpenChallenges = { navController.navigate(MainDestination.CHALLENGES.route) }
+                    )
+                }
+
+                composable(MainDestination.STATS.route) {
+                    val streakState by streakViewModel.uiState.collectAsStateWithLifecycle()
+                    StatsScreen(
+                        statsState = streakState.statsState,
+                        onLeaderboardTypeSelected = streakViewModel::toggleLeaderboardType,
+                        onOpenLeaderboard = { showLeaderboard = true }
+                    )
+                }
+
+                composable(MainDestination.MENTOR.route) {
+                    val app = appViewModel.getApplication<com.productivitystreak.NeverZeroApplication>()
+                    com.productivitystreak.ui.screens.ai.BuddhaChatScreen(
+                        userName = uiState.userName,
+                        onBackClick = { navController.navigateUp() },
+                        repository = app.buddhaRepository,
+                        hapticsEnabled = uiState.profileState.hapticsEnabled,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                composable(MainDestination.PROFILE.route) {
+                    val profileState by profileViewModel.uiState.collectAsStateWithLifecycle()
+                    ProfileScreen(
+                        userName = uiState.userName,
+                        profileState = profileState.profileState,
+                        settingsState = profileState.settingsState,
+                        totalPoints = uiState.totalPoints,
+                        timeCapsules = profileState.timeCapsules,
+                        onSettingsThemeChange = profileViewModel::onSettingsThemeChange,
+                        onSettingsDailyRemindersToggle = profileViewModel::onSettingsDailyRemindersToggle,
+                        onSettingsWeeklyBackupsToggle = profileViewModel::onSettingsWeeklyBackupsToggle,
+                        onSettingsReminderTimeChange = profileViewModel::onSettingsReminderTimeChange,
+                        onSettingsHapticFeedbackToggle = profileViewModel::onSettingsHapticFeedbackToggle,
+                        onSettingsCreateBackup = profileViewModel::onSettingsCreateBackup,
+                        onSettingsRestoreBackup = profileViewModel::onSettingsRestoreBackup,
+                        onSettingsRestoreFileSelected = profileViewModel::onSettingsRestoreFromFile,
+                        onSettingsDismissRestoreDialog = profileViewModel::onSettingsDismissRestoreDialog,
+                        onSettingsDismissMessage = profileViewModel::onSettingsDismissMessage,
+                        onToggleNotifications = profileViewModel::onToggleNotifications,
+                        onChangeReminderFrequency = profileViewModel::onChangeReminderFrequency,
+                        onToggleWeeklySummary = profileViewModel::onToggleWeeklySummary,
+                        onToggleHaptics = profileViewModel::onToggleHaptics,
+                        onRequestNotificationPermission = appViewModel::onShowNotificationPermissionDialog,
+                        onRequestExactAlarmPermission = appViewModel::onShowAlarmPermissionDialog,
+                        onCreateTimeCapsule = profileViewModel::onCreateTimeCapsule,
+                        onSaveTimeCapsuleReflection = profileViewModel::onSaveTimeCapsuleReflection
+                    )
+                }
+
+                composable(MainDestination.FOCUS.route) {
+                    com.productivitystreak.ui.screens.focus.FocusScreen(
+                        onBackClick = { navController.navigateUp() }
+                    )
+                }
+
+                composable(MainDestination.CHALLENGES.route) {
+                    com.productivitystreak.ui.screens.challenges.ChallengesScreen(
+                        onBackClick = { navController.navigateUp() }
+                    )
                 }
             }
 
@@ -338,7 +350,6 @@ fun NeverZeroApp(
             if (isSheetVisible) {
                 ModalBottomSheet(
                     onDismissRequest = {
-                        // Use a coroutine to avoid blocking the UI thread during dismissal
                         scope.launch {
                             if (addUi.activeForm != null) {
                                 onDismissAddForm()
@@ -377,7 +388,6 @@ fun NeverZeroApp(
                             )
                         }
                         AddEntryType.TEMPLATE -> {
-                            // Close sheet and navigate to templates
                             LaunchedEffect(Unit) {
                                 onDismissAddMenu()
                                 showTemplates = true
@@ -400,7 +410,7 @@ fun NeverZeroApp(
                             )
                         }
                         AddEntryType.TIME_CAPSULE -> {
-                            com.productivitystreak.ui.screens.add.TimeCapsuleFormSheet(
+                            TimeCapsuleFormSheet(
                                 isSubmitting = addUi.isSubmitting,
                                 onSubmit = { message, goal, days ->
                                     profileViewModel.onCreateTimeCapsule(message, goal, days)
@@ -483,7 +493,7 @@ fun NeverZeroApp(
                                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            com.productivitystreak.ui.components.PrimaryButton(
+                            PrimaryButton(
                                 text = "Continue",
                                 onClick = {
                                     journalViewModel.clearBuddhaResponse()
@@ -498,120 +508,3 @@ fun NeverZeroApp(
         }
     }
 }
-
-@Composable
-private fun NeverZeroBottomBar(
-    current: MainDestination,
-    onDestinationSelected: (MainDestination) -> Unit,
-    onAddTapped: () -> Unit,
-    isMenuOpen: Boolean = false
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = com.productivitystreak.ui.theme.Spacing.md, vertical = com.productivitystreak.ui.theme.Spacing.sm),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .blur(20.dp),
-            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-            tonalElevation = com.productivitystreak.ui.theme.Elevation.level2,
-            shape = com.productivitystreak.ui.theme.Shapes.extraLarge
-        ) {}
-
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = Color.Transparent,
-            shape = com.productivitystreak.ui.theme.Shapes.extraLarge
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = com.productivitystreak.ui.theme.Spacing.lg, vertical = com.productivitystreak.ui.theme.Spacing.sm),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                NavItem(
-                    icon = Icons.Outlined.Home,
-                    label = "Home",
-                    selected = current == MainDestination.HOME,
-                    onClick = { onDestinationSelected(MainDestination.HOME) }
-                )
-                NavItem(
-                    icon = Icons.Outlined.BarChart,
-                    label = "Stats",
-                    selected = current == MainDestination.STATS,
-                    onClick = { onDestinationSelected(MainDestination.STATS) }
-                )
-
-                com.productivitystreak.ui.components.StyledFAB(
-                    icon = Icons.Outlined.Add,
-                    onClick = onAddTapped,
-                    containerColor = NeverZeroTheme.gradientColors.PremiumStart,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    isExpanded = isMenuOpen
-                )
-
-                NavItem(
-                    icon = Icons.Rounded.Spa,
-                    label = "Mentor",
-                    selected = current == MainDestination.MENTOR,
-                    onClick = { onDestinationSelected(MainDestination.MENTOR) }
-                )
-                NavItem(
-                    icon = Icons.Outlined.Person,
-                    label = "Profile",
-                    selected = current == MainDestination.PROFILE,
-                    onClick = { onDestinationSelected(MainDestination.PROFILE) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun NavItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val scale by androidx.compose.animation.core.animateFloatAsState(
-        targetValue = if (selected) 1.1f else 1f,
-        label = "scale"
-    )
-    
-    val color by androidx.compose.animation.animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-        label = "color"
-    )
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-        modifier = Modifier
-            .scale(scale)
-            .clip(RoundedCornerShape(12.dp)) // Less aggressive rounding
-            .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 4.dp) // More padding
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = color
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = color,
-            maxLines = 1,
-            softWrap = false,
-            fontSize = 10.sp, // Slightly smaller to fit
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
-        )
-    }
-}
-
-

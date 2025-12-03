@@ -14,10 +14,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 /**
- * Calm Zen RPG Color Scheme
- * Professional Dark Mode with Muted Colors
+ * Modern Stoic RPG Color Scheme
+ * Clean, professional, and wisdom-focused
  */
-private val CalmZenRPGColorScheme = darkColorScheme(
+private val ModernStoicColorScheme = lightColorScheme(
     primary = Primary,
     onPrimary = OnPrimary,
     primaryContainer = PrimaryContainer,
@@ -45,32 +45,21 @@ private val CalmZenRPGColorScheme = darkColorScheme(
     scrim = Scrim
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF00C853),
+// Keep Dark Scheme for users who really want it, but map to Stoic Dark equivalents if needed
+// For now, we enforce the Light "Stoic" theme as requested, but provide a dark fallback that matches
+private val DarkColorScheme = darkColorScheme(
+    primary = ForestGreenLight,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFF00C853).copy(alpha = 0.2f),
-    onPrimaryContainer = Color(0xFF003300),
-    secondary = Color(0xFF1B1B1F),
+    primaryContainer = ForestGreenDark,
+    onPrimaryContainer = ForestGreenLight,
+    secondary = SlateBlueLight,
     onSecondary = Color.White,
-    secondaryContainer = Color(0xFFEADDFF),
-    onSecondaryContainer = Color(0xFF21005D),
-    tertiary = Color(0xFF2BB8FF), // Accent.Info
-    onTertiary = Color.White,
-    tertiaryContainer = Color(0xFF2BB8FF).copy(alpha = 0.2f),
-    onTertiaryContainer = Color(0xFF004F4F),
-    error = Error,
-    onError = Color.White,
-    errorContainer = ErrorContainer,
-    onErrorContainer = OnErrorContainer,
-    background = Color(0xFFF7F8FA),
-    onBackground = Color(0xFF1B1B1F),
-    surface = Color(0xFFFFFFFF),
-    onSurface = Color(0xFF1B1B1F),
-    surfaceVariant = Color(0xFFF0F2F5),
-    onSurfaceVariant = Color(0xFF49454F),
-    outline = Color(0xFFE2E4EA),
-    outlineVariant = Color(0xFFCAC4D0),
-    scrim = Color.Black
+    secondaryContainer = SlateBlueDark,
+    onSecondaryContainer = SlateBlueLight,
+    background = Color(0xFF121212),
+    onBackground = Color(0xFFE0E0E0),
+    surface = Color(0xFF1E1E1E),
+    onSurface = Color(0xFFE0E0E0)
 )
 
 /**
@@ -91,7 +80,7 @@ private val AppShapes = Shapes(
 val LocalStreakColors = staticCompositionLocalOf { StreakColors }
 val LocalGradientColors = staticCompositionLocalOf { GradientColors }
 val LocalSemanticColors = staticCompositionLocalOf { SemanticColors }
-val LocalDesignColors = staticCompositionLocalOf { NeverZeroDesignPalettes.CalmZenRPG }
+val LocalDesignColors = staticCompositionLocalOf { NeverZeroDesignPalettes.ModernStoic }
 
 /**
  * Never Zero Theme
@@ -103,8 +92,11 @@ fun AppTheme(
     dynamicColor: Boolean = false, // Disable dynamic color
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) CalmZenRPGColorScheme else LightColorScheme
-    val designColors = if (darkTheme) NeverZeroDesignPalettes.CalmZenRPG else NeverZeroDesignPalettes.Light
+    // User requested "Modern Stoic RPG" with off-white background. 
+    // We prioritize the Light (Stoic) scheme.
+    // If the user explicitly wants dark mode, we can support it, but the default "Stoic" look is light.
+    val colorScheme = if (darkTheme) DarkColorScheme else ModernStoicColorScheme
+    val designColors = NeverZeroDesignPalettes.ModernStoic // Always use Stoic palette structure
     
     CompositionLocalProvider(
         LocalStreakColors provides StreakColors,

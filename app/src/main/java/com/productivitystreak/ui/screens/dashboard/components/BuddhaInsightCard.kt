@@ -1,19 +1,21 @@
 package com.productivitystreak.ui.screens.dashboard.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.productivitystreak.ui.components.GlassCard
-import com.productivitystreak.ui.components.PremiumGlassCard
+import com.productivitystreak.ui.components.InteractiveGlassCard
 import com.productivitystreak.ui.theme.NeverZeroTheme
-import androidx.compose.material.icons.filled.Refresh
 
 @Composable
 fun BuddhaInsightCard(
@@ -21,41 +23,51 @@ fun BuddhaInsightCard(
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    PremiumGlassCard(
-        modifier = modifier.fillMaxWidth(),
-        onClick = { onRefresh() }
+    InteractiveGlassCard(
+        onClick = onRefresh,
+        modifier = modifier.fillMaxWidth().height(160.dp),
+        contentPadding = PaddingValues(0.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Header
-            Text(
-                text = "DAILY WISDOM",
-                style = MaterialTheme.typography.labelSmall,
-                color = NeverZeroTheme.designColors.primary,
-                letterSpacing = 2.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Paper texture background (simulated with color)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFFFDFBF7)) // Off-white paper color
             )
             
-            // The Wisdom Content
-            Text(
-                text = insight,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontStyle = FontStyle.Italic,
-                    lineHeight = 24.sp
-                ),
-                color = NeverZeroTheme.designColors.textPrimary,
-                textAlign = TextAlign.Center
-            )
-
-            // Footer
-            Text(
-                text = "Tap to reflect",
-                style = MaterialTheme.typography.labelSmall,
-                color = NeverZeroTheme.designColors.textSecondary.copy(alpha = 0.6f)
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "DAILY WISDOM",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color(0xFF8D6E63), // Brownish
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+                
+                Text(
+                    text = insight,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontStyle = FontStyle.Italic,
+                        fontFamily = FontFamily.Serif
+                    ),
+                    color = Color(0xFF3E2723), // Dark Brown
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis
+                )
+                
+                Text(
+                    text = "Tap for insight",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color(0xFF8D6E63).copy(alpha = 0.6f),
+                    modifier = Modifier.align(Alignment.End)
+                )
+            }
         }
     }
 }

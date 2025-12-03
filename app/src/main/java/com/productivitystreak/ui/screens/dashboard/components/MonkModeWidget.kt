@@ -26,17 +26,18 @@ fun MonkModeWidget(
 ) {
     InteractiveGlassCard(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().height(160.dp),
         shape = RoundedCornerShape(24.dp),
-        contentPadding = PaddingValues(20.dp)
+        contentPadding = PaddingValues(16.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.Start
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
                     .background(
                         Brush.linearGradient(
@@ -52,11 +53,11 @@ fun MonkModeWidget(
                     imageVector = Icons.Rounded.SelfImprovement,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
-            Column {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     text = "Monk Mode",
                     style = MaterialTheme.typography.titleMedium,
@@ -65,7 +66,7 @@ fun MonkModeWidget(
                 )
                 Text(
                     text = "Enter deep focus",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

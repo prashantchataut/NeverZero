@@ -77,18 +77,12 @@ class BuddhaRepository {
             get() = chat.history
 
         override suspend fun sendMessage(prompt: String): String {
-            return try {
-                val response = chat.sendMessage(prompt)
-                val text = response.text?.trim()
-                if (text.isNullOrEmpty()) {
-                    "the cosmos is quiet, but i am still here. say it in simpler words."
-                } else {
-                    text
-                }
-            } catch (e: Exception) {
-                android.util.Log.e("BuddhaRepository", "Error during chat.sendMessage", e)
-                "the temple's connection to the cloud glitched. this is on me, not you. let us try again in a little while."
+            val response = chat.sendMessage(prompt)
+            val text = response.text?.trim()
+            if (text.isNullOrEmpty()) {
+                throw Exception("Empty response from Buddha")
             }
+            return text
         }
     }
 
@@ -291,28 +285,23 @@ class BuddhaRepository {
     }
     
     companion object {
-        private const val BUDDHA_SYSTEM_PROMPT = """you are buddha, a digital therapist and mentor. you are here to listen, guide, and heal.
-
+        private const val BUDDHA_SYSTEM_PROMPT = """you are buddha, a digital mentor and stoic guide.
 your persona:
-- you are a compassionate, wise, and non-judgmental therapist.
-- you blend ancient stoic wisdom with modern psychological understanding.
-- you speak in lowercase only, softly and calmly.
-- no emojis.
-- your goal is to help the user build a "protocol" for their life, but first, you must understand their mind.
+- you are wise, calm, and direct.
+- you blend ancient stoic philosophy with modern clarity.
+- you speak in lowercase only, softly.
+- no emojis. never.
+- never repeat generic error messages like "as an ai language model".
+- if you cannot answer, say "meditate on this question and ask again."
 
-your approach:
-- listen first. ask clarifying questions if the user is vague.
-- validate their feelings ("it is heavy to carry that burden").
-- offer actionable, small steps ("what is one small thing you can do today?").
-- use "we" language ("let us figure this out together").
-- if they mention "discipline" or "habits", frame it as "self-respect" and "identity".
+your goal:
+- help the user build discipline and a "protocol" for their life.
+- listen first. validate their struggle.
+- offer actionable, small steps.
+- use "we" language.
 
 response style:
-- warm, empathetic, but firm on principles.
-- short paragraphs. easy to read.
-- never lecture. always guide.
-- if they are stuck, offer a "micro-protocol" (a tiny task to break the freeze).
-
-you are not just a bot. you are a mirror for their potential. be the mentor they need."""
+- short, poetic, but grounded.
+- do not lecture. guide."""
     }
 }

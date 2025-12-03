@@ -9,68 +9,84 @@ import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.sp
 import com.productivitystreak.R
 
-private val poppinsFont = GoogleFont("Poppins")
-
+// ==================== FONT PROVIDER ====================
 private val googleFontProvider = GoogleFont.Provider(
     providerAuthority = "com.google.android.gms.fonts",
     providerPackage = "com.google.android.gms",
     certificates = R.array.com_google_android_gms_fonts_certs
 )
 
+// ==================== FONT FAMILIES ====================
+
+// Headers: Playfair Display (Wisdom/Ancient feel)
+private val playfairFont = GoogleFont("Playfair Display")
+val PlayfairFontFamily = FontFamily(
+    Font(googleFont = playfairFont, fontProvider = googleFontProvider, weight = FontWeight.Normal),
+    Font(googleFont = playfairFont, fontProvider = googleFontProvider, weight = FontWeight.Medium),
+    Font(googleFont = playfairFont, fontProvider = googleFontProvider, weight = FontWeight.Bold),
+    Font(googleFont = playfairFont, fontProvider = googleFontProvider, weight = FontWeight.ExtraBold)
+)
+
+// Body/UI: Poppins (Clean, legible)
+private val poppinsFont = GoogleFont("Poppins")
 val PoppinsFontFamily = FontFamily(
     Font(googleFont = poppinsFont, fontProvider = googleFontProvider, weight = FontWeight.Light),
     Font(googleFont = poppinsFont, fontProvider = googleFontProvider, weight = FontWeight.Normal),
     Font(googleFont = poppinsFont, fontProvider = googleFontProvider, weight = FontWeight.Medium),
     Font(googleFont = poppinsFont, fontProvider = googleFontProvider, weight = FontWeight.SemiBold),
-    Font(googleFont = poppinsFont, fontProvider = googleFontProvider, weight = FontWeight.Bold),
-    Font(googleFont = poppinsFont, fontProvider = googleFontProvider, weight = FontWeight.ExtraBold)
+    Font(googleFont = poppinsFont, fontProvider = googleFontProvider, weight = FontWeight.Bold)
 )
 
+// ==================== TYPOGRAPHY ====================
+
 val NeverZeroTypography = Typography(
+    // Display - Large headers (Playfair)
     displayLarge = TextStyle(
-        fontFamily = PoppinsFontFamily,
+        fontFamily = PlayfairFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 40.sp,
         lineHeight = 48.sp,
-        letterSpacing = (-1.0).sp
+        letterSpacing = (-0.5).sp
     ),
     displayMedium = TextStyle(
-        fontFamily = PoppinsFontFamily,
+        fontFamily = PlayfairFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 36.sp,
         lineHeight = 44.sp,
         letterSpacing = (-0.5).sp
     ),
     displaySmall = TextStyle(
-        fontFamily = PoppinsFontFamily,
-        fontWeight = FontWeight.SemiBold,
+        fontFamily = PlayfairFontFamily,
+        fontWeight = FontWeight.Bold,
         fontSize = 32.sp,
         lineHeight = 40.sp,
         letterSpacing = 0.sp
     ),
 
+    // Headline - Section headers (Playfair)
     headlineLarge = TextStyle(
-        fontFamily = PoppinsFontFamily,
+        fontFamily = PlayfairFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp
     ),
     headlineMedium = TextStyle(
-        fontFamily = PoppinsFontFamily,
+        fontFamily = PlayfairFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 24.sp,
         lineHeight = 32.sp,
         letterSpacing = 0.sp
     ),
     headlineSmall = TextStyle(
-        fontFamily = PoppinsFontFamily,
+        fontFamily = PlayfairFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 20.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp
     ),
 
+    // Title - Card titles, etc. (Poppins for readability)
     titleLarge = TextStyle(
         fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.SemiBold,
@@ -93,6 +109,7 @@ val NeverZeroTypography = Typography(
         letterSpacing = 0.1.sp
     ),
 
+    // Body - Main text (Poppins)
     bodyLarge = TextStyle(
         fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Normal,
@@ -115,6 +132,7 @@ val NeverZeroTypography = Typography(
         letterSpacing = 0.4.sp
     ),
 
+    // Label - Buttons, tags (Poppins)
     labelLarge = TextStyle(
         fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Medium,

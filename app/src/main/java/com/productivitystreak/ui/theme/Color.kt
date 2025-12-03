@@ -2,156 +2,162 @@ package com.productivitystreak.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ==================== CALM ZEN RPG PALETTE ====================
+// ==================== MODERN STOIC RPG PALETTE ====================
 
-// Basic Colors
-val White = Color(0xFFFFFFFF)
-val NeonCyan = Color(0xFF00F5FF) // Bright cyan for accents
-val NeonPurple = Color(0xFFBF40BF) // Bright purple for accents
+// Base Colors
+val StoicWhite = Color(0xFFFAFAFA) // Off-white background
+val StoicBlack = Color(0xFF1A1C1E) // Deep text
+val StoicGray = Color(0xFFE0E0E0) // Subtle borders
 
-// Backgrounds (Deep Muted Blue-Greys)
-val Background = Color(0xFF0B0F14) // Very dark desaturated blue
-val Surface = Color(0xFF151A21) // Slightly lighter
-val SurfaceVariant = Color(0xFF1E242C) // Elevated surface
-val BorderColor = Color(0xFF2A323C) // Muted border (renamed to avoid conflict with Border object)
+// Primary - Deep Forest Green (Growth/Wisdom)
+val ForestGreen = Color(0xFF2E5C55)
+val ForestGreenLight = Color(0xFF4A8075)
+val ForestGreenDark = Color(0xFF1B3B35)
 
-// Primary Colors (Muted Blues & Desaturated Accents)
-val PrimaryBlue = Color(0xFF6482AD) // Muted Steel Blue
-val PrimaryPurple = Color(0xFF9485C2) // Desaturated Purple
-val AccentCyan = Color(0xFF5FA8D3) // Muted Cyan
+// Secondary - Slate Blue (Tech/Stats)
+val SlateBlue = Color(0xFF5C7C8A)
+val SlateBlueLight = Color(0xFF829FA8)
+val SlateBlueDark = Color(0xFF3A525E)
 
-// RPG Stat Colors (strategic use only)
-val StatRed = Color(0xFFEF4444) // Strength
-val StatBlue = Color(0xFF3B82F6) // Intelligence  
-val StatPurple = Color(0xFF8B5CF6) // Charisma
-val StatGreen = Color(0xFF10B981) // Wisdom
-val StatOrange = Color(0xFFF59E0B) // Discipline
+// Accents (Stoic/Ancient Feel)
+val AncientGold = Color(0xFFC5A059) // Wisdom/Achievements
+val ClayRed = Color(0xFFA65D57) // Danger/Action
+val SageGreen = Color(0xFF7CA982) // Success/Health
 
-// Semantic (Muted)
-// Semantic (Muted & Professional)
-val SuccessGreen = Color(0xFF5DAA86) // Sage Green
-val DangerRed = Color(0xFFC25B5B) // Muted Red
-val WarningYellow = Color(0xFFD4A758) // Muted Gold
+// Backgrounds
+val BackgroundLight = StoicWhite
+val SurfaceLight = Color(0xFFFFFFFF)
+val SurfaceVariantLight = Color(0xFFF0F2F4)
 
-// Text Hierarchy
-// Text Hierarchy
-val TextPrimary = Color(0xFFE2E8F0) // Off-white/Slate-200
-val TextSecondary = Color(0xFF94A3B8) // Slate-400
-val TextTertiary = Color(0xFF64748B) // Slate-500
+// Borders
+val BorderLight = Color(0xFFE5E7EB) // Subtle 1px border
+val BorderStrong = Color(0xFFD1D5DB)
+
+// Text
+val TextPrimaryLight = Color(0xFF1F2937) // Gray-900
+val TextSecondaryLight = Color(0xFF4B5563) // Gray-600
+val TextTertiaryLight = Color(0xFF9CA3AF) // Gray-400
+
+// ==================== RPG STAT COLORS ====================
+val StatStrength = Color(0xFFE57373) // Red
+val StatIntelligence = SlateBlue // Blue
+val StatCharisma = Color(0xFF9575CD) // Purple
+val StatWisdom = ForestGreen // Green
+val StatDiscipline = AncientGold // Gold
 
 // ==================== MATERIAL 3 MAPPING ====================
 
-// Dark theme mappings using Calm Zen RPG palette
-val Primary = PrimaryBlue
-val OnPrimary = TextPrimary
-val PrimaryContainer = PrimaryBlue.copy(alpha = 0.2f)
-val OnPrimaryContainer = PrimaryBlue
+// Light Theme (Default for Modern Stoic)
+val Primary = ForestGreen
+val OnPrimary = Color.White
+val PrimaryContainer = ForestGreen.copy(alpha = 0.1f)
+val OnPrimaryContainer = ForestGreenDark
 
-val Secondary = PrimaryPurple
-val OnSecondary = TextPrimary
-val SecondaryContainer = PrimaryPurple.copy(alpha = 0.2f)
-val OnSecondaryContainer = PrimaryPurple
+val Secondary = SlateBlue
+val OnSecondary = Color.White
+val SecondaryContainer = SlateBlue.copy(alpha = 0.1f)
+val OnSecondaryContainer = SlateBlueDark
 
-val Tertiary = AccentCyan
-val OnTertiary = Background
-val TertiaryContainer = AccentCyan.copy(alpha = 0.2f)
-val OnTertiaryContainer = AccentCyan
+val Tertiary = AncientGold
+val OnTertiary = Color.White
+val TertiaryContainer = AncientGold.copy(alpha = 0.1f)
+val OnTertiaryContainer = Color(0xFF3E2E0B)
 
-val Error = DangerRed
-val OnError = Background
-val ErrorContainer = DangerRed.copy(alpha = 0.2f)
-val OnErrorContainer = DangerRed
+val Error = ClayRed
+val OnError = Color.White
+val ErrorContainer = ClayRed.copy(alpha = 0.1f)
+val OnErrorContainer = Color(0xFF411B19)
 
-val BackgroundColor = Background
-val OnBackground = TextSecondary
-val SurfaceColor = Surface
-val OnSurface = TextSecondary
-val SurfaceVariantColor = SurfaceVariant
-val OnSurfaceVariant = TextTertiary
+val Background = BackgroundLight
+val OnBackground = TextPrimaryLight
+val Surface = SurfaceLight
+val OnSurface = TextPrimaryLight
+val SurfaceVariant = SurfaceVariantLight
+val OnSurfaceVariant = TextSecondaryLight
 
-val Outline = BorderColor
-val OutlineVariant = Color(0xFF1A1A1A)
-val Scrim = Color(0xFF000000)
+val Outline = BorderLight
+val OutlineVariant = BorderStrong
+val Scrim = Color.Black
 
 // ==================== STREAK / CATEGORY COLORS ====================
 
 object StreakColors {
-    val Reading = Color(0xFF5FA8D3) // Muted Cyan
-    val ReadingContainer = Reading.copy(alpha = 0.15f)
+    val Reading = SlateBlue
+    val ReadingContainer = Reading.copy(alpha = 0.1f)
     val OnReadingContainer = Reading
 
-    val Learning = Color(0xFFD4A758) // Muted Yellow
-    val LearningContainer = Learning.copy(alpha = 0.15f)
+    val Learning = AncientGold
+    val LearningContainer = Learning.copy(alpha = 0.1f)
     val OnLearningContainer = Learning
 
-    val Vocabulary = Color(0xFF9485C2) // Muted Purple
-    val VocabularyContainer = Vocabulary.copy(alpha = 0.15f)
+    val Vocabulary = StatCharisma
+    val VocabularyContainer = Vocabulary.copy(alpha = 0.1f)
     val OnVocabularyContainer = Vocabulary
 
-    val Creative = Color(0xFFC27D8B) // Muted Pink/Salmon
-    val CreativeContainer = Creative.copy(alpha = 0.15f)
+    val Creative = Color(0xFFD88C9A) // Muted Rose
+    val CreativeContainer = Creative.copy(alpha = 0.1f)
     val OnCreativeContainer = Creative
 
-    val Exercise = Color(0xFFC25B5B) // Muted Red
-    val ExerciseContainer = Exercise.copy(alpha = 0.15f)
+    val Exercise = ClayRed
+    val ExerciseContainer = Exercise.copy(alpha = 0.1f)
     val OnExerciseContainer = Exercise
 
-    val Wellness = Color(0xFF5DAA86) // Sage Green
-    val WellnessContainer = Wellness.copy(alpha = 0.15f)
+    val Wellness = SageGreen
+    val WellnessContainer = Wellness.copy(alpha = 0.1f)
     val OnWellnessContainer = Wellness
 
-    val Meditation = Color(0xFF6482AD) // Steel Blue
-    val MeditationContainer = Meditation.copy(alpha = 0.15f)
+    val Meditation = ForestGreen
+    val MeditationContainer = Meditation.copy(alpha = 0.1f)
     val OnMeditationContainer = Meditation
 
-    val Productivity = Color(0xFF4B6E91) // Deep Steel Blue
-    val ProductivityContainer = Productivity.copy(alpha = 0.15f)
+    val Productivity = Color(0xFF546E7A) // Blue Gray
+    val ProductivityContainer = Productivity.copy(alpha = 0.1f)
     val OnProductivityContainer = Productivity
 }
 
 // ==================== GRADIENTS ====================
 
 object GradientColors {
-    // Muted Deep Space Gradients
-    val PremiumStart = Color(0xFF4B6E91)
-    val PremiumEnd = Color(0xFF9485C2)
+    // Subtle, natural gradients
+    val PremiumStart = ForestGreen
+    val PremiumEnd = SlateBlue
 
-    val CyberStart = Color(0xFF5FA8D3)
-    val CyberEnd = Color(0xFF4B6E91)
+    val CyberStart = SlateBlue
+    val CyberEnd = Color(0xFF4A8075) // ForestGreenLight
 
-    val FireStart = Color(0xFFD4A758)
-    val FireEnd = Color(0xFFC25B5B)
+    val FireStart = AncientGold
+    val FireEnd = ClayRed
 
-    val VoidStart = Color(0xFF0B0F14)
-    val VoidEnd = Color(0xFF151A21)
+    val VoidStart = Color(0xFF2C3E50)
+    val VoidEnd = Color(0xFF34495E)
 
-    val OceanStart = Color(0xFF4B6E91)
-    val OceanEnd = Color(0xFF5FA8D3)
+    val OceanStart = SlateBlue
+    val OceanEnd = ForestGreen
 
-    val SunriseStart = Color(0xFFD4A758)
-    val SunriseEnd = Color(0xFFC27D8B)
+    val SunriseStart = AncientGold
+    val SunriseEnd = Color(0xFFE6B89C)
 }
 
 // ==================== SEMANTIC COLORS ====================
 
 object SemanticColors {
-    val Success = Color(0xFF2ED573)
-    val OnSuccess = Background
-    val SuccessContainer = Success.copy(alpha = 0.2f)
+    val Success = SageGreen
+    val OnSuccess = Color.White
+    val SuccessContainer = Success.copy(alpha = 0.1f)
     
-    val Warning = Color(0xFFFFA502)
-    val OnWarning = Background
-    val WarningContainer = Warning.copy(alpha = 0.2f)
+    val Warning = AncientGold
+    val OnWarning = Color.White
+    val WarningContainer = Warning.copy(alpha = 0.1f)
 
-    val Info = Color(0xFF1E90FF)
-    val OnInfo = White
-    val InfoContainer = Info.copy(alpha = 0.2f)
+    val Info = SlateBlue
+    val OnInfo = Color.White
+    val InfoContainer = Info.copy(alpha = 0.1f)
 }
 
 // ==================== DESIGN TOKENS ====================
 
 data class NeverZeroDesignColors(
-    val isDark: Boolean = true,
+    val isDark: Boolean = false,
     val background: Color,
     val backgroundAlt: Color,
     val surface: Color,
@@ -171,78 +177,53 @@ data class NeverZeroDesignColors(
     val error: Color
 )
 
-// NeonGreen is already defined in Primary Accents section
-
-// ... (existing code)
-
 object NeverZeroDesignPalettes {
-    val CalmZenRPG = NeverZeroDesignColors(
-        isDark = true,
-        background = Background,
-        backgroundAlt = Surface,
-        surface = Surface,
-        surfaceElevated = SurfaceVariant,
-        border = BorderColor,
-        glow = PrimaryBlue.copy(alpha = 0.3f),
-        primary = PrimaryBlue,
-        onPrimary = TextPrimary,
-        primaryMuted = PrimaryBlue.copy(alpha = 0.5f),
-        secondary = PrimaryPurple,
-        onSecondary = TextPrimary,
-        textPrimary = TextPrimary,
-        textSecondary = TextSecondary,
-        disabled = Color(0xFF444444),
-        success = SuccessGreen,
-        warning = WarningYellow,
-        error = DangerRed
-    )
-
-    val Light = NeverZeroDesignColors(
+    val ModernStoic = NeverZeroDesignColors(
         isDark = false,
-        background = Color(0xFFF7F8FA), // Surface.Base
-        backgroundAlt = White,
-        surface = White, // Surface.Card
-        surfaceElevated = White,
-        border = Color(0xFFE2E4EA), // Border.Muted
-        glow = Color.Transparent,
-        primary = Color(0xFF00C853), // Brand.Primary (Emerald)
-        onPrimary = White,
-        primaryMuted = Color(0xFF00C853).copy(alpha = 0.5f),
-        secondary = Color(0xFF1B1B1F), // Brand.Secondary
-        onSecondary = White,
-        textPrimary = Color(0xFF1B1B1F),
-        textSecondary = Color(0xFF757575),
-        disabled = Color(0xFFE0E0E0),
-        success = Color(0xFF00C853), // Accent.Success
-        warning = Color(0xFFFFB74D), // Accent.Warning
+        background = Background,
+        backgroundAlt = SurfaceVariant,
+        surface = Surface,
+        surfaceElevated = Surface, // Flat design, use border instead of elevation
+        border = BorderLight,
+        glow = Color.Transparent, // No glow in stoic theme
+        primary = Primary,
+        onPrimary = OnPrimary,
+        primaryMuted = Primary.copy(alpha = 0.6f),
+        secondary = Secondary,
+        onSecondary = OnSecondary,
+        textPrimary = TextPrimaryLight,
+        textSecondary = TextSecondaryLight,
+        disabled = Color(0xFF9E9E9E),
+        success = SemanticColors.Success,
+        warning = SemanticColors.Warning,
         error = Error
     )
 }
 
 object ExtendedSemanticColors {
-    val Focus = NeonCyan
-    val DarkFocus = NeonCyan
+    val Focus = ForestGreen
+    val DarkFocus = ForestGreenDark
     
-    val DisabledContent = Color(0xFFFFFFFF).copy(alpha = 0.38f)
-    val DisabledContainer = Color(0xFFFFFFFF).copy(alpha = 0.12f)
-    val DarkDisabledContent = Color(0xFFFFFFFF).copy(alpha = 0.38f)
-    val DarkDisabledContainer = Color(0xFFFFFFFF).copy(alpha = 0.12f)
+    val DisabledContent = Color.Black.copy(alpha = 0.38f)
+    val DisabledContainer = Color.Black.copy(alpha = 0.12f)
+    val DarkDisabledContent = Color.White.copy(alpha = 0.38f)
+    val DarkDisabledContainer = Color.White.copy(alpha = 0.12f)
     
-    val LoadingShimmer = Color(0xFF333333)
+    val LoadingShimmer = Color(0xFFEEEEEE)
     val DarkLoadingShimmer = Color(0xFF333333)
 }
 
 object AccentColors {
-    val Achievement = Color(0xFFFFD700) // Gold
-    val AchievementContainer = Color(0xFF332F00)
+    val Achievement = AncientGold
+    val AchievementContainer = AncientGold.copy(alpha = 0.1f)
     
-    val Premium = NeonPurple
-    val PremiumContainer = NeonPurple.copy(alpha = 0.2f)
+    val Premium = ForestGreen
+    val PremiumContainer = ForestGreen.copy(alpha = 0.1f)
     
-    val StreakFire = Color(0xFFFF4757)
-    val StreakFireContainer = StreakFire.copy(alpha = 0.2f)
+    val StreakFire = ClayRed
+    val StreakFireContainer = ClayRed.copy(alpha = 0.1f)
     
-    val Focus = NeonCyan
-    val FocusContainer = NeonCyan.copy(alpha = 0.2f)
+    val Focus = ForestGreen
+    val FocusContainer = ForestGreen.copy(alpha = 0.1f)
 }
 

@@ -30,7 +30,8 @@ class BuddhaChatViewModel(
             messages = chatSession?.history?.map { content ->
                 BuddhaChatMessage(
                     text = (content.parts.firstOrNull() as? TextPart)?.text ?: "",
-                    isUser = content.role == "user"
+                    isUser = content.role == "user",
+                    status = MessageStatus.SENT
                 )
             } ?: emptyList()
         )
@@ -40,47 +41,88 @@ class BuddhaChatViewModel(
         if (text.isBlank()) return
 
         val currentMessages = _uiState.value.messages.toMutableList()
-        currentMessages.add(BuddhaChatMessage(text, isUser = true))
+        val userMessage = BuddhaChatMessage(
+            id = java.util.UUID.randomUUID().toString(),
+            text = text,
+            isUser = true,
+            status = MessageStatus.SENDING
+        )
+        currentMessages.add(userMessage)
         _uiState.value = _uiState.value.copy(messages = currentMessages, isLoading = true)
 
         viewModelScope.launch {
             try {
                 val responseText = chatSession?.sendMessage(text)
 
-                if (!responseText.isNullOrBlank()) {
-                    val updatedMessages = _uiState.value.messages.toMutableList()
-                    updatedMessages.add(BuddhaChatMessage(responseText, isUser = false))
-                    _uiState.value = _uiState.value.copy(messages = updatedMessages, isLoading = false)
-                } else {
-                    _uiState.value = _uiState.value.copy(isLoading = false)
+                val updatedMessages = _uiState.value.messages.toMutableList()
+                // Update user message to SENT
+                val index = updatedMessages.indexOfFirst { it.id == userMessage.id }
+                if (index != -1) {
+                    updatedMessages[index] = userMessage.copy(status = MessageStatus.SENT)
                 }
+
+                if (!responseText.isNullOrBlank()) {
+                    updatedMessages.add(
+                        BuddhaChatMessage(
+                            id = java.util.UUID.randomUUID().toString(),
+                            text = responseText,
+                            isUser = false,
+                            status = MessageStatus.SENT
+                        )
+                    )
+                }
+                _uiState.value = _uiState.value.copy(messages = updatedMessages, isLoading = false)
             } catch (e: Exception) {
-                // Log the actual error for debugging
                 android.util.Log.e("BuddhaChat", "Error generating response", e)
                 
                 val updatedMessages = _uiState.value.messages.toMutableList()
-                // Show a mystical, thematic error message
-                val errorMessage = if (e.message?.contains("Unable to resolve host") == true) {
-                    "The connection to the cosmos is weak. Check your internet."
-                } else {
-                    "I am in deep meditation. Please try again in a moment."
+                val index = updatedMessages.indexOfFirst { it.id == userMessage.id }
+                if (index != -1) {
+                    updatedMessages[index] = userMessage.copy(status = MessageStatus.ERROR)
                 }
-                updatedMessages.add(BuddhaChatMessage(errorMessage, isUser = false))
-                _uiState.value = _uiState.value.copy(messages = updatedMessages, isLoading = false)
+                
+                _uiState.value = _uiState.value.copy(
+                    messages = updatedMessages, 
+                    isLoading = false,
+                    errorEvent = "Connection weak, meditating..."
+                )
             }
         }
+    }
+
+    fun retryMessage(messageId: String) {
+        val message = _uiState.value.messages.find { it.id == messageId } ?: return
+        if (message.status != MessageStatus.ERROR) return
+
+        // Remove the failed message and re-send its text
+        val currentMessages = _uiState.value.messages.toMutableList()
+        currentMessages.remove(message)
+        _uiState.value = _uiState.value.copy(messages = currentMessages)
+        
+        sendMessage(message.text)
+    }
+    
+    fun clearError() {
+        _uiState.value = _uiState.value.copy(errorEvent = null)
     }
 }
 
 data class BuddhaChatUiState(
     val messages: List<BuddhaChatMessage> = emptyList(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val errorEvent: String? = null
 )
 
 data class BuddhaChatMessage(
+    val id: String = java.util.UUID.randomUUID().toString(),
     val text: String,
-    val isUser: Boolean
+    val isUser: Boolean,
+    val status: MessageStatus = MessageStatus.SENT
 )
+
+enum class MessageStatus {
+    SENDING, SENT, ERROR
+}
 
 class BuddhaChatViewModelFactory(private val repository: BuddhaRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
