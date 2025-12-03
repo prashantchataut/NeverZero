@@ -26,7 +26,7 @@ fun MonkModeWidget(
 ) {
     InteractiveGlassCard(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth().height(160.dp),
+        modifier = modifier.fillMaxWidth().height(180.dp),
         shape = RoundedCornerShape(24.dp),
         contentPadding = PaddingValues(16.dp)
     ) {

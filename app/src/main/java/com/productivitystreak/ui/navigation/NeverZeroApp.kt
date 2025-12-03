@@ -256,9 +256,10 @@ fun NeverZeroApp(
             ) {
                 composable(MainDestination.HOME.route) {
                     val streakState by streakViewModel.uiState.collectAsStateWithLifecycle()
+                    val vocabularyState by vocabularyViewModel.uiState.collectAsStateWithLifecycle()
                     DashboardScreen(
                         streakUiState = streakState,
-                        uiState = uiState,
+                        uiState = uiState.copy(vocabularyState = vocabularyState),
                         onToggleTask = streakViewModel::onToggleTask,
                         onRefreshQuote = streakViewModel::fetchBuddhaInsight,
                         onAddHabitClick = appViewModel::onAddButtonTapped,
@@ -272,7 +273,8 @@ fun NeverZeroApp(
                         onOpenTimeCapsule = { appViewModel.onAddEntrySelected(AddEntryType.TIME_CAPSULE) },
                         onOpenLeaderboard = { showLeaderboard = true },
                         onOpenMonkMode = { navController.navigate(MainDestination.FOCUS.route) },
-                        onOpenChallenges = { navController.navigate(MainDestination.CHALLENGES.route) }
+                        onOpenChallenges = { navController.navigate(MainDestination.CHALLENGES.route) },
+                        onAddEntrySelected = appViewModel::onAddEntrySelected
                     )
                 }
 

@@ -26,7 +26,7 @@ fun TeachWordWidget(
 ) {
     InteractiveGlassCard(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth().height(160.dp),
+        modifier = modifier.fillMaxWidth().height(180.dp),
         contentPadding = PaddingValues(16.dp)
     ) {
         Column(
