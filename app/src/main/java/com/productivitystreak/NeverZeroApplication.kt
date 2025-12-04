@@ -39,6 +39,9 @@ class NeverZeroApplication : Application() {
     
     // AI
     val geminiClient by lazy { com.productivitystreak.data.gemini.GeminiClient.getInstance(this) }
+    val geminiRepository by lazy { 
+        GeminiRepository(com.productivitystreak.data.config.ApiKeyManager.getApiKey(this)) 
+    }
     val quoteRepository by lazy { 
         QuoteRepository(
             personalizedEngine = PersonalizedQuoteEngine(geminiClient),

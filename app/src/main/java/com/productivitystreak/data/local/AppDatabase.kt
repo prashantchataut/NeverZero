@@ -17,13 +17,18 @@ import com.productivitystreak.data.local.entity.*
         ReadingSessionEntity::class,
         DailyReflectionEntity::class,
         AchievementEntity::class,
-        TimeCapsuleEntity::class
+        TimeCapsuleEntity::class,
+        // New Protocol-based entities
+        ProtocolEntity::class,
+        DailyLogEntity::class,
+        UserStatsEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
+    // Existing DAOs
     abstract fun streakDao(): StreakDao
     abstract fun quoteDao(): QuoteDao
     abstract fun vocabularyDao(): VocabularyDao
@@ -32,6 +37,11 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun dailyReflectionDao(): DailyReflectionDao
     abstract fun achievementDao(): AchievementDao
     abstract fun timeCapsuleDao(): TimeCapsuleDao
+
+    // Protocol-based DAOs
+    abstract fun protocolDao(): ProtocolDao
+    abstract fun dailyLogDao(): DailyLogDao
+    abstract fun userStatsDao(): UserStatsDao
 
     companion object {
         @Volatile
@@ -52,3 +62,4 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 }
+

@@ -18,10 +18,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
+import com.productivitystreak.data.repository.GeminiRepository
+
 class VocabularyViewModel(
     private val preferencesManager: PreferencesManager,
     private val moshi: Moshi,
-    private val geminiClient: com.productivitystreak.data.gemini.GeminiClient
+    private val geminiClient: com.productivitystreak.data.gemini.GeminiClient,
+    private val geminiRepository: GeminiRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(VocabularyState())
@@ -46,15 +49,23 @@ class VocabularyViewModel(
 
     private fun fetchWordOfTheDay() {
         viewModelScope.launch {
-            // In a real app, we'd check if we already have a word for today in Preferences
-            // For now, let's fetch a new one or use a cached one if we implement caching for it.
-            // To keep it simple and robust, we'll fetch every time for now (or rely on GeminiClient caching if we added it, which we didn't).
-            // Ideally, we should store "lastWordOfTheDay" and "lastWordDate" in Preferences.
+            // Fetch user stats (placeholder)
+            val userStats = com.productivitystreak.data.local.entity.UserStats.default()
             
-            // Let's assume we want to fetch fresh for now to demonstrate the AI.
-            val word = geminiClient.generateWordOfTheDay()
-            if (word != null) {
-                _uiState.update { it.copy(wordOfTheDay = word) }
+            when (val result = geminiRepository.getVocabularyWord(userStats)) {
+                is com.productivitystreak.data.repository.RepositoryResult.Success -> {
+                    _uiState.update { it.copy(wordOfTheDay = result.data) }
+                }
+                is com.productivitystreak.data.repository.RepositoryResult.NetworkError -> {
+                    Log.e("VocabularyViewModel", "Network error fetching word", result.throwable)
+                }
+                is com.productivitystreak.data.repository.RepositoryResult.UnknownError -> {
+                    Log.e("VocabularyViewModel", "Unknown error fetching word", result.throwable)
+                }
+                is com.productivitystreak.data.repository.RepositoryResult.PermissionError -> {
+                    Log.e("VocabularyViewModel", "Permission error (API Key?) fetching word", result.throwable)
+                }
+                else -> {}
             }
         }
     }

@@ -27,10 +27,11 @@ import kotlin.math.sin
 fun RpgHexagon(
     stats: RpgStats,
     modifier: Modifier = Modifier,
-    size: Dp = 200.dp,
+    size: Dp = 240.dp,
     lineColor: Color = MaterialTheme.colorScheme.outlineVariant,
-    fillColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-    strokeColor: Color = MaterialTheme.colorScheme.primary
+    fillColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+    strokeColor: Color = MaterialTheme.colorScheme.primary,
+    glowColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
 ) {
     val textMeasurer = rememberTextMeasurer()
     val labelStyle = MaterialTheme.typography.labelSmall.copy(
@@ -40,13 +41,13 @@ fun RpgHexagon(
 
     Canvas(modifier = modifier.size(size)) {
         val center = Offset(size.toPx() / 2, size.toPx() / 2)
-        val radius = (size.toPx() / 2) * 0.7f // Leave room for labels
+        val radius = (size.toPx() / 2) * 0.72f // Leave room for labels
         val maxStat = 10f // Normalize stats to 10 for now
 
         // Draw background webs (3 levels)
         for (i in 1..3) {
             val levelRadius = radius * (i / 3f)
-            drawHexagonPath(center, levelRadius, lineColor)
+            drawHexagonPath(center, levelRadius, lineColor.copy(alpha = 0.35f), strokeWidth = 1.5f)
         }
 
         // Draw stat polygon
@@ -98,15 +99,26 @@ fun RpgHexagon(
             path = statPath,
             color = fillColor
         )
+        // Glow layer
+        drawPath(
+            path = statPath,
+            color = glowColor,
+            style = Stroke(width = 10.dp.toPx(), cap = StrokeCap.Round)
+        )
         drawPath(
             path = statPath,
             color = strokeColor,
-            style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+            style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
         )
     }
 }
 
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawHexagonPath(center: Offset, radius: Float, color: Color) {
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawHexagonPath(
+    center: Offset,
+    radius: Float,
+    color: Color,
+    strokeWidth: Float = 1f
+) {
     val path = Path()
     val sides = 5 // Matching the 5 attributes
     val angleStep = (2 * Math.PI / sides).toFloat()
@@ -123,6 +135,6 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawHexagonPath(cen
     drawPath(
         path = path,
         color = color,
-        style = Stroke(width = 1.dp.toPx())
+        style = Stroke(width = strokeWidth.dp.toPx())
     )
 }

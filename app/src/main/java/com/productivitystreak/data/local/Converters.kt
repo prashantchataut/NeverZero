@@ -1,6 +1,10 @@
 package com.productivitystreak.data.local
 
 import androidx.room.TypeConverter
+import com.productivitystreak.data.local.entity.LogStatus
+import com.productivitystreak.data.local.entity.ProtocolFrequency
+import com.productivitystreak.data.local.entity.ProtocolType
+import com.productivitystreak.data.model.HabitAttribute
 import com.productivitystreak.data.model.StreakDayRecord
 import com.productivitystreak.data.model.StreakDifficulty
 import com.productivitystreak.data.model.StreakFrequency
@@ -60,4 +64,55 @@ class Converters {
             StreakDifficulty.BALANCED // Default fallback
         }
     }
+
+    // --- Protocol Entity Converters ---
+
+    @TypeConverter
+    fun fromProtocolType(type: ProtocolType): String = type.name
+
+    @TypeConverter
+    fun toProtocolType(name: String): ProtocolType {
+        return try {
+            ProtocolType.valueOf(name)
+        } catch (e: IllegalArgumentException) {
+            ProtocolType.DAILY
+        }
+    }
+
+    @TypeConverter
+    fun fromProtocolFrequency(frequency: ProtocolFrequency): String = frequency.name
+
+    @TypeConverter
+    fun toProtocolFrequency(name: String): ProtocolFrequency {
+        return try {
+            ProtocolFrequency.valueOf(name)
+        } catch (e: IllegalArgumentException) {
+            ProtocolFrequency.DAILY
+        }
+    }
+
+    @TypeConverter
+    fun fromLogStatus(status: LogStatus): String = status.name
+
+    @TypeConverter
+    fun toLogStatus(name: String): LogStatus {
+        return try {
+            LogStatus.valueOf(name)
+        } catch (e: IllegalArgumentException) {
+            LogStatus.PENDING
+        }
+    }
+
+    @TypeConverter
+    fun fromHabitAttribute(attribute: HabitAttribute): String = attribute.name
+
+    @TypeConverter
+    fun toHabitAttribute(name: String): HabitAttribute {
+        return try {
+            HabitAttribute.valueOf(name)
+        } catch (e: IllegalArgumentException) {
+            HabitAttribute.NONE
+        }
+    }
 }
+
