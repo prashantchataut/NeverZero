@@ -9,13 +9,13 @@ import com.productivitystreak.data.model.Streak
 /**
  * Repository for Buddha AI insights using Google Gemini SDK
  */
-class BuddhaRepository {
+class BuddhaRepository(private val context: android.content.Context) {
     
     private val generativeModel: GenerativeModel?
     private val isMockMode: Boolean
 
     init {
-        val apiKey = BuildConfig.GEMINI_API_KEY
+        val apiKey = com.productivitystreak.data.config.ApiKeyManager.getApiKey(context)
         android.util.Log.d("BuddhaRepository", "Initializing with API key length: ${apiKey.length}")
         android.util.Log.d("BuddhaRepository", "API key starts with: ${apiKey.take(10)}...")
         

@@ -38,17 +38,20 @@ data class TeachingLesson(
     val practicePrompts: List<String>
 )
 
-class GeminiClient private constructor() {
+class GeminiClient private constructor(private val context: android.content.Context) {
 
-    private val model: GenerativeModel? = BuildConfig.GEMINI_API_KEY.takeIf { it.isNotBlank() }?.let { key ->
-        Log.d(TAG, "Gemini API initialized successfully")
-        GenerativeModel(
-            modelName = MODEL_NAME,
-            apiKey = key
-        )
-    } ?: run {
-        Log.w(TAG, "Gemini API key not configured - AI features will use fallback responses")
-        null
+    private val model: GenerativeModel? = run {
+        val apiKey = com.productivitystreak.data.config.ApiKeyManager.getApiKey(context)
+        if (apiKey.isBlank()) {
+            Log.w(TAG, "Gemini API key not configured - AI features will use fallback responses")
+            null
+        } else {
+            Log.d(TAG, "Gemini API initialized successfully")
+            GenerativeModel(
+                modelName = MODEL_NAME,
+                apiKey = apiKey
+            )
+        }
     }
 
     private val cache = com.productivitystreak.data.ai.AIResponseCache.getInstance()
@@ -272,8 +275,8 @@ class GeminiClient private constructor() {
         @Volatile
         private var instance: GeminiClient? = null
 
-        fun getInstance(): GeminiClient = instance ?: synchronized(this) {
-            instance ?: GeminiClient().also { instance = it }
+        fun getInstance(context: android.content.Context): GeminiClient = instance ?: synchronized(this) {
+            instance ?: GeminiClient(context.applicationContext).also { instance = it }
         }
     }
 }

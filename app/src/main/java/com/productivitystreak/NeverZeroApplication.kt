@@ -38,7 +38,7 @@ class NeverZeroApplication : Application() {
     val socialRepository by lazy { SocialRepository() }
     
     // AI
-    val geminiClient by lazy { com.productivitystreak.data.gemini.GeminiClient.getInstance() }
+    val geminiClient by lazy { com.productivitystreak.data.gemini.GeminiClient.getInstance(this) }
     val quoteRepository by lazy { 
         QuoteRepository(
             personalizedEngine = PersonalizedQuoteEngine(geminiClient),
@@ -46,7 +46,7 @@ class NeverZeroApplication : Application() {
             timeCapsuleRepository = timeCapsuleRepository
         )
     }
-    val buddhaRepository by lazy { com.productivitystreak.data.ai.BuddhaRepository() }
+    val buddhaRepository by lazy { com.productivitystreak.data.ai.BuddhaRepository(this) }
     val aiCoach by lazy { com.productivitystreak.data.ai.AICoach(geminiClient) }
 
     // Utilities
