@@ -40,7 +40,12 @@ class AppViewModel(
         refreshQuote()
     }
 
-    // ... (loadUserPreferences remains unchanged)
+    private fun loadUserPreferences() {
+        viewModelScope.launch {
+            val userName = preferencesManager.userName
+            _uiState.update { it.copy(userName = userName) }
+        }
+    }
 
     fun refreshQuote() {
         quoteRefreshJob?.cancel()
@@ -56,8 +61,7 @@ class AppViewModel(
                             state.copy(
                                 quote = com.productivitystreak.data.model.Quote(
                                     text = result.data,
-                                    author = "The Digital Ascetic",
-                                    category = "Wisdom"
+                                    author = "The Digital Ascetic"
                                 ),
                                 isQuoteLoading = false
                             )
