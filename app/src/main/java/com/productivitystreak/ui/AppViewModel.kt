@@ -42,8 +42,9 @@ class AppViewModel(
 
     private fun loadUserPreferences() {
         viewModelScope.launch {
-            val userName = preferencesManager.userName
-            _uiState.update { it.copy(userName = userName) }
+            preferencesManager.userName.collect { userName ->
+                _uiState.update { it.copy(userName = userName) }
+            }
         }
     }
 
