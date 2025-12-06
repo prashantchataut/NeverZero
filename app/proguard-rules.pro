@@ -17,3 +17,11 @@
 # Optional: keep coroutines debug probes when running with JVM debug options.
 -keep class kotlinx.coroutines.debug.internal.DebugProbesImpl { *; }
 -keep class kotlinx.coroutines.DebugProbesKt { *; }
+
+# Kotlin Reflection & Metadata (Required for Moshi)
+-keep class kotlin.reflect.** { *; }
+-keep class kotlin.Metadata { *; }
+
+# Moshi
+-keep class com.squareup.moshi.** { *; }
+-keep interface com.squareup.moshi.** { *; }

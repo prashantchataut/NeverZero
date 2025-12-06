@@ -9,6 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import com.productivitystreak.ui.animation.ConfettiEffect
+import com.productivitystreak.ui.animation.StarBurstEffect
 import kotlinx.coroutines.delay
 import kotlin.math.cos
 import kotlin.math.sin
@@ -39,8 +41,9 @@ fun CompletionCelebration(
         Box(modifier = modifier.fillMaxSize()) {
             // Gold ring expanding outward
             GoldRingEffect(color = color)
-            // Confetti particles
-            ConfettiEffect()
+            // Enhanced particle effects
+            ConfettiEffect(trigger = true)
+            StarBurstEffect(trigger = true)
         }
     }
 }

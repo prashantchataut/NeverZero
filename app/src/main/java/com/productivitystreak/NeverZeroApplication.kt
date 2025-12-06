@@ -64,6 +64,14 @@ class NeverZeroApplication : Application() {
     lateinit var backupManager: com.productivitystreak.data.backup.BackupManager
         private set
 
+    // Use Cases (Shared Logic)
+    lateinit var rpgStatsUseCase: com.productivitystreak.domain.usecase.RpgStatsUseCase
+        private set
+    lateinit var geminiAIUseCase: com.productivitystreak.domain.usecase.GeminiAIUseCase
+        private set
+    lateinit var jsonSerializationUseCase: com.productivitystreak.domain.usecase.JsonSerializationUseCase
+        private set
+
     private val _isInitialized = MutableStateFlow(false)
     val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
 
@@ -156,5 +164,10 @@ class NeverZeroApplication : Application() {
 
         ghostScheduler = GhostNotificationScheduler(this)
         backupManager = com.productivitystreak.data.backup.BackupManager(this, database)
+
+        // 5. Use Cases (Shared Logic)
+        rpgStatsUseCase = com.productivitystreak.domain.usecase.RpgStatsUseCase()
+        geminiAIUseCase = com.productivitystreak.domain.usecase.GeminiAIUseCase(geminiClient)
+        jsonSerializationUseCase = com.productivitystreak.domain.usecase.JsonSerializationUseCase(moshi)
     }
 }

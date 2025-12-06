@@ -7,45 +7,13 @@
     <string name="exact_alarm_permission_rationale">We need exact alarm access to deliver streak reminders at the perfect moment.</string>
     <string name="exact_alarm_permission_action">Open settings</string>
 
-    <!-- Shared UI text -->
-    <string name="action_view_all">View all</string>
-    <string name="action_change">Change</string>
-    <string name="dashboard_section_quick_actions">Quick actions</string>
-    <string name="dashboard_section_inspiration">Daily inspiration</string>
-    <string name="dashboard_button_log_streak">+  Log streak</string>
-    <string name="dashboard_label_all_streaks_logged">All streaks logged</string>
-    <string name="dashboard_action_get_motivated">Get motivated</string>
-    <string name="discover_section_title">Discover</string>
-    <string name="discover_section_community">Community</string>
-    <string name="stats_section_title">Your stats</string>
-    <string name="stats_section_leaderboard">Leaderboard</string>
+    <!-- Shared UI text - Keep only used strings -->
     <string name="leaderboard_personal_title">Your Top Streaks</string>
     <string name="leaderboard_personal_subtitle">Ranked by consistency</string>
     <string name="leaderboard_global_title">Global Leaderboard</string>
     <string name="leaderboard_global_subtitle">Community rankings</string>
     <string name="leaderboard_tab_personal">Personal</string>
     <string name="leaderboard_tab_global">Global</string>
-    <string name="profile_section_preferences">Preferences</string>
-    <string name="profile_action_logout">Logout</string>
-
-    <!-- Onboarding controls -->
-    <string name="onboarding_primary_cta">Continue</string>
-    <string name="onboarding_primary_cta_last">Confirm</string>
-    <string name="onboarding_secondary_cta">Skip</string>
-    <string name="onboarding_back">Back</string>
-    <string name="onboarding_step_progress">Step %1$d of %2$d</string>
-    <string name="onboarding_welcome_subtitle">Build habits that last. Start your journey today.</string>
-    <string name="onboarding_skip_for_now">Skip for now</string>
-    <string name="time_picker_label_hour">Hour</string>
-    <string name="time_picker_label_minute">Minute</string>
-    <string name="time_picker_label_period">Period</string>
-
-    <!-- Accessibility content descriptions -->
-    <string name="cd_profile_avatar">Open profile</string>
-    <string name="cd_refresh_quote">Refresh inspiration quote</string>
-    <string name="cd_navigate_discover">Go to discover</string>
-    <string name="cd_close_dialog">Close dialog</string>
-    <string name="cd_leaderboard_badge">Leaderboard badge</string>
 
     <!-- Widget Strings -->
     <string name="widget_description">View your top 3 streaks at a glance</string>

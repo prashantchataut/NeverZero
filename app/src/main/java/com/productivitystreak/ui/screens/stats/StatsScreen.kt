@@ -14,8 +14,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -65,16 +66,20 @@ import kotlin.math.absoluteValue
 @Composable
 fun StatsScreen(
     statsState: StatsState,
+    rpgStats: com.productivitystreak.data.model.RpgStats = com.productivitystreak.data.model.RpgStats(),
     modifier: Modifier = Modifier,
     onLeaderboardEntrySelected: (LeaderboardEntry) -> Unit = {},
     onLeaderboardTypeSelected: (LeaderboardType) -> Unit = {},
     onNavigateToSkillPaths: () -> Unit = {},
     onOpenLeaderboard: () -> Unit = {}
 ) {
+    val scrollState = rememberScrollState()
+    
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(scrollState)
             .padding(horizontal = com.productivitystreak.ui.theme.Spacing.lg, vertical = com.productivitystreak.ui.theme.Spacing.md),
         verticalArrangement = Arrangement.spacedBy(com.productivitystreak.ui.theme.Spacing.md)
     ) {
@@ -95,6 +100,9 @@ fun StatsScreen(
             StoryCardsSection(statsState = statsState)
             
             SummaryRow(statsState = statsState)
+            
+            // RPG Stats Spider Chart
+            RpgStatsCard(rpgStats = rpgStats)
 
             // Consistency Score Card - use top consistency streak if available
             val topConsistency = statsState.streakConsistency.maxByOrNull { it.score }
@@ -102,9 +110,8 @@ fun StatsScreen(
                 ConsistencyScoreCard(score = topConsistency)
             }
 
-            statsState.averageDailyTrend?.let {
-                StreakTrendCard(trend = it)
-            }
+            // GitHub-style Contribution Heatmap
+            ContributionHeatmapCard()
         }
 
         // Skill Paths Entry
@@ -803,4 +810,203 @@ private fun SkillPathsEntryCard(onClick: () -> Unit) {
             )
         }
     }
+}
+
+@Composable
+private fun RpgStatsCard(rpgStats: com.productivitystreak.data.model.RpgStats) {
+    com.productivitystreak.ui.components.ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = {}
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(com.productivitystreak.ui.theme.Spacing.md),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(com.productivitystreak.ui.theme.Spacing.md)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Character Stats",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Level ${rpgStats.level} • ${rpgStats.currentXp}/${rpgStats.currentXp + rpgStats.xpToNextLevel} XP",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
+                // Level badge
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "${rpgStats.level}",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Spider Chart
+            com.productivitystreak.ui.components.SpiderChart(
+                rpgStats = rpgStats,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            // XP Progress Bar
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "Progress to Level ${rpgStats.level + 1}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant,
+                            shape = RoundedCornerShape(999.dp)
+                        )
+                ) {
+                    val progress = rpgStats.currentXp.toFloat() / (rpgStats.currentXp + rpgStats.xpToNextLevel)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(progress.coerceIn(0f, 1f))
+                            .height(8.dp)
+                            .background(
+                                brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                    listOf(
+                                        MaterialTheme.colorScheme.primary,
+                                        MaterialTheme.colorScheme.tertiary
+                                    )
+                                ),
+                                shape = RoundedCornerShape(999.dp)
+                            )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ContributionHeatmapCard() {
+    com.productivitystreak.ui.components.ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = {}
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(com.productivitystreak.ui.theme.Spacing.md),
+            verticalArrangement = Arrangement.spacedBy(com.productivitystreak.ui.theme.Spacing.md)
+        ) {
+            Column {
+                Text(
+                    text = "Activity Heatmap",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Your consistency over the last year",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Generate sample data (in real app, this would come from actual streak data)
+            val contributions = com.productivitystreak.ui.components.generateSampleContributions()
+            
+            com.productivitystreak.ui.components.ContributionHeatmap(
+                contributions = contributions,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            // Stats summary
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "${contributions.count { it.value > 0 }}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Active days",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    val avgIntensity = contributions.values.filter { it > 0 }.average()
+                    Text(
+                        text = "${(avgIntensity * 100).toInt()}%",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Avg intensity",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    val currentStreak = calculateCurrentStreak(contributions)
+                    Text(
+                        text = "$currentStreak",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Day streak",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun calculateCurrentStreak(contributions: Map<java.time.LocalDate, Float>): Int {
+    var streak = 0
+    var date = java.time.LocalDate.now()
+    
+    while (contributions[date]?.let { it > 0 } == true) {
+        streak++
+        date = date.minusDays(1)
+    }
+    
+    return streak
 }

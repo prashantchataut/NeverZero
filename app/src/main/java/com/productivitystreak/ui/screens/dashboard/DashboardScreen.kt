@@ -33,6 +33,7 @@ import com.productivitystreak.ui.screens.dashboard.components.AddTaskDialog
 import com.productivitystreak.ui.screens.dashboard.components.FocusModeWidget
 import com.productivitystreak.ui.screens.dashboard.components.OneOffTaskRow
 import com.productivitystreak.ui.screens.dashboard.components.RadarChartPreview
+import com.productivitystreak.ui.screens.dashboard.components.VoiceControlCard
 import com.productivitystreak.ui.screens.home.HomeHeader
 import com.productivitystreak.ui.state.AppUiState
 import com.productivitystreak.ui.state.DashboardTask
@@ -40,6 +41,17 @@ import com.productivitystreak.ui.state.AddEntryType
 import com.productivitystreak.ui.theme.NeverZeroTheme
 import com.productivitystreak.ui.theme.PlayfairFontFamily
 import com.productivitystreak.ui.theme.Spacing
+import com.productivitystreak.ui.interaction.rememberHapticManager
+import com.productivitystreak.ui.interaction.HapticFeedback
+import com.productivitystreak.ui.interaction.HapticPattern
+import com.productivitystreak.ui.interaction.taskSwipeGestures
+import com.productivitystreak.ui.interaction.quickActionGestures
+import com.productivitystreak.ui.components.VoiceButton
+import com.productivitystreak.ui.voice.rememberVoiceManager
+import com.productivitystreak.ui.voice.VoiceCommand
+import com.productivitystreak.ui.animation.rememberPhysicsState
+import com.productivitystreak.ui.animation.elasticStretchAnimation
+import com.productivitystreak.ui.animation.bounceAnimation
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -78,6 +90,8 @@ fun DashboardScreen(
 
     val haptics = LocalHapticFeedback.current
     val hapticsEnabled = uiState.profileState.hapticsEnabled
+    val hapticManager = rememberHapticManager()
+    val voiceManager = rememberVoiceManager()
 
     fun performHaptic(type: HapticFeedbackType = com.productivitystreak.ui.theme.HapticTokens.Impact) {
         if (hapticsEnabled) {
@@ -124,15 +138,30 @@ fun DashboardScreen(
                 DailyWisdomCard(
                     insight = streakUiState.buddhaInsight ?: "Meditate on your goals.",
                     onRefresh = {
-                        performHaptic()
+                        HapticFeedback(pattern = HapticPattern.REFRESH, manager = hapticManager)
                         onRefreshQuote()
                     },
+                    deepForest = deepForest,
+                    creamWhite = creamWhite
+                ).quickActionGestures(
+                    onRefresh = {
+                        HapticFeedback(pattern = HapticPattern.WISDOM_REVEAL, manager = hapticManager)
+                        onRefreshQuote()
+                    }
+                )
+            }
+
+            // 4. Voice Control (square)
+            item(key = "voice-control") {
+                VoiceControlCard(
+                    voiceManager = voiceManager,
+                    hapticManager = hapticManager,
                     deepForest = deepForest,
                     creamWhite = creamWhite
                 )
             }
 
-            // 4. Radar Chart Preview (square)
+            // 5. Radar Chart Preview (square)
             item(key = "radar-chart") {
                 RadarChartPreview(
                     stats = streakUiState.rpgStats,
@@ -143,7 +172,7 @@ fun DashboardScreen(
                 )
             }
 
-            // 5. Quest Log Section (full width)
+            // 6. Quest Log Section (full width)
             fullWidthItem(key = "quest-log") {
                 QuestLogSection(
                     tasks = streakUiState.oneOffTasks,
@@ -164,7 +193,7 @@ fun DashboardScreen(
                 )
             }
 
-            // 6. Daily Disciplines Section Header (full width)
+            // 7. Daily Disciplines Section Header (full width)
             if (streakUiState.streaks.isNotEmpty()) {
                 fullWidthItem(key = "disciplines-header") {
                     Text(
@@ -176,7 +205,7 @@ fun DashboardScreen(
                     )
                 }
 
-                // 7. Protocol list items (full width each)
+                // 8. Protocol list items (full width each)
                 streakUiState.streaks.forEachIndexed { index, streak ->
                     fullWidthItem(key = "streak-${streak.id}") {
                         val task = DashboardTask(
@@ -196,7 +225,8 @@ fun DashboardScreen(
                                 celebratingTaskId = task.id
                                 onToggleTask(task.id)
                             },
-                            onSelect = { onSelectStreak(streak.id) }
+                            onSelect = { onSelectStreak(streak.id) },
+                            hapticManager = hapticManager
                         )
                     }
                 }
@@ -235,9 +265,12 @@ private fun ProtocolRow(
     task: DashboardTask,
     onToggle: () -> Unit,
     onSelect: () -> Unit,
+    hapticManager: com.productivitystreak.ui.interaction.HapticManager,
     modifier: Modifier = Modifier
 ) {
     val checkScale = remember { Animatable(1f) }
+    val physicsState = rememberPhysicsState()
+    val elasticScale = elasticStretchAnimation(stretched = false)
     
     LaunchedEffect(task.isCompleted) {
         if (task.isCompleted) {
@@ -245,23 +278,36 @@ private fun ProtocolRow(
                 targetValue = 1.2f,
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
+                    stiffness = Spring.StiffnessMedium
                 )
             )
-            checkScale.animateTo(1f)
+            checkScale.animateTo(
+                targetValue = 1f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
         }
-    }
-
-    val accentColor = try {
-        Color(android.graphics.Color.parseColor(task.accentHex))
-    } catch (e: Exception) {
-        MaterialTheme.colorScheme.primary
     }
 
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onSelect),
+            .taskSwipeGestures(
+                onComplete = {
+                    HapticFeedback(pattern = HapticPattern.TASK_COMPLETE, manager = hapticManager)
+                    onToggle()
+                },
+                onDelete = {
+                    HapticFeedback(pattern = HapticPattern.TASK_DELETE, manager = hapticManager)
+                    // Handle delete if needed
+                },
+                onEdit = {
+                    HapticFeedback(pattern = HapticPattern.TASK_EDIT, manager = hapticManager)
+                    onSelect()
+                }
+            ),
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         tonalElevation = 1.dp

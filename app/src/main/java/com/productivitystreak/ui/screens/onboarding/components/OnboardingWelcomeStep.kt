@@ -76,7 +76,7 @@ fun OnboardingWelcomeStep() {
             ) {
                 Icon(
                     imageVector = AppIcons.FireStreak,
-                    contentDescription = "NeverZero Logo",
+                    contentDescription = "Never Zero Logo",
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(56.dp)
                 )
@@ -88,7 +88,7 @@ fun OnboardingWelcomeStep() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "NeverZero",
+                text = "Never Zero",
                 style = MaterialTheme.typography.displayMedium.copy(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = (-1).sp
@@ -97,7 +97,7 @@ fun OnboardingWelcomeStep() {
             )
             
             Text(
-                text = "Welcome to NeverZero",
+                text = "Welcome to Never Zero",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
